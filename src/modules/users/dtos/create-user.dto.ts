@@ -1,3 +1,4 @@
+import { Gender } from '@shared/enums/gender.enum';
 import {
   IsEmail,
   IsEnum,
@@ -5,7 +6,6 @@ import {
   IsPhoneNumber,
   IsString,
 } from 'class-validator';
-import { Gender } from 'src/common/enums/gender.enum';
 
 export class CreateUserDto {
   @IsNotEmpty({ message: 'First name is required' })

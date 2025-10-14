@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { User, UserDocument } from '../schemas/user.schema';
 import { Model } from 'mongoose';
+import { User, UserDocument } from '../schemas/user.schema';
 
 @Injectable()
 export class UserRepository {
@@ -12,7 +12,6 @@ export class UserRepository {
   async create(data: Partial<User>): Promise<User> {
     const newUser = new this.userModel(data);
     console.log(newUser);
-
     return await newUser.save();
   }
 

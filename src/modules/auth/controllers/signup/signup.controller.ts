@@ -1,6 +1,6 @@
+import { BasicUserDto } from '@modules/auth/dtos/basicUserData.dto';
+import { SignupService } from '@modules/auth/services/signup/signup.service';
 import { Body, Controller, Get, Post } from '@nestjs/common';
-import { SignupService } from '../../services/signup/signup.service';
-import { BasicUserDto } from '../../dtos/basicUserData.dto';
 
 @Controller('auth/signup')
 export class SignupController {

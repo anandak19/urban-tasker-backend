@@ -9,6 +9,10 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
   await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap();
+
+bootstrap().catch((error) => {
+  console.log('Application faild to start', error);
+  process.exit(1);
+});
 
 // modular layered architecture

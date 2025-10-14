@@ -1,6 +1,6 @@
+import { BasicUserDto } from '@modules/auth/dtos/basicUserData.dto';
+import { UserRepository } from '@modules/users/repositories/user.repository';
 import { Injectable } from '@nestjs/common';
-import { UserRepository } from 'src/modules/users/repositories/user.repository';
-import { BasicUserDto } from '../../dtos/basicUserData.dto';
 
 @Injectable()
 export class SignupService {
