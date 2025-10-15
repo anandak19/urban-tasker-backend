@@ -1,4 +1,4 @@
-import { Gender } from '@shared/enums/gender.enum';
+import { Gender } from '@shared/constants/enums/gender.enum';
 import {
   IsEmail,
   IsEnum,
