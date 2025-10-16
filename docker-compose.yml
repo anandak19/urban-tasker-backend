@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: urban_tasker_app
+    ports:
+      - '${PORT}:3000'
+    env_file:
+      - .env
+    depends_on:
+      - mongo
+      - redis
+    volumes:
+      - ./src:/usr/src/app/src
+
+  mongo:
+    image: mongo:7.0
+    container_name: mongodb
+    ports:
+      - '27017:27017'
+    command: ['--quiet']
+    volumes:
+      - mongo_data:/data/db
+
+  redis:
+    image: redis:latest
+    env_file:
+      - .env
+    command: /bin/sh -c "redis-server --requirepass $$REDIS_PASS"
+    container_name: redis_server
+    ports:
+      - '6379:6379'
+    volumes:
+      - ./redis/data:/data
+
+volumes:
+  mongo_data:
+    driver: local

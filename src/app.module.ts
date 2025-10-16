@@ -1,36 +1,26 @@
-import databaseConfig from '@config/database.config';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import Joi from 'joi';
+import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from '@modules/auth/auth.module';
 import { CategoriesModule } from '@modules/categories/categories.module';
 import { TaskerApplicationsModule } from '@modules/tasker-applications/tasker-applications.module';
 import { UsersModule } from '@modules/users/users.module';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { configOptions } from '@config/config.option';
+import { mongooseOption } from '@config/database/database.option';
+import { CacheModule } from '@core/lib/cache/cache.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({
-      isGlobal: true,
-      load: [databaseConfig],
-      validationSchema: Joi.object({
-        MONGO_URI: Joi.string().required(),
-        PORT: Joi.number().default(3000),
-      }),
-    }),
-    MongooseModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        uri: configService.get<string>('mongoUri'),
-      }),
-    }),
+    ConfigModule.forRoot(configOptions),
+    CacheModule.register(),
     AuthModule,
+    MongooseModule.forRootAsync(mongooseOption),
     UsersModule,
     CategoriesModule,
     TaskerApplicationsModule,
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [],
 })
 export class AppModule {}

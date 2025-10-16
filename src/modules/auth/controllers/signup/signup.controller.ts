@@ -4,16 +4,20 @@ import { Body, Controller, Get, Post } from '@nestjs/common';
 
 @Controller('auth/signup')
 export class SignupController {
-  constructor(private singupService: SignupService) {}
+  constructor(private _singupService: SignupService) {}
 
   @Post()
-  signupUser() {
+  async signupUser() {
     // singup controller logic
+    const email = 'arun.kumar@example.com';
+    const data = await this._singupService.signup(email);
+    console.log(data);
+    return data;
   }
 
   @Post('varify-user-data')
-  validateBasicUserData(@Body() basicUserDto: BasicUserDto) {
-    return basicUserDto;
+  async validateBasicUserData(@Body() basicUserDto: BasicUserDto) {
+    return await this._singupService.varifiUserData(basicUserDto);
   }
 
   @Post('varify-otp')

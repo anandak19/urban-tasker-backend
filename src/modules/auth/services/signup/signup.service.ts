@@ -1,24 +1,37 @@
 import { BasicUserDto } from '@modules/auth/dtos/basicUserData.dto';
-import { CreateUserDto } from '@modules/users/dtos/create-user.dto';
 import { UserRepository } from '@modules/users/repositories/user.repository';
 import { Injectable } from '@nestjs/common';
+import { AuthRedisService } from '../auth-redis/auth-redis.service';
+import { IBasicUserData } from '@modules/auth/interfaces/singup.interface';
 
 @Injectable()
 export class SignupService {
-  constructor(private userRepo: UserRepository) {}
+  constructor(
+    private userRepo: UserRepository,
+    private _authRedisService: AuthRedisService,
+  ) {}
 
-  async varifyNewUserData(basicUserDto: BasicUserDto) {
-    // check if the
-    const user = await this.userRepo.findOne(basicUserDto);
-    if (user) throw new Error('User with this email already exists');
-    // other logics ----
+  // async varifyNewUserData(basicUserDto: BasicUserDto) {
+  //   // check if the
+  //   const user = await this.userRepo.findOne(basicUserDto);
+  //   if (user) throw new Error('User with this email already exists');
+  //   // other logics ----
 
-    return { message: 'User data varified' };
+  //   return { message: 'User data varified' };
+  // }
+
+  async varifiUserData(basicUserDto: BasicUserDto) {
+    await this._authRedisService.setUserTempData(
+      basicUserDto.email,
+      basicUserDto,
+    );
+    return 'User added to cache';
   }
 
   // signup logic
-  async signup(userData: CreateUserDto) {
-    return await this.userRepo.create(userData);
+  async signup(email: string) {
+    // return await this.userRepo.create(userData);
+    return await this._authRedisService.getUserTempData<IBasicUserData>(email);
   }
 
   // --STEPPER SINGUP PROCESS
