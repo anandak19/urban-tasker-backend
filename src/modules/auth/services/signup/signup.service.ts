@@ -1,6 +1,11 @@
 import { BasicUserDto } from '@modules/auth/dtos/basicUserData.dto';
 import { UserRepository } from '@modules/users/repositories/user.repository';
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  GoneException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { IBasicUserData } from '@modules/auth/interfaces/singup.interface';
 import { UuidService } from '@core/lib/uuid/uuid.service';
 import { CacheService } from '@core/lib/cache/cache.service';
@@ -20,6 +25,13 @@ export class SignupService {
     private _emailService: EmailService,
   ) {}
 
+  /*
+  . STEP 1: Basic Info Submission (POST /auth/signup/basic) +
+  - Client sends: firstName, lastName, email, phone. +
+  - Server: Validate input → Store in Redis (key based on redis id) → Generate/send OTP → Store OTP in Redis with TTL.
+    both basic user and otp and stored separatly
+  - return the message: otp send to email along with redis id in cookie
+  */
   async saveBasicUserData(res: Response, basicUserDto: BasicUserDto) {
     try {
       // Create UUID and save to Redis
@@ -49,23 +61,55 @@ export class SignupService {
       return { message: 'OTP sent successfully' };
     } catch (err) {
       console.error('Error in saveBasicUserData:', err);
-      return { message: 'Somthing went wrong' };
+      throw new InternalServerErrorException('Somthing went wrong');
     }
   }
 
   /*
-    . SETP 2: OTP Verification (POST /auth/signup/varify)
+  . SETP 2: OTP Verification (POST /auth/signup/varify)
   - Client sends:  otp.  (cookie: id of redis)
   - Server: Fetch OTP from Redis → Validate match/expiration 
     If valid, mark "user data" in Redis as verified: true then Delete OTP key from redis.
     if not valid, send error message
-    */
-  varifyOtp(otp: string) {
-    // from cache get the otp
-    console.log(otp);
+  */
+  async varifyOtp(signupId: string, otp: string) {
+    const isOtpCorrect = await this._otpService.varifyOtp(signupId, otp);
+    if (!isOtpCorrect) {
+      throw new GoneException(
+        'Invalid or expired OTP. Click resend to get a new one.',
+      );
+    }
+    return { message: 'OTP Varified successfully' };
+  }
 
-    // if no, otp found --invlid or expired, send error
-    // if valid send the success message
+  /*
+    Route to resend otp
+  */
+  async resendOtp(signupId: string) {
+    const userData: BasicUserDto | undefined =
+      await this._cacheService.get<BasicUserDto>(signupId);
+
+    if (!userData) {
+      throw new BadRequestException(
+        'Signup session expired. Please restart signup.',
+      );
+    }
+
+    const otp = this._otpService.generateOtp();
+    try {
+      await this._emailService.sendEmail({
+        recipient: userData.email,
+        subject: 'Varify Your Email',
+        html: this._otpService.generateOtpHtml(otp),
+      });
+
+      await this._otpService.storeOtp(signupId, otp);
+
+      return { message: 'OTP sent successfully' };
+    } catch (err) {
+      console.error('Error in otp send:', err);
+      throw new InternalServerErrorException('Somthing went wrong');
+    }
   }
 
   // signup logic

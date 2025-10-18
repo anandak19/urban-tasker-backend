@@ -12,7 +12,7 @@ export class CacheService {
 
   async get<T>(key: string) {
     const data = await this._cacheManager.get<T>(key);
-    console.log('Inside the get', data);
+    console.log('Inside the get of cache', data);
     return data ?? undefined;
   }
 

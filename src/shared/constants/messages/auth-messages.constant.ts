@@ -19,4 +19,9 @@ export const AUTH_MESSAGES = {
   PHONE_REQUIRED: 'Phone number is required.',
   INVALID_PHONE: 'Invalid phone number.',
   INVALID_PHONE_FORMAT: 'Phone number must be a valid 10-digit Indian number.',
+
+  //STEP2
+  OTP_REQUIRED: 'OTP is required',
+  OTP_STRING: 'OTP must be string',
+  OTP_LENGTH: 'OTP must be 4 charecter long',
 };
