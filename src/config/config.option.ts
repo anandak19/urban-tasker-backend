@@ -13,5 +13,9 @@ export const configOptions: ConfigModuleOptions = {
     REDIS_PORT: Joi.number().required(),
     REDIS_PASS: Joi.string().required(),
     REDIS_URI: Joi.string().required(),
+    SMTP_HOST: Joi.string().required(),
+    SMTP_PASS: Joi.string().required(),
+    SMTP_PORT: Joi.number().required(),
+    SMTP_FROM: Joi.string().required(),
   }),
 };

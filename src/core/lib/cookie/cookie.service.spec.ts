@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthRedisService } from './auth-redis.service';
+import { CookieService } from './cookie.service';
 
-describe('AuthRedisService', () => {
-  let service: AuthRedisService;
+describe('CookieService', () => {
+  let service: CookieService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [AuthRedisService],
+      providers: [CookieService],
     }).compile();
 
-    service = module.get<AuthRedisService>(AuthRedisService);
+    service = module.get<CookieService>(CookieService);
   });
 
   it('should be defined', () => {
