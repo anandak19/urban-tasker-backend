@@ -1,9 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../schemas/user.schema';
-import { IUserEntity } from '../interfaces/user.interface';
-import { CreateUserDto } from '../dtos/create-user.dto';
+import { IUser, IUserEntity } from '../interfaces/user.interface';
+import { isDuplicateKeyError } from '@shared/utility/db/mongo-error.util';
+import { AUTH_MESSAGES } from '@shared/constants/messages/auth-messages.constant';
+// import { hashPassword } from '@shared/utility/security/password.util';
 
 @Injectable()
 export class UserRepository {
@@ -13,10 +15,21 @@ export class UserRepository {
 
   // To create a new user to db
   // return type = mongoose doc
-  async create(data: CreateUserDto): Promise<UserDocument> {
-    const newUser = new this.userModel(data);
-    const savedUser = await newUser.save();
-    return savedUser; // the service will convert the this to plain object using mapper
+  async create(data: IUser): Promise<UserDocument> {
+    try {
+      // const hashedPassword = await hashPassword(data.password);
+      const hashedPassword = data.password; // change to hashed password later
+      const newUser = new this.userModel({
+        ...data,
+        password: hashedPassword,
+      });
+      return await newUser.save();
+    } catch (error) {
+      if (isDuplicateKeyError(error)) {
+        throw new ConflictException(AUTH_MESSAGES.EMAIL_TAKEN);
+      }
+      throw error;
+    }
   }
 
   async findAll(): Promise<UserDocument[]> {

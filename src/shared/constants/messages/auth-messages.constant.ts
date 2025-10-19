@@ -15,6 +15,7 @@ export const AUTH_MESSAGES = {
   INVALID_EMAIL: 'Invalid email format.',
   EMAIL_MAX: 'Email cannot exceed 60 characters.',
   EMAIL_TAKEN: 'This email is already taken.',
+  NOT_VERIFIED: 'Email is not verified',
 
   PHONE_REQUIRED: 'Phone number is required.',
   INVALID_PHONE: 'Invalid phone number.',
@@ -24,4 +25,16 @@ export const AUTH_MESSAGES = {
   OTP_REQUIRED: 'OTP is required',
   OTP_STRING: 'OTP must be string',
   OTP_LENGTH: 'OTP must be 4 charecter long',
+  OTP_EXPIRED: 'Invalid or expired OTP. Click resend to get new one',
+
+  //STEP3
+  PASSWORD_REQUIRED: 'Password is required',
+  PASSWORD_MIN: 'Password should be atleast 5 charecters',
+  PASSWORD_MAX: 'Password cannot exceed 15 charecters',
+  PASSWORD_INVALID_FORMAT:
+    'Password must include uppercase, lowercase, and number characters',
+};
+
+export const SESSION_MESSAGES = {
+  SIGNUP_EXPIRED: 'Signup session expired. Please restart signup.',
 };

@@ -16,10 +16,25 @@ export class CacheService {
     return data ?? undefined;
   }
 
+  // delete
   del(key: string) {
     return this._cacheManager.del(key);
   }
 
-  // delete field
+  // update
+  async updateField(key: string, field: string, value: unknown, ttl?: number) {
+    const data = (await this.get<unknown>(key)) ?? {};
+
+    if (typeof data !== 'object' || data === null) {
+      throw new Error('Cache entry is not an object and cannot be updated');
+    }
+
+    const obj = data as Record<string, unknown>;
+
+    obj[field] = value;
+
+    return await this.set(key, obj, ttl);
+  }
+
   // getField
 }

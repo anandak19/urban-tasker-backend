@@ -3,5 +3,5 @@ export interface IBasicUserData {
   lastName: string;
   email: string;
   phone: string;
-  isVarified?: boolean;
+  isVerified?: boolean;
 }

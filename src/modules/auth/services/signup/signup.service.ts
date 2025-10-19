@@ -1,7 +1,7 @@
 import { BasicUserDto } from '@modules/auth/dtos/basicUserData.dto';
-import { UserRepository } from '@modules/users/repositories/user.repository';
 import {
   BadRequestException,
+  ConflictException,
   GoneException,
   Injectable,
   InternalServerErrorException,
@@ -13,11 +13,16 @@ import { CookieService } from '@core/lib/cookie/cookie.service';
 import { Response } from 'express';
 import { OtpService } from '@core/lib/otp/otp.service';
 import { EmailService } from '@core/lib/email/email.service';
+import { UsersService } from '@modules/users/services/users.service';
+import {
+  AUTH_MESSAGES,
+  SESSION_MESSAGES,
+} from '@shared/constants/messages/auth-messages.constant';
 
 @Injectable()
 export class SignupService {
   constructor(
-    private userRepo: UserRepository,
+    private _userService: UsersService,
     private _cookieService: CookieService,
     private _uuidService: UuidService,
     private _cacheService: CacheService,
@@ -37,11 +42,11 @@ export class SignupService {
       // Create UUID and save to Redis
       const uuid = this._uuidService.generate();
       // save user data in cache
-      await this._cacheService.set(
+      const userData: IBasicUserData = (await this._cacheService.set(
         uuid,
         { ...basicUserDto, isVerified: false },
         1000 * 60 * 30,
-      );
+      )) as IBasicUserData;
 
       // add the uuid to cookie
       this._cookieService.setCookie(res, 'signupId', uuid, 60 * 30); // in cookie upto 30min
@@ -58,10 +63,10 @@ export class SignupService {
       // Save OTP to Redis
       await this._otpService.storeOtp(uuid, otp);
 
-      return { message: 'OTP sent successfully' };
+      return { message: 'OTP sent successfully', userData };
     } catch (err) {
       console.error('Error in saveBasicUserData:', err);
-      throw new InternalServerErrorException('Somthing went wrong');
+      throw new InternalServerErrorException();
     }
   }
 
@@ -75,10 +80,11 @@ export class SignupService {
   async varifyOtp(signupId: string, otp: string) {
     const isOtpCorrect = await this._otpService.varifyOtp(signupId, otp);
     if (!isOtpCorrect) {
-      throw new GoneException(
-        'Invalid or expired OTP. Click resend to get a new one.',
-      );
+      throw new GoneException(AUTH_MESSAGES.OTP_EXPIRED);
     }
+
+    await this._cacheService.updateField(signupId, 'isVerified', true);
+
     return { message: 'OTP Varified successfully' };
   }
 
@@ -90,9 +96,7 @@ export class SignupService {
       await this._cacheService.get<BasicUserDto>(signupId);
 
     if (!userData) {
-      throw new BadRequestException(
-        'Signup session expired. Please restart signup.',
-      );
+      throw new BadRequestException(SESSION_MESSAGES.SIGNUP_EXPIRED);
     }
 
     const otp = this._otpService.generateOtp();
@@ -105,17 +109,34 @@ export class SignupService {
 
       await this._otpService.storeOtp(signupId, otp);
 
-      return { message: 'OTP sent successfully' };
+      return { message: 'OTP sent successfully', userData };
     } catch (err) {
       console.error('Error in otp send:', err);
-      throw new InternalServerErrorException('Somthing went wrong');
+      throw new InternalServerErrorException();
     }
   }
 
   // signup logic
-  async signup(uuid: string) {
-    // return await this.userRepo.create(userData);
-    return await this._cacheService.get<IBasicUserData>(uuid);
+  async signup(signupId: string, password: string) {
+    // get user data from cache
+    const userData = (await this._cacheService.get<IBasicUserData>(
+      signupId,
+    )) as IBasicUserData;
+    if (!userData) {
+      throw new BadRequestException(SESSION_MESSAGES.SIGNUP_EXPIRED);
+    } else if (!userData.isVerified) {
+      throw new BadRequestException(AUTH_MESSAGES.NOT_VERIFIED);
+    }
+
+    // check if the user with email exists
+    const userExists = await this._userService.findByEmail(userData.email);
+    if (userExists) {
+      throw new ConflictException(AUTH_MESSAGES.EMAIL_TAKEN);
+    }
+    // save user to db
+    const savedUser = this._userService.create({ ...userData, password });
+    // toekn process
+    return { message: 'User singup success, now login', savedUser };
   }
 
   // --STEPPER SINGUP PROCESS

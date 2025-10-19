@@ -10,7 +10,7 @@ export class UserMapper {
       lastName: userDoc.lastName,
       email: userDoc.email,
       phone: userDoc.phone,
-      gender: userDoc.gender,
+      // gender: userDoc.gender,
     };
   }
 }

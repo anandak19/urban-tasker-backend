@@ -46,7 +46,6 @@ export class ResponseInterceptor<T>
           timestamp: new Date().toISOString(),
         };
 
-        // ✅ Only include data if it exists
         return responseData
           ? { ...baseResponse, data: responseData }
           : baseResponse;

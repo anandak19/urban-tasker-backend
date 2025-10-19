@@ -46,7 +46,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       statusCode: status,
       success: false,
       message,
-      path: request.url,
+      path: request.originalUrl,
       timeStamp: new Date().toISOString(),
     });
   }
