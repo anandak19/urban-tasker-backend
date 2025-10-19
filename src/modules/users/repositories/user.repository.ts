@@ -5,20 +5,22 @@ import { User, UserDocument } from '../schemas/user.schema';
 import { IUser, IUserEntity } from '../interfaces/user.interface';
 import { isDuplicateKeyError } from '@shared/utility/db/mongo-error.util';
 import { AUTH_MESSAGES } from '@shared/constants/messages/auth-messages.constant';
-// import { hashPassword } from '@shared/utility/security/password.util';
+import { HashService } from '@core/lib/hash/hash.service';
 
 @Injectable()
 export class UserRepository {
   constructor(
     @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+    private _hashService: HashService,
   ) {}
 
   // To create a new user to db
   // return type = mongoose doc
   async create(data: IUser): Promise<UserDocument> {
     try {
-      // const hashedPassword = await hashPassword(data.password);
-      const hashedPassword = data.password; // change to hashed password later
+      const hashedPassword = await this._hashService.hashPassword(
+        data.password,
+      ); // change to hashed password later
       const newUser = new this.userModel({
         ...data,
         password: hashedPassword,

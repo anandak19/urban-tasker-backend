@@ -21,6 +21,7 @@ import { SignupIdMiddleware } from '@core/middlewares/signup-id.middleware';
 })
 export class AuthModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
+    // Check if the cookie has signup sessionId
     consumer
       .apply(SignupIdMiddleware)
       .forRoutes(
