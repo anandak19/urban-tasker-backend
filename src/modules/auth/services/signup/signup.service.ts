@@ -139,6 +139,10 @@ export class SignupService {
     return { message: 'User singup success, now login', savedUser };
   }
 
+  getOtpStatus(signupId: string) {
+    console.log(signupId);
+  }
+
   // --STEPPER SINGUP PROCESS
   /*
   . STEP 1: Basic Info Submission (POST /auth/signup/basic) +

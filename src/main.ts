@@ -9,8 +9,14 @@ import { ResponseInterceptor } from '@core/interceptors/response.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors({
+    origin: 'http://localhost:4200', // Angular app URL
+    credentials: true, // allow cookies/auth headers
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  });
   app.use(json());
   app.use(cookieParser());
+  app.setGlobalPrefix('api');
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
   app.useGlobalPipes(
     new ValidationPipe({

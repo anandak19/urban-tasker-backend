@@ -41,6 +41,12 @@ export class SignupController {
     return await this._singupService.resendOtp(signupId);
   }
 
+  // STEP 2.2
+  @Get('otp-status')
+  getOtpStatus(@Cookies('signupId') signupId: string) {
+    console.log(signupId);
+  }
+
   // STEP 1: Validate and save basic user data
   @Post('basic')
   async validateBasicUserData(
