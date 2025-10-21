@@ -1,4 +1,5 @@
 import { Cookies } from '@core/decorators/cookies.decorator';
+import { OtpService } from '@core/lib/otp/otp.service';
 import { BasicUserDto } from '@modules/auth/dtos/basicUserData.dto';
 import { OtpDto } from '@modules/auth/dtos/otp.dto';
 import { PasswordDto } from '@modules/auth/dtos/password.dto';
@@ -8,7 +9,10 @@ import express from 'express';
 
 @Controller('auth/signup')
 export class SignupController {
-  constructor(private _singupService: SignupService) {}
+  constructor(
+    private _singupService: SignupService,
+    private _otpService: OtpService,
+  ) {}
 
   // STEP 3
   @Post()
@@ -43,8 +47,8 @@ export class SignupController {
 
   // STEP 2.2
   @Get('otp-status')
-  getOtpStatus(@Cookies('signupId') signupId: string) {
-    console.log(signupId);
+  async getOtpStatus(@Cookies('signupId') signupId: string) {
+    return await this._singupService.getOtpTimeLeft(signupId);
   }
 
   // STEP 1: Validate and save basic user data

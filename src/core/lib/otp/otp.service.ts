@@ -12,7 +12,11 @@ export class OtpService {
   }
 
   // save otp in session 60sec
-  async storeOtp(uuid: string, otp: string, ttl = 1000 * 60): Promise<void> {
+  async storeOtp(
+    uuid: string,
+    otp: string,
+    ttl = 1000 * 60 * 2,
+  ): Promise<void> {
     await this._cacheService.set(`otp:${uuid}`, otp, ttl);
   }
 
@@ -25,9 +29,13 @@ export class OtpService {
          <div style="background:#f4f4f4;padding:10px 20px;width:'fit-content';border-radius:6px;font-size:18px;">
           <b>${otp}</b>
          </div>
-         <p>This OTP will expire in 60 seconds.</p>
+         <p>This OTP will expire in 120 seconds.</p>
       </div>
     `;
+  }
+
+  async getOtpTimeLeft(uuid: string) {
+    return await this._cacheService.getReminingTime(`otp:${uuid}`);
   }
 
   // varify otp

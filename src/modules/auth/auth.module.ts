@@ -13,9 +13,17 @@ import { CookieModule } from '@core/lib/cookie/cookie.module';
 import { OtpModule } from '@core/lib/otp/otp.module';
 import { EmailModule } from '@core/lib/email/email.module';
 import { SignupIdMiddleware } from '@core/middlewares/signup-id.middleware';
+import { CacheModule } from '@core/lib/cache/cache.module';
 
 @Module({
-  imports: [UsersModule, UuidModule, CookieModule, OtpModule, EmailModule],
+  imports: [
+    UsersModule,
+    UuidModule,
+    CookieModule,
+    OtpModule,
+    EmailModule,
+    CacheModule,
+  ],
   controllers: [SignupController],
   providers: [AuthService, SignupService],
 })

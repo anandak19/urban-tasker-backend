@@ -4,13 +4,13 @@ FROM node:20
 # Set working directory inside container
 WORKDIR /usr/src/app
 
-# Copy package.json first
+# Copy package files first
 COPY package*.json ./
 
-# Install all dependencies (including dev)
-RUN npm install
+# Install all dependencies (including dev) using lockfile
+RUN npm ci
 
-# Copy entire source code
+# Copy entire source code (but src will be overridden by volume in dev)
 COPY . .
 
 # Expose NestJS default port

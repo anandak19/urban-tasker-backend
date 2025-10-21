@@ -42,11 +42,18 @@ export class SignupService {
       // Create UUID and save to Redis
       const uuid = this._uuidService.generate();
       // save user data in cache
-      const userData: IBasicUserData = (await this._cacheService.set(
+      // const userData: IBasicUserData = (await this._cacheService.set(
+      //   uuid,
+      //   { ...basicUserDto, isVerified: false },
+      //   1000 * 60 * 30,
+      // )) as IBasicUserData;
+
+      await this._cacheService.set(
         uuid,
         { ...basicUserDto, isVerified: false },
         1000 * 60 * 30,
-      )) as IBasicUserData;
+      );
+      const userData = await this._cacheService.get(uuid);
 
       // add the uuid to cookie
       this._cookieService.setCookie(res, 'signupId', uuid, 60 * 30); // in cookie upto 30min
@@ -116,12 +123,16 @@ export class SignupService {
     }
   }
 
+  async getOtpTimeLeft(signupId: string) {
+    const timeLeft = await this._otpService.getOtpTimeLeft(signupId);
+    console.log('From singup servcie', timeLeft);
+    return { timeLeft };
+  }
+
   // signup logic
   async signup(signupId: string, password: string) {
     // get user data from cache
-    const userData = (await this._cacheService.get<IBasicUserData>(
-      signupId,
-    )) as IBasicUserData;
+    const userData = await this._cacheService.get<IBasicUserData>(signupId);
     if (!userData) {
       throw new BadRequestException(SESSION_MESSAGES.SIGNUP_EXPIRED);
     } else if (!userData.isVerified) {
@@ -136,11 +147,7 @@ export class SignupService {
     // save user to db
     const savedUser = this._userService.create({ ...userData, password });
     // toekn process
-    return { message: 'User singup success, now login', savedUser };
-  }
-
-  getOtpStatus(signupId: string) {
-    console.log(signupId);
+    return { message: 'User signup success, now login', savedUser };
   }
 
   // --STEPPER SINGUP PROCESS

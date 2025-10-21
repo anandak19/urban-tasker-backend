@@ -1,18 +1,19 @@
-import { DynamicModule, Global, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
+import { createKeyv } from '@keyv/redis';
+import { Cacheable } from 'cacheable';
 import { CacheService } from './cache.service';
-import { CacheModule as NestJSCacheModule } from '@nestjs/cache-manager';
-import { cacheManagerOptions } from '@config/cache/cache.option';
 
-@Global()
-@Module({})
-export class CacheModule {
-  static register(): DynamicModule {
-    return {
-      global: true,
-      providers: [CacheService],
-      imports: [NestJSCacheModule.registerAsync(cacheManagerOptions)],
-      exports: [CacheService],
-      module: CacheModule,
-    };
-  }
-}
+@Module({
+  providers: [
+    {
+      provide: 'CACHE_INSTANCE',
+      useFactory: () => {
+        const secondary = createKeyv('redis://default:secret@redis:6379');
+        return new Cacheable({ secondary, ttl: '4h' });
+      },
+    },
+    CacheService,
+  ],
+  exports: ['CACHE_INSTANCE', CacheService],
+})
+export class CacheModule {}

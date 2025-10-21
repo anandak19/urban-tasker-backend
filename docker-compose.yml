@@ -26,9 +26,14 @@ services:
       - mongo_data:/data/db
 
   redis:
-    image: redis:latest
+    image: redis:alpine
     env_file:
       - .env
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3  
     command: /bin/sh -c "redis-server --requirepass $$REDIS_PASS"
     container_name: redis_server
     ports:

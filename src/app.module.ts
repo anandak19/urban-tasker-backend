@@ -7,13 +7,13 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { configOptions } from '@config/config.option';
 import { mongooseOption } from '@config/database/database.option';
-import { CacheModule } from '@core/lib/cache/cache.module';
 import { AppController } from './app.controller';
+import { CacheModule } from '@core/lib/cache/cache.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(configOptions),
-    CacheModule.register(),
+    CacheModule,
     AuthModule,
     MongooseModule.forRootAsync(mongooseOption),
     UsersModule,
