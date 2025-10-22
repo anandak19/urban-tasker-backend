@@ -18,6 +18,7 @@ import {
   AUTH_MESSAGES,
   SESSION_MESSAGES,
 } from '@shared/constants/messages/auth-messages.constant';
+import { TokenService } from '../token/token.service';
 
 @Injectable()
 export class SignupService {
@@ -28,6 +29,7 @@ export class SignupService {
     private _cacheService: CacheService,
     private _otpService: OtpService,
     private _emailService: EmailService,
+    private _tokenService: TokenService,
   ) {}
 
   /*
@@ -85,12 +87,13 @@ export class SignupService {
     if not valid, send error message
   */
   async varifyOtp(signupId: string, otp: string) {
-    const isOtpCorrect = await this._otpService.varifyOtp(signupId, otp);
-    if (!isOtpCorrect) {
+    const isOtpMatch = await this._otpService.varifyOtp(signupId, otp);
+    if (!isOtpMatch) {
       throw new GoneException(AUTH_MESSAGES.OTP_EXPIRED);
     }
 
     await this._cacheService.updateField(signupId, 'isVerified', true);
+    // TODO: call method to delete otp from cache here
 
     return { message: 'OTP Varified successfully' };
   }
@@ -125,12 +128,11 @@ export class SignupService {
 
   async getOtpTimeLeft(signupId: string) {
     const timeLeft = await this._otpService.getOtpTimeLeft(signupId);
-    console.log('From singup servcie', timeLeft);
     return { timeLeft };
   }
 
   // signup logic
-  async signup(signupId: string, password: string) {
+  async signup(res: Response, signupId: string, password: string) {
     // get user data from cache
     const userData = await this._cacheService.get<IBasicUserData>(signupId);
     if (!userData) {
@@ -145,9 +147,31 @@ export class SignupService {
       throw new ConflictException(AUTH_MESSAGES.EMAIL_TAKEN);
     }
     // save user to db
-    const savedUser = this._userService.create({ ...userData, password });
+    const savedUser = await this._userService.create({ ...userData, password });
+
+    /*
+    TODO: 
+    Call method to delete temp user data from cache
+    Call method to remove singupId token from req.cookie 
+    */
+
     // toekn process
-    return { message: 'User signup success, now login', savedUser };
+    const tokens = this._tokenService.getTokens({
+      id: savedUser.id,
+      email: savedUser.email,
+    });
+
+    this._cookieService.setCookie(
+      res,
+      'refresh_token',
+      tokens.refreshToken,
+      60 * 60 * 24 * 7,
+    ); // in cookie upto 7 days
+
+    return {
+      message: 'User signup success',
+      accessToken: tokens.accessToken,
+    };
   }
 
   // --STEPPER SINGUP PROCESS

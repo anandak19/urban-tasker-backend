@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { UserRepository } from '../repositories/user.repository';
 import { IUser } from '../interfaces/user.interface';
+import { UserMapper } from '../mappers/user.mapper';
 
 @Injectable()
 export class UsersService {
@@ -14,6 +15,10 @@ export class UsersService {
     return await this._userRepo.findOne({ phone });
   }
   async create(userData: IUser) {
-    return await this._userRepo.create(userData);
+    const savedUser = await this._userRepo.create(userData);
+    if (!savedUser) {
+      throw new InternalServerErrorException('Faild to register user');
+    }
+    return UserMapper.toResponse(savedUser);
   }
 }
