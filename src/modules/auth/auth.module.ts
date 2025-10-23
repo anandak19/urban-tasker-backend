@@ -34,7 +34,11 @@ import { AuthController } from './controllers/auth/auth.controller';
     }),
   ],
   controllers: [SignupController, AuthController],
-  providers: [AuthService, SignupService, TokenService],
+  providers: [
+    { provide: 'ISignupService', useClass: SignupService },
+    { provide: 'IAuthService', useClass: AuthService },
+    TokenService,
+  ],
 })
 export class AuthModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

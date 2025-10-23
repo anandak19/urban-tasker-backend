@@ -12,7 +12,11 @@ import { HashModule } from '@core/lib/hash/hash.module';
     HashModule,
   ],
   controllers: [],
-  providers: [UsersService, UserRepository, IsEmailUnique],
-  exports: [UserRepository, UsersService],
+  providers: [
+    IsEmailUnique,
+    { provide: 'IUserService', useClass: UsersService },
+    { provide: 'IUserRepository', useClass: UserRepository },
+  ],
+  exports: ['IUserService'],
 })
 export class UsersModule {}

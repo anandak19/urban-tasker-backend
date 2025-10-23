@@ -1,11 +1,17 @@
 import { Cookies } from '@core/decorators/cookies.decorator';
-import { AuthService } from '@modules/auth/services/auth/auth.service';
-import { Controller, Get, Res, UnauthorizedException } from '@nestjs/common';
+import { type IAuthService } from '@modules/auth/interfaces/auth-service.interface';
+import {
+  Controller,
+  Get,
+  Inject,
+  Res,
+  UnauthorizedException,
+} from '@nestjs/common';
 import express from 'express';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private _authService: AuthService) {}
+  constructor(@Inject('IAuthService') private _authService: IAuthService) {}
 
   @Get('refresh')
   refreshUserToken(

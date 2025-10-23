@@ -2,43 +2,35 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from '../schemas/user.schema';
-import { IUser, IUserEntity } from '../interfaces/user.interface';
+import { ICreateUser } from '../interfaces/user.interface';
 import { isDuplicateKeyError } from '@shared/utility/db/mongo-error.util';
 import { AUTH_MESSAGES } from '@shared/constants/messages/auth-messages.constant';
-import { HashService } from '@core/lib/hash/hash.service';
+import { IUserRepository } from '../interfaces/user-repository.interface';
+import { BaseRepository } from '@shared/repository/base.repository';
 
 @Injectable()
-export class UserRepository {
+export class UserRepository
+  extends BaseRepository<UserDocument, ICreateUser>
+  implements IUserRepository
+{
   constructor(
-    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
-    private _hashService: HashService,
-  ) {}
+    @InjectModel(User.name) private readonly _userModel: Model<UserDocument>,
+  ) {
+    super(_userModel);
+  }
 
-  // To create a new user to db
-  // return type = mongoose doc
-  async create(data: IUser): Promise<UserDocument> {
+  async findByEmail(email: string): Promise<UserDocument | null> {
+    return await this.findOne({ email });
+  }
+
+  async create(data: ICreateUser): Promise<UserDocument> {
     try {
-      const hashedPassword = await this._hashService.hashPassword(
-        data.password,
-      ); // change to hashed password later
-      const newUser = new this.userModel({
-        ...data,
-        password: hashedPassword,
-      });
-      return await newUser.save();
+      return await this._userModel.create(data);
     } catch (error) {
       if (isDuplicateKeyError(error)) {
-        throw new ConflictException(AUTH_MESSAGES.EMAIL_TAKEN);
+        throw new ConflictException(AUTH_MESSAGES.EMAIL_TAKEN); // create one for phone number taken
       }
       throw error;
     }
-  }
-
-  async findAll(): Promise<UserDocument[]> {
-    return await this.userModel.find().exec();
-  }
-
-  async findOne(filter: Partial<IUserEntity>): Promise<UserDocument | null> {
-    return await this.userModel.findOne(filter).exec();
   }
 }

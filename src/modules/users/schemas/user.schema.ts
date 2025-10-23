@@ -1,4 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Gender, UserRoles } from '@shared/constants/enums/user.enum';
 import { HydratedDocument } from 'mongoose';
 
 @Schema({ timestamps: true })
@@ -15,14 +16,24 @@ export class User {
   @Prop({ required: true })
   phone: string;
 
-  // @Prop()
-  // gender: string;
-
-  // @Prop()
-  // dob: string;
-
   @Prop({ required: true })
   password: string;
+
+  // optional props
+  @Prop({ required: false })
+  gender?: Gender;
+
+  @Prop({ required: false, default: UserRoles.USER })
+  userRole?: UserRoles;
+
+  @Prop({ required: false })
+  profileImageUrl?: string;
+
+  @Prop({ required: false, type: Boolean, default: false })
+  isTaskerApplied?: boolean;
+
+  @Prop({ required: false, type: Boolean, default: false })
+  isDeleted?: boolean;
 }
 
 export type UserDocument = HydratedDocument<User>;

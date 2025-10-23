@@ -3,8 +3,10 @@ import {
   BadRequestException,
   ConflictException,
   GoneException,
+  Inject,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { IBasicUserData } from '@modules/auth/interfaces/singup.interface';
 import { UuidService } from '@core/lib/uuid/uuid.service';
@@ -13,17 +15,24 @@ import { CookieService } from '@core/lib/cookie/cookie.service';
 import { Response } from 'express';
 import { OtpService } from '@core/lib/otp/otp.service';
 import { EmailService } from '@core/lib/email/email.service';
-import { UsersService } from '@modules/users/services/users.service';
 import {
   AUTH_MESSAGES,
   SESSION_MESSAGES,
 } from '@shared/constants/messages/auth-messages.constant';
 import { TokenService } from '../token/token.service';
+import { type IUserService } from '@modules/users/interfaces/user-service.interface';
+import { ISignupService } from '@modules/auth/interfaces/signup-service.interface';
+import {
+  IBasicUserResponse,
+  ISignupResponse,
+  ITimeLeftResponse,
+} from '@modules/auth/interfaces/response.interface';
+import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 
 @Injectable()
-export class SignupService {
+export class SignupService implements ISignupService {
   constructor(
-    private _userService: UsersService,
+    @Inject('IUserService') private _userService: IUserService,
     private _cookieService: CookieService,
     private _uuidService: UuidService,
     private _cacheService: CacheService,
@@ -39,7 +48,10 @@ export class SignupService {
     both basic user and otp and stored separatly
   - return the message: otp send to email along with redis id in cookie
   */
-  async saveBasicUserData(res: Response, basicUserDto: BasicUserDto) {
+  async saveBasicUserData(
+    res: Response,
+    basicUserDto: BasicUserDto,
+  ): Promise<IBasicUserResponse> {
     try {
       // Create UUID and save to Redis
       const uuid = this._uuidService.generate();
@@ -50,12 +62,15 @@ export class SignupService {
       //   1000 * 60 * 30,
       // )) as IBasicUserData;
 
-      await this._cacheService.set(
+      await this._cacheService.set<IBasicUserData>(
         uuid,
         { ...basicUserDto, isVerified: false },
         1000 * 60 * 30,
       );
-      const userData = await this._cacheService.get(uuid);
+      const userData = await this._cacheService.get<IBasicUserData>(uuid);
+      if (!userData) {
+        throw new BadRequestException(SESSION_MESSAGES.SIGNUP_EXPIRED);
+      }
 
       // add the uuid to cookie
       this._cookieService.setCookie(res, 'signupId', uuid, 60 * 30); // in cookie upto 30min
@@ -86,7 +101,7 @@ export class SignupService {
     If valid, mark "user data" in Redis as verified: true then Delete OTP key from redis.
     if not valid, send error message
   */
-  async varifyOtp(signupId: string, otp: string) {
+  async varifyOtp(signupId: string, otp: string): Promise<IBaseResponse> {
     const isOtpMatch = await this._otpService.varifyOtp(signupId, otp);
     if (!isOtpMatch) {
       throw new GoneException(AUTH_MESSAGES.OTP_EXPIRED);
@@ -101,7 +116,7 @@ export class SignupService {
   /*
     Route to resend otp
   */
-  async resendOtp(signupId: string) {
+  async resendOtp(signupId: string): Promise<IBasicUserResponse> {
     const userData: BasicUserDto | undefined =
       await this._cacheService.get<BasicUserDto>(signupId);
 
@@ -126,13 +141,20 @@ export class SignupService {
     }
   }
 
-  async getOtpTimeLeft(signupId: string) {
+  async getOtpTimeLeft(signupId: string): Promise<ITimeLeftResponse> {
     const timeLeft = await this._otpService.getOtpTimeLeft(signupId);
+    if (!timeLeft) {
+      throw new NotFoundException('OTP expired');
+    }
     return { timeLeft };
   }
 
   // signup logic
-  async signup(res: Response, signupId: string, password: string) {
+  async signup(
+    res: Response,
+    signupId: string,
+    password: string,
+  ): Promise<ISignupResponse> {
     // get user data from cache
     const userData = await this._cacheService.get<IBasicUserData>(signupId);
     if (!userData) {
@@ -148,6 +170,9 @@ export class SignupService {
     }
     // save user to db
     const savedUser = await this._userService.create({ ...userData, password });
+    if (!savedUser) {
+      throw new InternalServerErrorException('Faild to signup user');
+    }
 
     /*
     TODO: 

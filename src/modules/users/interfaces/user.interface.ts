@@ -1,6 +1,12 @@
+import { UserRoles } from '@shared/constants/enums/user.enum';
 import { Types } from 'mongoose';
 
-export interface IUser {
+// add other properties here
+export interface IUser extends ICreateUser {
+  userRole: UserRoles;
+}
+
+export interface ICreateUser {
   firstName: string;
   lastName: string;
   email: string;
