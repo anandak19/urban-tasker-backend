@@ -1,0 +1,20 @@
+import { type IUserService } from '@modules/users/interfaces/user-service.interface';
+import { USER_TOKENS } from '@modules/users/user-tokens';
+import { Inject, Injectable } from '@nestjs/common';
+import {
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+} from 'class-validator';
+
+@ValidatorConstraint({ async: true })
+@Injectable()
+export class IsEmailUnique implements ValidatorConstraintInterface {
+  constructor(
+    @Inject(USER_TOKENS.SERVICE) private readonly _userService: IUserService,
+  ) {}
+
+  async validate(email: string) {
+    const user = await this._userService.findByEmail(email);
+    return !user;
+  }
+}

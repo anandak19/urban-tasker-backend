@@ -1,12 +1,26 @@
+import { ConfigModule } from '@nestjs/config';
+import { AuthModule } from '@modules/auth/auth.module';
+import { CategoriesModule } from '@modules/categories/categories.module';
+import { TaskerApplicationsModule } from '@modules/tasker-applications/tasker-applications.module';
+import { UsersModule } from '@modules/users/users.module';
 import { Module } from '@nestjs/common';
-import { AuthModule } from './modules/auth/auth.module';
-import { UsersModule } from './modules/users/users.module';
-import { CategoriesModule } from './modules/categories/categories.module';
-import { TaskerApplicationsModule } from './modules/tasker-applications/tasker-applications.module';
+import { MongooseModule } from '@nestjs/mongoose';
+import { configOptions } from '@config/config.option';
+import { mongooseOption } from '@config/database/database.option';
+import { AppController } from './app.controller';
+import { CacheModule } from '@core/lib/cache/cache.module';
 
 @Module({
-  imports: [AuthModule, UsersModule, CategoriesModule, TaskerApplicationsModule],
-  controllers: [],
+  imports: [
+    ConfigModule.forRoot(configOptions),
+    CacheModule,
+    AuthModule,
+    MongooseModule.forRootAsync(mongooseOption),
+    UsersModule,
+    CategoriesModule,
+    TaskerApplicationsModule,
+  ],
+  controllers: [AppController],
   providers: [],
 })
 export class AppModule {}

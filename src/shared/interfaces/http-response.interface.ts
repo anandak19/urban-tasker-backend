@@ -1,0 +1,14 @@
+export interface HttpResponse {
+  statusCode: number;
+  success: boolean;
+  message: string;
+  timestamp: string;
+}
+
+export interface IErrorResponse extends HttpResponse {
+  path: string;
+}
+
+export interface ISuccessResponse<T> extends HttpResponse {
+  data?: T;
+}
