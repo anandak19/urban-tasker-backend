@@ -18,6 +18,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthService } from './services/auth/auth.service';
 import { TokenService } from './services/token/token.service';
 import { AuthController } from './controllers/auth/auth.controller';
+import { AUTH_TOKENS } from './auth-tokens';
 
 @Module({
   imports: [
@@ -35,9 +36,9 @@ import { AuthController } from './controllers/auth/auth.controller';
   ],
   controllers: [SignupController, AuthController],
   providers: [
-    { provide: 'ISignupService', useClass: SignupService },
-    { provide: 'IAuthService', useClass: AuthService },
-    TokenService,
+    { provide: AUTH_TOKENS.SIGNUP_SERVICE, useClass: SignupService },
+    { provide: AUTH_TOKENS.AUTH_SERVICE, useClass: AuthService },
+    { provide: AUTH_TOKENS.TOKEN_SERVICE, useClass: TokenService },
   ],
 })
 export class AuthModule implements NestModule {

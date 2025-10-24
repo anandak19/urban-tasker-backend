@@ -1,4 +1,4 @@
-import { EmailUnique } from '@core/decorators/is-email-unique.decorator';
+import { EmailUnique } from '@core/decorators/email.decorator';
 import { AUTH_MESSAGES } from '@shared/constants/messages/auth-messages.constant';
 import { USER_REGEX } from '@shared/constants/regex/user-regex.constant';
 import {

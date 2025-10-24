@@ -21,19 +21,19 @@ export class User {
 
   // optional props
   @Prop({ required: false })
-  gender?: Gender;
+  gender: Gender;
 
   @Prop({ required: false, default: UserRoles.USER })
-  userRole?: UserRoles;
+  userRole: UserRoles;
 
   @Prop({ required: false })
-  profileImageUrl?: string;
+  profileImageUrl: string;
 
   @Prop({ required: false, type: Boolean, default: false })
-  isTaskerApplied?: boolean;
+  isTaskerApplied: boolean;
 
   @Prop({ required: false, type: Boolean, default: false })
-  isDeleted?: boolean;
+  isDeleted: boolean;
 }
 
 export type UserDocument = HydratedDocument<User>;

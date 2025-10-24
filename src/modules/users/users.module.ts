@@ -5,6 +5,7 @@ import { User, UserSchema } from './schemas/user.schema';
 import { UsersService } from './services/users.service';
 import { IsEmailUnique } from '@core/validators/is-email-unique.validator';
 import { HashModule } from '@core/lib/hash/hash.module';
+import { USER_TOKENS } from './user-tokens';
 
 @Module({
   imports: [
@@ -14,9 +15,9 @@ import { HashModule } from '@core/lib/hash/hash.module';
   controllers: [],
   providers: [
     IsEmailUnique,
-    { provide: 'IUserService', useClass: UsersService },
-    { provide: 'IUserRepository', useClass: UserRepository },
+    { provide: USER_TOKENS.SERVICE, useClass: UsersService },
+    { provide: USER_TOKENS.REPOSITORY, useClass: UserRepository },
   ],
-  exports: ['IUserService'],
+  exports: [USER_TOKENS.SERVICE],
 })
 export class UsersModule {}

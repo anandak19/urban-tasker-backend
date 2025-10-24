@@ -1,30 +1,31 @@
 import { Cookies } from '@core/decorators/cookies.decorator';
+import { AUTH_TOKENS } from '@modules/auth/auth-tokens';
 import { BasicUserDto } from '@modules/auth/dtos/basicUserData.dto';
 import { OtpDto } from '@modules/auth/dtos/otp.dto';
 import { PasswordDto } from '@modules/auth/dtos/password.dto';
+import { ISignupController } from '@modules/auth/interfaces/controllers.interface';
 import {
-  ISignupResponse,
   ITimeLeftResponse,
   type IBasicUserResponse,
 } from '@modules/auth/interfaces/response.interface';
-import { type ISignupService } from '@modules/auth/interfaces/signup-service.interface';
+import { type ISignupService } from '@modules/auth/interfaces/services.interface';
 import { Body, Controller, Get, Inject, Post, Res } from '@nestjs/common';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import express from 'express';
 
 @Controller('auth/signup')
-export class SignupController {
+export class SignupController implements ISignupController {
   constructor(
-    @Inject('ISignupService') private _signupService: ISignupService,
+    @Inject(AUTH_TOKENS.SIGNUP_SERVICE) private _signupService: ISignupService,
   ) {}
 
   // STEP 3
   @Post()
-  async signupUser(
-    @Cookies('signupId') signupId: string,
+  async signup(
     @Res({ passthrough: true }) res: express.Response,
+    @Cookies('signupId') signupId: string,
     @Body() passwordDto: PasswordDto,
-  ): Promise<ISignupResponse> {
+  ): Promise<IBaseResponse> {
     // singup controller logic
     return await this._signupService.signup(
       res,

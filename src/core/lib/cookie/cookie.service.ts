@@ -1,5 +1,5 @@
 import { Injectable, Scope } from '@nestjs/common';
-import { Response } from 'express';
+import { type Response } from 'express';
 
 @Injectable({ scope: Scope.REQUEST })
 export class CookieService {

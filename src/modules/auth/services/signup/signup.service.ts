@@ -19,26 +19,24 @@ import {
   AUTH_MESSAGES,
   SESSION_MESSAGES,
 } from '@shared/constants/messages/auth-messages.constant';
-import { TokenService } from '../token/token.service';
 import { type IUserService } from '@modules/users/interfaces/user-service.interface';
-import { ISignupService } from '@modules/auth/interfaces/signup-service.interface';
 import {
   IBasicUserResponse,
-  ISignupResponse,
   ITimeLeftResponse,
 } from '@modules/auth/interfaces/response.interface';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
+import { USER_TOKENS } from '@modules/users/user-tokens';
+import { ISignupService } from '@modules/auth/interfaces/services.interface';
 
 @Injectable()
 export class SignupService implements ISignupService {
   constructor(
-    @Inject('IUserService') private _userService: IUserService,
+    @Inject(USER_TOKENS.SERVICE) private _userService: IUserService,
     private _cookieService: CookieService,
     private _uuidService: UuidService,
     private _cacheService: CacheService,
     private _otpService: OtpService,
     private _emailService: EmailService,
-    private _tokenService: TokenService,
   ) {}
 
   /*
@@ -154,7 +152,7 @@ export class SignupService implements ISignupService {
     res: Response,
     signupId: string,
     password: string,
-  ): Promise<ISignupResponse> {
+  ): Promise<IBaseResponse> {
     // get user data from cache
     const userData = await this._cacheService.get<IBasicUserData>(signupId);
     if (!userData) {
@@ -180,22 +178,8 @@ export class SignupService implements ISignupService {
     Call method to remove singupId token from req.cookie 
     */
 
-    // toekn process
-    const tokens = this._tokenService.getTokens({
-      id: savedUser.id,
-      email: savedUser.email,
-    });
-
-    this._cookieService.setCookie(
-      res,
-      'refresh_token',
-      tokens.refreshToken,
-      60 * 60 * 24 * 7,
-    ); // in cookie upto 7 days
-
     return {
       message: 'User signup success',
-      accessToken: tokens.accessToken,
     };
   }
 

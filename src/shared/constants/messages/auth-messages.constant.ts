@@ -16,6 +16,7 @@ export const AUTH_MESSAGES = {
   EMAIL_MAX: 'Email cannot exceed 60 characters.',
   EMAIL_TAKEN: 'This email is already taken.',
   NOT_VERIFIED: 'Email is not verified',
+  EMAIL_NOT_FOUND: 'User not found with this email',
 
   PHONE_REQUIRED: 'Phone number is required.',
   INVALID_PHONE: 'Invalid phone number.',
@@ -33,6 +34,17 @@ export const AUTH_MESSAGES = {
   PASSWORD_MAX: 'Password cannot exceed 15 charecters',
   PASSWORD_INVALID_FORMAT:
     'Password must include uppercase, lowercase, and number characters',
+  PASSWORD_INCORRECT: 'Incorrect password, please enter correct password',
+
+  LOGIN_SUCCESS: 'User login success',
+  LOGIN_FAILD: 'Faild to login',
+
+  SIGNUP_FAILD: 'Signup faild, please try again later',
+  SIGNUP_SUCCESS: 'Account created successfully, please login to continue',
+
+  UNAUTH_USER: 'Unauthorized user',
+
+  ADMIN_ONLY: 'Access denied, only admins can perform this action',
 };
 
 export const SESSION_MESSAGES = {

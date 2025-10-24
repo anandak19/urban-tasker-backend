@@ -5,7 +5,6 @@ export type IBasicUserResponse = IBasicResponseData<IBasicUserData, 'userData'>;
 
 export type ITimeLeftResponse = { timeLeft: number };
 
-// update this later
 export type ISignupResponse = {
   message: string;
   accessToken: string;
