@@ -1,6 +1,9 @@
+import { UserRoles } from '@shared/constants/enums/user.enum';
+
 export interface IPayload {
   id: string;
   email: string;
+  userRole: UserRoles;
 }
 
 export interface ITokens {

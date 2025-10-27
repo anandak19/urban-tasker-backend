@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { IPayload } from '@modules/auth/interfaces/auth.interface';
 import { type Response } from 'express';
 import { CookieService } from '@core/lib/cookie/cookie.service';
@@ -17,29 +17,27 @@ import {
   COOKIE_TIME,
 } from '@shared/constants/keys/cookie-keys.constant';
 import { AUTH_MESSAGES } from '@shared/constants/messages/auth-messages.constant';
+import { UserResponseDto } from '@modules/users/dtos/user-response.dto';
 
 @Injectable()
 export class AuthService implements IAuthService {
+  private _logger = new Logger(AuthService.name);
+
   constructor(
     @Inject(AUTH_TOKENS.TOKEN_SERVICE) private _tokenService: ITokenService,
     @Inject(USER_TOKENS.SERVICE) private _userService: IUserService,
     private _cookieService: CookieService,
   ) {}
 
-  //closed
   async userLogin(res: Response, loginDto: LoginDTo): Promise<IAuthResponse> {
     const userData = await this._userService.authenticateUser(
       loginDto.email,
       loginDto.password,
     );
+    const payload = this._getPaylod(userData);
+    const accessToken = await this._setTokenInCookie(res, payload);
 
-    const payload = {
-      id: userData.id,
-      email: userData.email,
-      userRole: userData.userRole,
-    };
-
-    return this._setTokenInCookie(res, payload);
+    return { message: AUTH_MESSAGES.LOGIN_SUCCESS, accessToken };
   }
 
   async adminLogin(res: Response, loginDto: LoginDTo): Promise<IAuthResponse> {
@@ -47,24 +45,32 @@ export class AuthService implements IAuthService {
       loginDto.email,
       loginDto.password,
     );
-    const payload = {
-      id: userData.id,
-      email: userData.email,
-      userRole: userData.userRole,
-    };
-    return this._setTokenInCookie(res, payload);
+    const payload = this._getPaylod(userData);
+    const accessToken = await this._setTokenInCookie(res, payload);
+
+    return { message: AUTH_MESSAGES.LOGIN_SUCCESS, accessToken };
   }
 
   logout(): Promise<IBaseResponse> {
     throw new Error('Method not implemented.');
   }
 
-  refreshToken(res: Response, refreshToken: string): IAuthResponse {
-    const payload: IPayload = this._tokenService.verifyToken(refreshToken);
+  /*
+  To refresh tokens
+  args: response, refreshToken
+  returns: message & accessToken And set new refreshToken in clint cookie
+  */
+  async refreshToken(
+    res: Response,
+    refreshToken: string,
+  ): Promise<IAuthResponse> {
+    const payload: IPayload =
+      await this._tokenService.verifyToken(refreshToken);
 
-    const tokens = this._tokenService.getTokens({
+    const tokens = await this._tokenService.getAuthTokens({
       id: payload.id,
       email: payload.email,
+      userRole: payload.userRole,
     });
 
     this._cookieService.setCookie(
@@ -81,8 +87,11 @@ export class AuthService implements IAuthService {
   }
 
   // Private helper methods
-  private _setTokenInCookie(res: Response, payload: IPayload): IAuthResponse {
-    const tokens = this._tokenService.getTokens(payload);
+  private async _setTokenInCookie(
+    res: Response,
+    payload: IPayload,
+  ): Promise<string> {
+    const tokens = await this._tokenService.getAuthTokens(payload);
 
     this._cookieService.setCookie(
       res,
@@ -91,9 +100,14 @@ export class AuthService implements IAuthService {
       COOKIE_TIME.REFRESH_TIME,
     );
 
+    return tokens.accessToken;
+  }
+
+  private _getPaylod(user: UserResponseDto): IPayload {
     return {
-      message: AUTH_MESSAGES.LOGIN_SUCCESS,
-      accessToken: tokens.accessToken,
+      id: user.id,
+      email: user.email,
+      userRole: user.userRole,
     };
   }
 }

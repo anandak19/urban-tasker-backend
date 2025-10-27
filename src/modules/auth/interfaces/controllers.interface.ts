@@ -14,7 +14,7 @@ import { ForgotPasswordDto } from '../dtos/forgot-password.dto';
 export interface IAuthController {
   userLogin(res: Response, loginDto: LoginDTo): Promise<IAuthResponse>;
   adminLogin(res: Response, loginDto: LoginDTo): Promise<IAuthResponse>;
-  refreshToken(res: Response, refreshToken: string): IAuthResponse;
+  refreshToken(res: Response, refreshToken: string): Promise<IAuthResponse>;
   logout(): Promise<IBaseResponse>;
 }
 

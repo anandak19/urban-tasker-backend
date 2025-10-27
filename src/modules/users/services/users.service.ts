@@ -1,9 +1,11 @@
 import {
   BadRequestException,
   ForbiddenException,
+  HttpException,
   Inject,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { ICreateUser } from '../interfaces/user.interface';
@@ -18,6 +20,8 @@ import { UserRoles } from '@shared/constants/enums/user.enum';
 
 @Injectable()
 export class UsersService implements IUserService {
+  private _logger = new Logger(UsersService.name);
+
   constructor(
     @Inject(USER_TOKENS.REPOSITORY)
     private readonly _userRepo: IUserRepository,
@@ -56,15 +60,24 @@ export class UsersService implements IUserService {
   }
 
   async create(userData: ICreateUser): Promise<UserResponseDto> {
-    const hashedPassword = await this._hashService.hashPassword(
-      userData.password,
-    );
-    userData.password = hashedPassword;
-    const savedUser = await this._userRepo.create(userData);
-    if (!savedUser) {
+    try {
+      const hashedPassword = await this._hashService.hashPassword(
+        userData.password,
+      );
+      userData.password = hashedPassword;
+
+      const savedUser = await this._userRepo.create(userData);
+
+      if (!savedUser) {
+        throw new InternalServerErrorException(AUTH_MESSAGES.SIGNUP_FAILD);
+      }
+
+      return UserMapper.toResponse(savedUser);
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+
       throw new InternalServerErrorException(AUTH_MESSAGES.SIGNUP_FAILD);
     }
-    return UserMapper.toResponse(savedUser);
   }
 
   // private methods
@@ -75,15 +88,21 @@ export class UsersService implements IUserService {
       throw new NotFoundException(AUTH_MESSAGES.EMAIL_NOT_FOUND);
     }
 
-    const isPasswordMatch = await this._hashService.comparePassword(
-      password,
-      user.password,
-    );
+    try {
+      const isPasswordMatch = await this._hashService.comparePassword(
+        password,
+        user.password,
+      );
 
-    if (!isPasswordMatch) {
-      throw new BadRequestException(AUTH_MESSAGES.PASSWORD_INCORRECT);
+      if (!isPasswordMatch) {
+        throw new BadRequestException(AUTH_MESSAGES.PASSWORD_INCORRECT);
+      }
+
+      return UserMapper.toResponse(user);
+    } catch (error) {
+      if (error instanceof HttpException) throw error;
+
+      throw new InternalServerErrorException(AUTH_MESSAGES.LOGIN_FAILD);
     }
-
-    return UserMapper.toResponse(user);
   }
 }

@@ -29,8 +29,11 @@ export interface ISignupService {
 }
 
 export interface ITokenService {
-  getTokens(payload: IPayload): ITokens;
-  verifyToken(token: string): IPayload;
+  getAuthTokens(payload: IPayload): Promise<ITokens> | ITokens;
+
+  verifyToken(token: string): Promise<IPayload>;
+
+  getResetToken(payload: IPayload): Promise<string>;
 }
 
 export interface IAuthService {
@@ -38,7 +41,7 @@ export interface IAuthService {
 
   adminLogin(res: Response, loginDto: LoginDTo): Promise<IAuthResponse>;
 
-  refreshToken(res: Response, refreshToken: string): IAuthResponse;
+  refreshToken(res: Response, refreshToken: string): Promise<IAuthResponse>;
 
   logout(): Promise<IBaseResponse>;
 }
