@@ -19,7 +19,7 @@ import {
   AUTH_MESSAGES,
   SESSION_MESSAGES,
 } from '@shared/constants/messages/auth-messages.constant';
-import { type IUserService } from '@modules/users/interfaces/user-service.interface';
+import { type IUserService } from '@modules/users/interfaces/user-services.interface';
 import {
   IBasicUserResponse,
   ITimeLeftResponse,

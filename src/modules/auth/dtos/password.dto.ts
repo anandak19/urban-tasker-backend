@@ -1,6 +1,12 @@
 import { AUTH_MESSAGES } from '@shared/constants/messages/auth-messages.constant';
 import { USER_REGEX } from '@shared/constants/regex/user-regex.constant';
-import { IsNotEmpty, Matches, MaxLength, MinLength } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 
 export class PasswordDto {
   @IsNotEmpty({ message: AUTH_MESSAGES.PASSWORD_REQUIRED })
@@ -10,4 +16,8 @@ export class PasswordDto {
     message: AUTH_MESSAGES.PASSWORD_INVALID_FORMAT,
   })
   password: string;
+
+  @IsNotEmpty()
+  @IsString()
+  resetToken: string;
 }

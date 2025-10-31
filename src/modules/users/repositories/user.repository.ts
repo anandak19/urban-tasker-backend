@@ -5,7 +5,7 @@ import { User, UserDocument } from '../schemas/user.schema';
 import { ICreateUser } from '../interfaces/user.interface';
 import { isDuplicateKeyError } from '@shared/utility/db/mongo-error.util';
 import { AUTH_MESSAGES } from '@shared/constants/messages/auth-messages.constant';
-import { IUserRepository } from '../interfaces/user-repository.interface';
+import { IUserRepository } from '../interfaces/user-repositories.interface';
 import { BaseRepository } from '@shared/repository/base.repository';
 
 @Injectable()

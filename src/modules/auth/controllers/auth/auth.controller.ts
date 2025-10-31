@@ -13,6 +13,7 @@ import {
   Inject,
   Logger,
   Post,
+  Req,
   Request,
   Res,
   UseGuards,
@@ -67,10 +68,17 @@ export class AuthController implements IAuthController {
     return this._authService.refreshToken(res, refreshToken);
   }
 
-  // moke protected route -- delete this later
+  // to check is the user login or not
   @UseGuards(AuthGuard)
-  @Get('protected')
-  mokeProtectedRoute(@Request() req: TRequest) {
-    return { message: 'protected data received', user: req.user };
+  @Get('is-login')
+  isLogin(@Request() req: TRequest) {
+    return { message: 'User is login', user: req.user };
+  }
+
+  // to check if the user is not login - to hide login/singup pages
+  @Get('is-not-login')
+  isNotLogin(@Req() req: Request) {
+    console.log(req);
+    throw new Error('method is not implemented');
   }
 }

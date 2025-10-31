@@ -11,7 +11,7 @@ import {
 import { LoginDTo } from '@modules/auth/dtos/login.dto';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { USER_TOKENS } from '@modules/users/user-tokens';
-import { type IUserService } from '@modules/users/interfaces/user-service.interface';
+import { type IUserService } from '@modules/users/interfaces/user-services.interface';
 import {
   COOKIE_KEYS,
   COOKIE_TIME,

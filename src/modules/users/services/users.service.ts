@@ -10,13 +10,14 @@ import {
 } from '@nestjs/common';
 import { ICreateUser } from '../interfaces/user.interface';
 import { UserMapper } from '../mappers/user.mapper';
-import type { IUserRepository } from '../interfaces/user-repository.interface';
+import type { IUserRepository } from '../interfaces/user-repositories.interface';
 import { HashService } from '@core/lib/hash/hash.service';
 import { UserResponseDto } from '../dtos/user-response.dto';
-import { IUserService } from '../interfaces/user-service.interface';
+import { IUserService } from '../interfaces/user-services.interface';
 import { USER_TOKENS } from '../user-tokens';
 import { AUTH_MESSAGES } from '@shared/constants/messages/auth-messages.constant';
 import { UserRoles } from '@shared/constants/enums/user.enum';
+import { USER_ERRORS } from '@shared/constants/messages/error-messaes.constants';
 
 @Injectable()
 export class UsersService implements IUserService {
@@ -77,6 +78,34 @@ export class UsersService implements IUserService {
       if (error instanceof HttpException) throw error;
 
       throw new InternalServerErrorException(AUTH_MESSAGES.SIGNUP_FAILD);
+    }
+  }
+
+  // update user password by id
+  async updateUserPassword(
+    id: string,
+    plainPassword: string,
+  ): Promise<UserResponseDto> {
+    // hash password
+    try {
+      const hashedPassword =
+        await this._hashService.hashPassword(plainPassword);
+      // call the method to update user data of repo
+      const savedUser = await this._userRepo.updateById(id, {
+        password: hashedPassword,
+      });
+
+      if (!savedUser) {
+        throw new InternalServerErrorException(
+          USER_ERRORS.UPDATE_PASSWORD_FAIL,
+        );
+      }
+
+      return UserMapper.toResponse(savedUser);
+    } catch (error) {
+      this._logger.error(USER_ERRORS.UPDATE_PASSWORD_FAIL);
+      this._logger.log(error);
+      throw new InternalServerErrorException(USER_ERRORS.UPDATE_PASSWORD_FAIL);
     }
   }
 

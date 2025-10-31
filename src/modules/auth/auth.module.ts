@@ -19,6 +19,8 @@ import { AuthService } from './services/auth/auth.service';
 import { TokenService } from './services/token/token.service';
 import { AuthController } from './controllers/auth/auth.controller';
 import { AUTH_TOKENS } from './auth-tokens';
+import { PasswordService } from './services/password/password.service';
+import { PasswordController } from './controllers/password/password.controller';
 
 @Module({
   imports: [
@@ -34,11 +36,12 @@ import { AUTH_TOKENS } from './auth-tokens';
       signOptions: { expiresIn: '15m' },
     }),
   ],
-  controllers: [SignupController, AuthController],
+  controllers: [SignupController, AuthController, PasswordController],
   providers: [
     { provide: AUTH_TOKENS.SIGNUP_SERVICE, useClass: SignupService },
     { provide: AUTH_TOKENS.AUTH_SERVICE, useClass: AuthService },
     { provide: AUTH_TOKENS.TOKEN_SERVICE, useClass: TokenService },
+    { provide: AUTH_TOKENS.PASSWORD_SERVICE, useClass: PasswordService },
   ],
 })
 export class AuthModule implements NestModule {

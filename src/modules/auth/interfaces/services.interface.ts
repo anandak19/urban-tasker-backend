@@ -118,4 +118,20 @@ export interface IAuthService {
   refreshToken(res: Response, refreshToken: string): Promise<IAuthResponse>;
 
   logout(): Promise<IBaseResponse>;
-} 
+}
+
+export interface IPasswordService {
+  /**
+   * To varify email and send reset token to email
+   * @param {string} email - email id send by user to get rest link
+   * @returns {Promise<IBaseResponse>} - message
+   */
+  forgotPassword(email: string): Promise<IBaseResponse>;
+
+  /**
+   * To
+   * @param {string} newPassword - new password submitted by user
+   * @returns {Promise<IBaseResponse>} - message
+   */
+  resetPassword(token: string, newPassword: string): Promise<IBaseResponse>;
+}
