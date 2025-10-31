@@ -18,23 +18,28 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    // take the request
     const request = context.switchToHttp().getRequest<Request>();
+    // extract access token from header
     const token = this._extractTokenFromHeader(request);
     if (!token) {
       this._logger.verbose('Token not found in request header');
+      // this will force clint to call - refresh
       throw new UnauthorizedException();
     }
 
     try {
       // extract paylod from token
       const payload = await this._tokenService.verifyToken(token);
-      // --here assing the payload to req.user in any way
+      // here assing the payload to req.user
       request.user = payload;
     } catch {
       this._logger.error('Token verification failed');
+      // access token is expired / invalid / malformed
+      // this will force clint to call - refresh
       throw new UnauthorizedException();
     }
-
+    // continue request to contoller :)
     return true;
   }
 

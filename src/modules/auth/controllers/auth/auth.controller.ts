@@ -13,7 +13,6 @@ import {
   Inject,
   Logger,
   Post,
-  Req,
   Request,
   Res,
   UseGuards,
@@ -52,7 +51,6 @@ export class AuthController implements IAuthController {
 
   /*
   To refresh the access token and refresh token
-
   */
   @Post('refresh')
   refreshToken(
@@ -68,17 +66,16 @@ export class AuthController implements IAuthController {
     return this._authService.refreshToken(res, refreshToken);
   }
 
+  @UseGuards(AuthGuard)
+  @Get('protected')
+  getProtected(@Request() req: TRequest) {
+    return { message: 'protected data', user: req.user };
+  }
+
   // to check is the user login or not
   @UseGuards(AuthGuard)
   @Get('is-login')
   isLogin(@Request() req: TRequest) {
     return { message: 'User is login', user: req.user };
-  }
-
-  // to check if the user is not login - to hide login/singup pages
-  @Get('is-not-login')
-  isNotLogin(@Req() req: Request) {
-    console.log(req);
-    throw new Error('method is not implemented');
   }
 }
