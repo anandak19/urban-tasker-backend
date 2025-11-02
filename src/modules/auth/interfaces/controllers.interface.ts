@@ -10,6 +10,7 @@ import { BasicUserDto } from '../dtos/basicUserData.dto';
 import { OtpDto } from '../dtos/otp.dto';
 import { PasswordDto } from '../dtos/password.dto';
 import { ForgotPasswordDto } from '../dtos/forgot-password.dto';
+import { ResetPasswordDto } from '../dtos/reset-password.dto';
 
 export interface IAuthController {
   userLogin(res: Response, loginDto: LoginDTo): Promise<IAuthResponse>;
@@ -54,5 +55,5 @@ export interface ISignupController {
 
 export interface IPasswordController {
   forgotPassword(forgotDto: ForgotPasswordDto): Promise<IBaseResponse>;
-  resetPassword(resetDto: PasswordDto): Promise<IBaseResponse>;
+  resetPassword(resetDto: ResetPasswordDto): Promise<IBaseResponse>;
 }

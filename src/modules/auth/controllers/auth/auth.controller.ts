@@ -66,6 +66,7 @@ export class AuthController implements IAuthController {
     return this._authService.refreshToken(res, refreshToken);
   }
 
+  // moke api
   @UseGuards(AuthGuard)
   @Get('protected')
   getProtected(@Request() req: TRequest) {

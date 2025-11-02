@@ -6,6 +6,7 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { IBasicUserData } from '@modules/auth/interfaces/singup.interface';
@@ -30,6 +31,7 @@ import { ISignupService } from '@modules/auth/interfaces/services.interface';
 
 @Injectable()
 export class SignupService implements ISignupService {
+  private _logger = new Logger(SignupService.name);
   constructor(
     @Inject(USER_TOKENS.SERVICE) private _userService: IUserService,
     private _cookieService: CookieService,
@@ -154,6 +156,7 @@ export class SignupService implements ISignupService {
     password: string,
   ): Promise<IBaseResponse> {
     // get user data from cache
+    this._logger.verbose('Reached signup servcie');
     const userData = await this._cacheService.get<IBasicUserData>(signupId);
     if (!userData) {
       throw new BadRequestException(SESSION_MESSAGES.SIGNUP_EXPIRED);

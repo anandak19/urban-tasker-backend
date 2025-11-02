@@ -7,6 +7,11 @@ import { isDuplicateKeyError } from '@shared/utility/db/mongo-error.util';
 import { AUTH_MESSAGES } from '@shared/constants/messages/auth-messages.constant';
 import { IUserRepository } from '../interfaces/user-repositories.interface';
 import { BaseRepository } from '@shared/repository/base.repository';
+import {
+  IPaginationQuery,
+  PaginatedResult,
+} from '@shared/interfaces/query.interface';
+import { IUserFilter } from '../interfaces/user-query.interface';
 
 @Injectable()
 export class UserRepository
@@ -19,10 +24,23 @@ export class UserRepository
     super(_userModel);
   }
 
+  // find all users
+  findAllUsers(
+    pagination?: IPaginationQuery,
+    filter?: IUserFilter,
+  ): Promise<PaginatedResult<UserDocument>> {
+    console.log(filter);
+    // prepare filter query here
+
+    return this.findAll(pagination, filter);
+  }
+
+  // find user by email
   async findByEmail(email: string): Promise<UserDocument | null> {
     return await this.findOne({ email });
   }
 
+  // create new user itno db
   async create(data: ICreateUser): Promise<UserDocument> {
     try {
       return await this._userModel.create(data);

@@ -1,3 +1,4 @@
+import { PaginationDto } from '@shared/dtos/pagination.dto';
 import { UserResponseDto } from '../dtos/user-response.dto';
 import { ICreateUser } from './user.interface';
 
@@ -17,4 +18,8 @@ export interface IUserService {
     id: string,
     plainPassword: string,
   ): Promise<UserResponseDto>;
+}
+
+export interface IAdminUserService {
+  findAllUsers(paginationDto: PaginationDto);
 }

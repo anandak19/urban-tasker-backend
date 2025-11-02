@@ -1,12 +1,18 @@
 import { InferRawDocType, UpdateQuery } from 'mongoose';
 import { FilterQuery } from 'mongoose';
+import { IPaginationQuery, PaginatedResult } from './query.interface';
 
 export interface IBaseRepository<TDocument, TCreate> {
   /**
    * To find all documents
-   * @returns {Promise<TDocument[]>} array of documents
+   * @param {IPaginationQuery} paginationDto? - contains: page, limit
+   * @param {FilterQuery<InferRawDocType<TDocument>>} paginationDto? actual mongoose filter query and its TDoc object
+   * @returns {Promise<PaginatedResult<TDocument>>} object that contains array of docs and metaData
    */
-  findAll(): Promise<TDocument[]>;
+  findAll(
+    paginationDto?: IPaginationQuery,
+    filter?: FilterQuery<InferRawDocType<TDocument>>,
+  ): Promise<PaginatedResult<TDocument>>;
 
   /**
    * To find a document by its id

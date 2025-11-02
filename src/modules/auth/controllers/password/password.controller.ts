@@ -1,6 +1,6 @@
 import { AUTH_TOKENS } from '@modules/auth/auth-tokens';
 import { ForgotPasswordDto } from '@modules/auth/dtos/forgot-password.dto';
-import { PasswordDto } from '@modules/auth/dtos/password.dto';
+import { ResetPasswordDto } from '@modules/auth/dtos/reset-password.dto';
 import { IPasswordController } from '@modules/auth/interfaces/controllers.interface';
 import type { IPasswordService } from '@modules/auth/interfaces/services.interface';
 import { Body, Controller, Inject, Logger, Post } from '@nestjs/common';
@@ -22,7 +22,9 @@ export class PasswordController implements IPasswordController {
   }
 
   @Post('reset')
-  async resetPassword(@Body() resetDto: PasswordDto): Promise<IBaseResponse> {
+  async resetPassword(
+    @Body() resetDto: ResetPasswordDto,
+  ): Promise<IBaseResponse> {
     return await this._passwordService.resetPassword(
       resetDto.resetToken,
       resetDto.password,
