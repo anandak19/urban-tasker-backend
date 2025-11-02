@@ -8,13 +8,13 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { ICreateUser } from '../interfaces/user.interface';
-import { UserMapper } from '../mappers/user.mapper';
-import type { IUserRepository } from '../interfaces/user-repositories.interface';
+import { ICreateUser } from '../../interfaces/user.interface';
+import { UserMapper } from '../../mappers/user.mapper';
+import type { IUserRepository } from '../../interfaces/user-repositories.interface';
 import { HashService } from '@core/lib/hash/hash.service';
-import { UserResponseDto } from '../dtos/user-response.dto';
-import { IUserService } from '../interfaces/user-services.interface';
-import { USER_TOKENS } from '../user-tokens';
+import { UserResponseDto } from '../../dtos/user-response.dto';
+import { IUserService } from '../../interfaces/user-services.interface';
+import { USER_TOKENS } from '../../user-tokens';
 import { AUTH_MESSAGES } from '@shared/constants/messages/auth-messages.constant';
 import { UserRoles } from '@shared/constants/enums/user.enum';
 import { USER_ERRORS } from '@shared/constants/messages/error-messaes.constants';
