@@ -31,8 +31,9 @@ export class UserRepository
   ): Promise<PaginatedResult<UserDocument>> {
     console.log(filter);
     // prepare filter query here
+    const filterQuery = { ...filter, userRole: { $ne: 'admin' } };
 
-    return this.findAll(pagination, filter);
+    return this.findAll(pagination, filterQuery);
   }
 
   // find user by email

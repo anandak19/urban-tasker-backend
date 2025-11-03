@@ -1,6 +1,6 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable, Logger } from '@nestjs/common';
 import { IPayload } from '@modules/auth/interfaces/auth.interface';
-import { type Response } from 'express';
+import { type Request, type Response } from 'express';
 import { CookieService } from '@core/lib/cookie/cookie.service';
 import { IAuthResponse } from '@modules/auth/interfaces/response.interface';
 import { AUTH_TOKENS } from '@modules/auth/auth-tokens';
@@ -18,6 +18,7 @@ import {
 } from '@shared/constants/keys/cookie-keys.constant';
 import { AUTH_MESSAGES } from '@shared/constants/messages/auth-messages.constant';
 import { UserResponseDto } from '@modules/users/dtos/user-response.dto';
+import { UserRoles } from '@shared/constants/enums/user.enum';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -51,8 +52,9 @@ export class AuthService implements IAuthService {
     return { message: AUTH_MESSAGES.LOGIN_SUCCESS, accessToken };
   }
 
-  logout(): Promise<IBaseResponse> {
-    throw new Error('Method not implemented.');
+  logout(res: Response): IBaseResponse {
+    this._cookieService.clearCookie(res);
+    return { message: 'Logout succsfully' };
   }
 
   /*
@@ -84,6 +86,19 @@ export class AuthService implements IAuthService {
       message: 'Token refreshed',
       accessToken: tokens.accessToken,
     };
+  }
+
+  isAdmin(req: Request): IBaseResponse {
+    const payload = req.user as IPayload;
+    try {
+      if (!payload || payload.userRole !== UserRoles.ADMIN) {
+        throw new ForbiddenException('Access Denied');
+      }
+      return { message: 'Admin logged in' };
+    } catch (error) {
+      console.log(error);
+      throw new ForbiddenException('Access Denied');
+    }
   }
 
   // Private helper methods

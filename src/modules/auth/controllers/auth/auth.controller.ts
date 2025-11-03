@@ -18,7 +18,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { COOKIE_KEYS } from '@shared/constants/keys/cookie-keys.constant';
-import { IBaseResponse } from '@shared/interfaces/base-response.interface';
+import type { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { type Request as TRequest, type Response } from 'express';
 
 @Controller('auth')
@@ -45,8 +45,9 @@ export class AuthController implements IAuthController {
     return this._authService.adminLogin(res, loginDto);
   }
 
-  logout(): Promise<IBaseResponse> {
-    return this._authService.logout();
+  @Post('logout')
+  logout(@Res({ passthrough: true }) res: Response): IBaseResponse {
+    return this._authService.logout(res);
   }
 
   /*
@@ -77,6 +78,13 @@ export class AuthController implements IAuthController {
   @UseGuards(AuthGuard)
   @Get('is-login')
   isLogin(@Request() req: TRequest) {
-    return { message: 'User is login', user: req.user };
+    return { message: 'User is loggedin', user: req.user };
+  }
+
+  // to check if the admin login or not
+  @UseGuards(AuthGuard)
+  @Get('admin/is-login')
+  isAdminLogin(@Request() req: TRequest) {
+    return { message: 'Admin is loggedin', admin: req.user };
   }
 }

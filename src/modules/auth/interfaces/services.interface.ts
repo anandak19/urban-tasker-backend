@@ -1,5 +1,5 @@
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
-import { type Response } from 'express';
+import { type Request, type Response } from 'express';
 import { BasicUserDto } from '../dtos/basicUserData.dto';
 import {
   IAuthResponse,
@@ -117,7 +117,9 @@ export interface IAuthService {
    */
   refreshToken(res: Response, refreshToken: string): Promise<IAuthResponse>;
 
-  logout(): Promise<IBaseResponse>;
+  logout(res: Response): IBaseResponse;
+
+  isAdmin(req: Request): IBaseResponse;
 }
 
 export interface IPasswordService {

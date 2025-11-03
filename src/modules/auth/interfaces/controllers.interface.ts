@@ -1,11 +1,11 @@
 import { type Response } from 'express';
 import { LoginDTo } from '../dtos/login.dto';
-import {
+import type {
   IAuthResponse,
   IBasicUserResponse,
   ITimeLeftResponse,
 } from './response.interface';
-import { IBaseResponse } from '@shared/interfaces/base-response.interface';
+import type { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { BasicUserDto } from '../dtos/basicUserData.dto';
 import { OtpDto } from '../dtos/otp.dto';
 import { PasswordDto } from '../dtos/password.dto';
@@ -16,7 +16,7 @@ export interface IAuthController {
   userLogin(res: Response, loginDto: LoginDTo): Promise<IAuthResponse>;
   adminLogin(res: Response, loginDto: LoginDTo): Promise<IAuthResponse>;
   refreshToken(res: Response, refreshToken: string): Promise<IAuthResponse>;
-  logout(): Promise<IBaseResponse>;
+  logout(res: Response): IBaseResponse;
 }
 
 export interface ISignupController {
