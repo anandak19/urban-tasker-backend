@@ -8,10 +8,10 @@ import {
   InternalServerErrorException,
   Logger,
   NotFoundException,
+  Scope,
 } from '@nestjs/common';
 import { IBasicUserData } from '@modules/auth/interfaces/singup.interface';
 import { UuidService } from '@core/lib/uuid/uuid.service';
-import { CacheService } from '@core/lib/cache/cache.service';
 import { CookieService } from '@core/lib/cookie/cookie.service';
 import { Response } from 'express';
 import { OtpService } from '@core/lib/otp/otp.service';
@@ -28,8 +28,9 @@ import {
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { USER_TOKENS } from '@modules/users/user-tokens';
 import { ISignupService } from '@modules/auth/interfaces/services.interface';
+import { CacheService } from '@core/lib/cache/cache.service';
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class SignupService implements ISignupService {
   private _logger = new Logger(SignupService.name);
   constructor(

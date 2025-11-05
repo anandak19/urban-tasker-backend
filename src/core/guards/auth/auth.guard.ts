@@ -6,11 +6,12 @@ import {
   Inject,
   Injectable,
   Logger,
+  Scope,
   UnauthorizedException,
 } from '@nestjs/common';
 import { type Request } from 'express';
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class AuthGuard implements CanActivate {
   private _logger = new Logger(AuthGuard.name);
   constructor(

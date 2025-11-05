@@ -1,13 +1,13 @@
 import { type IUserService } from '@modules/users/interfaces/user-services.interface';
 import { USER_TOKENS } from '@modules/users/user-tokens';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Scope } from '@nestjs/common';
 import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator';
 
 @ValidatorConstraint({ async: true })
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class IsEmailUnique implements ValidatorConstraintInterface {
   constructor(
     @Inject(USER_TOKENS.SERVICE) private readonly _userService: IUserService,

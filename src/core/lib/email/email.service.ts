@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Scope } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as nodeMailer from 'nodemailer';
 import { sendEmailDto } from './dto/email.dto';
 
-@Injectable()
+@Injectable({ scope: Scope.TRANSIENT })
 export class EmailService {
   constructor(private _configService: ConfigService) {}
 

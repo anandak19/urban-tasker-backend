@@ -29,8 +29,8 @@ export class PasswordService implements IPasswordService {
   constructor(
     @Inject(AUTH_TOKENS.TOKEN_SERVICE) private _tokenService: ITokenService,
     @Inject(USER_TOKENS.SERVICE) private _userService: IUserService,
-    private _emailService: EmailService,
     private _cacheService: CacheService,
+    private _emailService: EmailService,
   ) {}
 
   // to varify email and send reset link to email

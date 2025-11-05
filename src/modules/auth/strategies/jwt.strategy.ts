@@ -1,9 +1,9 @@
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
-import { Injectable } from '@nestjs/common';
+import { Injectable, Scope } from '@nestjs/common';
 import { IPayload } from '../interfaces/auth.interface';
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor() {
     super({

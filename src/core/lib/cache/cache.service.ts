@@ -1,8 +1,8 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Scope } from '@nestjs/common';
 import { Cacheable } from 'cacheable';
 import Keyv from 'keyv';
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class CacheService {
   private readonly logger = new Logger(CacheService.name);
   private readonly keyv: Keyv<unknown>;

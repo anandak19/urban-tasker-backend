@@ -3,12 +3,13 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
+  Scope,
 } from '@nestjs/common';
 import { Observable, map } from 'rxjs';
 import { Response } from 'express';
 import { ISuccessResponse } from '@shared/interfaces/http-response.interface';
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class ResponseInterceptor<T>
   implements NestInterceptor<T, ISuccessResponse<T>>
 {

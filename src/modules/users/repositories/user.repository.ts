@@ -32,7 +32,6 @@ export class UserRepository
     console.log(filter);
     // prepare filter query here
     const filterQuery = { ...filter, userRole: { $ne: 'admin' } };
-
     return this.findAll(pagination, filterQuery);
   }
 

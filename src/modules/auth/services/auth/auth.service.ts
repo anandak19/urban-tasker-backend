@@ -1,4 +1,10 @@
-import { ForbiddenException, Inject, Injectable, Logger } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  Logger,
+  Scope,
+} from '@nestjs/common';
 import { IPayload } from '@modules/auth/interfaces/auth.interface';
 import { type Request, type Response } from 'express';
 import { CookieService } from '@core/lib/cookie/cookie.service';
@@ -20,7 +26,7 @@ import { AUTH_MESSAGES } from '@shared/constants/messages/auth-messages.constant
 import { UserResponseDto } from '@modules/users/dtos/user-response.dto';
 import { UserRoles } from '@shared/constants/enums/user.enum';
 
-@Injectable()
+@Injectable({ scope: Scope.REQUEST })
 export class AuthService implements IAuthService {
   private _logger = new Logger(AuthService.name);
 
@@ -91,6 +97,8 @@ export class AuthService implements IAuthService {
   isAdmin(req: Request): IBaseResponse {
     const payload = req.user as IPayload;
     try {
+      console.log(payload.userRole);
+
       if (!payload || payload.userRole !== UserRoles.ADMIN) {
         throw new ForbiddenException('Access Denied');
       }
