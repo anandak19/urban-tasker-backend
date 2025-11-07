@@ -29,6 +29,7 @@ import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { USER_TOKENS } from '@modules/users/user-tokens';
 import { ISignupService } from '@modules/auth/interfaces/services.interface';
 import { CacheService } from '@core/lib/cache/cache.service';
+import { AuthProvider } from '@shared/constants/enums/auth-providers.enum';
 
 @Injectable({ scope: Scope.REQUEST })
 export class SignupService implements ISignupService {
@@ -171,11 +172,14 @@ export class SignupService implements ISignupService {
       throw new ConflictException(AUTH_MESSAGES.EMAIL_TAKEN);
     }
     // save user to db
-    const savedUser = await this._userService.create({ ...userData, password });
+    const savedUser = await this._userService.create({
+      ...userData,
+      password,
+      provider: AuthProvider.LOCAL,
+    });
     if (!savedUser) {
       throw new InternalServerErrorException('Faild to signup user');
     }
-
     /*
     TODO: 
     Call method to delete temp user data from cache

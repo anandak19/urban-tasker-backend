@@ -10,3 +10,9 @@ export interface ITokens {
   accessToken: string;
   refreshToken: string;
 }
+
+export interface IGoogleUserAuthData {
+  firstName: string;
+  lastName: string;
+  email: string;
+}

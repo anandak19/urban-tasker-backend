@@ -9,6 +9,7 @@ import { configOptions } from '@config/config.option';
 import { mongooseOption } from '@config/database/database.option';
 import { AppController } from './app.controller';
 import { CacheModule } from '@core/lib/cache/cache.module';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { CacheModule } from '@core/lib/cache/cache.module';
     UsersModule,
     CategoriesModule,
     TaskerApplicationsModule,
+    PassportModule.register({}),
   ],
   controllers: [AppController],
   providers: [],

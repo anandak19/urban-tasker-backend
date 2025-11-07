@@ -6,8 +6,10 @@ import {
   IBasicUserResponse,
   ITimeLeftResponse,
 } from './response.interface';
-import { IPayload, ITokens } from './auth.interface';
+import { IGoogleUserAuthData, IPayload, ITokens } from './auth.interface';
 import { LoginDTo } from '../dtos/login.dto';
+import { UserResponseDto } from '@modules/users/dtos/user-response.dto';
+import { IUserData } from '@modules/users/interfaces/user.interface';
 
 /**
  * Methods needed for signup process
@@ -116,6 +118,17 @@ export interface IAuthService {
    * @returns {Promise<IAuthResponse>} - message and access token (updated)
    */
   refreshToken(res: Response, refreshToken: string): Promise<IAuthResponse>;
+
+  /**
+   * Method that gets / create google user
+   * @param {IGoogleUserAuthData} userDetails - user details from google
+   * @returns {Promise<UserResponseDto>}
+   */
+  validateGoogleAuthUser(
+    userDetails: IGoogleUserAuthData,
+  ): Promise<UserResponseDto>;
+
+  loginGoogleUser(res: Response, userData: IUserData): Promise<IAuthResponse>;
 
   logout(res: Response): IBaseResponse;
 

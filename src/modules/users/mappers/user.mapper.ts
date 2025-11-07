@@ -9,7 +9,7 @@ export class UserMapper {
       firstName: userDoc.firstName,
       lastName: userDoc.lastName,
       email: userDoc.email,
-      phone: userDoc.phone,
+      phone: userDoc.phone ?? '',
       userRole: userDoc.userRole,
       isTaskerApplied: userDoc.isTaskerApplied,
     };

@@ -1,8 +1,8 @@
-import { Injectable, Scope } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { COOKIE_KEYS } from '@shared/constants/keys/cookie-keys.constant';
 import { type Response } from 'express';
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable()
 export class CookieService {
   // set a cookie with default 1 hr. accept time in sec
   setCookie(

@@ -1,10 +1,12 @@
 import { Cookies } from '@core/decorators/cookies.decorator';
 import { AuthGuard } from '@core/guards/auth/auth.guard';
+import { GoogleAuthGuard } from '@core/guards/google-auth/google-auth.guard';
 import { AUTH_TOKENS } from '@modules/auth/auth-tokens';
 import { LoginDTo } from '@modules/auth/dtos/login.dto';
 import { type IAuthController } from '@modules/auth/interfaces/controllers.interface';
 import { type IAuthResponse } from '@modules/auth/interfaces/response.interface';
 import { type IAuthService } from '@modules/auth/interfaces/services.interface';
+import { UserResponseDto } from '@modules/users/dtos/user-response.dto';
 import {
   Body,
   Controller,
@@ -13,6 +15,7 @@ import {
   Inject,
   Logger,
   Post,
+  Req,
   Request,
   Res,
   UseGuards,
@@ -51,6 +54,22 @@ export class AuthController implements IAuthController {
   }
 
   /*
+  Google Auth endpoints
+  */
+  @Get('google/login')
+  @UseGuards(GoogleAuthGuard)
+  googleLogin() {}
+
+  @Get('google/redirect')
+  @UseGuards(GoogleAuthGuard)
+  googleRedirect(
+    @Req() req: TRequest & { user: UserResponseDto },
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this._authService.loginGoogleUser(res, req.user);
+  }
+
+  /*  
   To refresh the access token and refresh token
   */
   @Post('refresh')

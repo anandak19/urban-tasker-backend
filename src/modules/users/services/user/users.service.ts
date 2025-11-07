@@ -18,6 +18,7 @@ import { USER_TOKENS } from '../../user-tokens';
 import { AUTH_MESSAGES } from '@shared/constants/messages/auth-messages.constant';
 import { UserRoles } from '@shared/constants/enums/user.enum';
 import { USER_ERRORS } from '@shared/constants/messages/error-messaes.constants';
+import { AuthProvider } from '@shared/constants/enums/auth-providers.enum';
 
 @Injectable()
 export class UsersService implements IUserService {
@@ -62,10 +63,13 @@ export class UsersService implements IUserService {
 
   async create(userData: ICreateUser): Promise<UserResponseDto> {
     try {
-      const hashedPassword = await this._hashService.hashPassword(
-        userData.password,
-      );
-      userData.password = hashedPassword;
+      // local create
+      if (userData.provider === AuthProvider.LOCAL && userData.password) {
+        const hashedPassword = await this._hashService.hashPassword(
+          userData.password,
+        );
+        userData.password = hashedPassword;
+      }
 
       const savedUser = await this._userRepo.create(userData);
 

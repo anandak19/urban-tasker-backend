@@ -2,10 +2,13 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
-  Logger,
+  InternalServerErrorException,
   Scope,
 } from '@nestjs/common';
-import { IPayload } from '@modules/auth/interfaces/auth.interface';
+import {
+  IGoogleUserAuthData,
+  IPayload,
+} from '@modules/auth/interfaces/auth.interface';
 import { type Request, type Response } from 'express';
 import { CookieService } from '@core/lib/cookie/cookie.service';
 import { IAuthResponse } from '@modules/auth/interfaces/response.interface';
@@ -25,16 +28,24 @@ import {
 import { AUTH_MESSAGES } from '@shared/constants/messages/auth-messages.constant';
 import { UserResponseDto } from '@modules/users/dtos/user-response.dto';
 import { UserRoles } from '@shared/constants/enums/user.enum';
-
-@Injectable({ scope: Scope.REQUEST })
+import { LOGGER_SERVICE } from '@core/lib/logger/logger.service';
+import { type ILoggerService } from '@core/lib/logger/logger.interface';
+import {
+  ICreateUser,
+  IUserData,
+} from '@modules/users/interfaces/user.interface';
+import { AuthProvider } from '@shared/constants/enums/auth-providers.enum';
+let instance = 1;
+@Injectable({ scope: Scope.DEFAULT })
 export class AuthService implements IAuthService {
-  private _logger = new Logger(AuthService.name);
-
   constructor(
     @Inject(AUTH_TOKENS.TOKEN_SERVICE) private _tokenService: ITokenService,
     @Inject(USER_TOKENS.SERVICE) private _userService: IUserService,
+    @Inject(LOGGER_SERVICE) private _logger: ILoggerService,
     private _cookieService: CookieService,
-  ) {}
+  ) {
+    console.log('AuthService inint instance: ', instance++);
+  }
 
   async userLogin(res: Response, loginDto: LoginDTo): Promise<IAuthResponse> {
     const userData = await this._userService.authenticateUser(
@@ -61,6 +72,45 @@ export class AuthService implements IAuthService {
   logout(res: Response): IBaseResponse {
     this._cookieService.clearCookie(res);
     return { message: 'Logout succsfully' };
+  }
+
+  // google login
+  async validateGoogleAuthUser(
+    userDetails: IGoogleUserAuthData,
+  ): Promise<UserResponseDto> {
+    console.log('google user details', userDetails);
+
+    const existingUser = await this._userService.findByEmail(userDetails.email);
+    if (existingUser) return existingUser;
+    const newUserData: ICreateUser = {
+      email: userDetails.email,
+      firstName: userDetails.firstName,
+      lastName: userDetails.lastName,
+      provider: AuthProvider.GOOGLE,
+    };
+
+    const savedUser = await this._userService.create(newUserData);
+    if (!savedUser) {
+      this._logger.error('AuthServce: Faild to save google user to db');
+      throw new InternalServerErrorException(AUTH_MESSAGES.LOGIN_FAILD);
+    }
+
+    return savedUser;
+  }
+
+  async loginGoogleUser(
+    res: Response,
+    userData: IUserData,
+  ): Promise<IAuthResponse> {
+    const payload: IPayload = {
+      email: userData.email,
+      userRole: userData.userRole,
+      id: userData.id,
+    };
+
+    const accessToken = await this._setTokenInCookie(res, payload);
+
+    return { message: AUTH_MESSAGES.LOGIN_SUCCESS, accessToken };
   }
 
   /*

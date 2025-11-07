@@ -8,11 +8,13 @@ import { HashModule } from '@core/lib/hash/hash.module';
 import { USER_TOKENS } from './user-tokens';
 import { AdminUserService } from './services/admin-user/admin-user.service';
 import { AdminUserController } from './controllers/admin/admin-user.controller';
+import { LoggerModule } from '@core/lib/logger/logger.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     HashModule,
+    LoggerModule,
   ],
   controllers: [AdminUserController],
   providers: [

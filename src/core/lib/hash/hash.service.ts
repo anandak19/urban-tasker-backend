@@ -1,7 +1,7 @@
-import { Injectable, Scope } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 
-@Injectable({ scope: Scope.TRANSIENT })
+@Injectable()
 export class HashService {
   private readonly SALT_ROUNDS = 10;
   async hashPassword(password: string): Promise<string> {

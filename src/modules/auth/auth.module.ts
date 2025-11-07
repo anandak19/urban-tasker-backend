@@ -21,6 +21,9 @@ import { AuthController } from './controllers/auth/auth.controller';
 import { AUTH_TOKENS } from './auth-tokens';
 import { PasswordService } from './services/password/password.service';
 import { PasswordController } from './controllers/password/password.controller';
+import { LoggerModule } from '@core/lib/logger/logger.module';
+import { GoogleStrategy } from './strategies/google.strategy';
+console.log('Loaded AuthModule');
 
 @Module({
   imports: [
@@ -30,11 +33,12 @@ import { PasswordController } from './controllers/password/password.controller';
     OtpModule,
     EmailModule,
     CacheModule,
-    PassportModule,
+    LoggerModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'secret',
       signOptions: { expiresIn: '15m' },
     }),
+    PassportModule.register({ session: false }),
   ],
   controllers: [SignupController, AuthController, PasswordController],
   providers: [
@@ -42,7 +46,10 @@ import { PasswordController } from './controllers/password/password.controller';
     { provide: AUTH_TOKENS.AUTH_SERVICE, useClass: AuthService },
     { provide: AUTH_TOKENS.TOKEN_SERVICE, useClass: TokenService },
     { provide: AUTH_TOKENS.PASSWORD_SERVICE, useClass: PasswordService },
+    GoogleStrategy,
+    AuthService,
   ],
+  exports: [AUTH_TOKENS.AUTH_SERVICE],
 })
 export class AuthModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
