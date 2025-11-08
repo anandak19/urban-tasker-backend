@@ -1,89 +1,221 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { IPayload } from '@modules/auth/interfaces/auth.interface';
-import { type Response } from 'express';
+import {
+  ForbiddenException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  Scope,
+} from '@nestjs/common';
+import {
+  IGoogleUserAuthData,
+  IPayload,
+} from '@modules/auth/interfaces/auth.interface';
+import { type Request, type Response } from 'express';
 import { CookieService } from '@core/lib/cookie/cookie.service';
 import { IAuthResponse } from '@modules/auth/interfaces/response.interface';
 import { AUTH_TOKENS } from '@modules/auth/auth-tokens';
-import {
-  type IAuthService,
-  type ITokenService,
+import type {
+  IRefreshTokenService,
+  IAuthService,
+  ITokenService,
 } from '@modules/auth/interfaces/services.interface';
 import { LoginDTo } from '@modules/auth/dtos/login.dto';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { USER_TOKENS } from '@modules/users/user-tokens';
-import { type IUserService } from '@modules/users/interfaces/user-service.interface';
+import { type IUserService } from '@modules/users/interfaces/user-services.interface';
 import {
   COOKIE_KEYS,
   COOKIE_TIME,
 } from '@shared/constants/keys/cookie-keys.constant';
 import { AUTH_MESSAGES } from '@shared/constants/messages/auth-messages.constant';
+import { UserResponseDto } from '@modules/users/dtos/user-response.dto';
+import { UserRoles } from '@shared/constants/enums/user.enum';
+import { LOGGER_SERVICE } from '@core/lib/logger/logger.service';
+import { type ILoggerService } from '@core/lib/logger/logger.interface';
+import {
+  ICreateUser,
+  IUserData,
+} from '@modules/users/interfaces/user.interface';
+import { AuthProvider } from '@shared/constants/enums/auth-providers.enum';
+import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constants';
 
-@Injectable()
+let instance = 1;
+@Injectable({ scope: Scope.DEFAULT })
 export class AuthService implements IAuthService {
   constructor(
     @Inject(AUTH_TOKENS.TOKEN_SERVICE) private _tokenService: ITokenService,
+
     @Inject(USER_TOKENS.SERVICE) private _userService: IUserService,
+
+    @Inject(LOGGER_SERVICE) private _logger: ILoggerService,
+
+    @Inject(AUTH_TOKENS.REFERESH_TOKEN_SERVICE)
+    private _refreshTokenService: IRefreshTokenService,
+
     private _cookieService: CookieService,
-  ) {}
-
-  //closed
-  async userLogin(res: Response, loginDto: LoginDTo): Promise<IAuthResponse> {
-    const userData = await this._userService.authenticateUser(
-      loginDto.email,
-      loginDto.password,
-    );
-
-    const payload = {
-      id: userData.id,
-      email: userData.email,
-      userRole: userData.userRole,
-    };
-
-    return this._setTokenInCookie(res, payload);
+  ) {
+    console.log('AuthService inint instance: ', instance++);
   }
 
+  // validate local user
+  async validateLocalUser(
+    email: string,
+    password: string,
+  ): Promise<UserResponseDto> {
+    return await this._userService.authenticateUser(email, password);
+  }
+
+  // local user login
+  async userLogin(res: Response, userData: IUserData): Promise<IBaseResponse> {
+    const payload = this._getPaylod(userData);
+    const refreshToken = await this._setTokensInCookie(res, payload);
+    // save refresh token in db
+    console.log(refreshToken);
+    const savedRefreshToken = await this._refreshTokenService.saveRefreshToken(
+      refreshToken,
+      userData.id,
+    );
+
+    if (!savedRefreshToken) {
+      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
+
+    return { message: AUTH_MESSAGES.LOGIN_SUCCESS };
+  }
+
+  // remove this
   async adminLogin(res: Response, loginDto: LoginDTo): Promise<IAuthResponse> {
     const userData = await this._userService.authenticateAdmin(
       loginDto.email,
       loginDto.password,
     );
-    const payload = {
-      id: userData.id,
+    const payload = this._getPaylod(userData);
+    const accessToken = await this._setTokensInCookie(res, payload);
+
+    return { message: AUTH_MESSAGES.LOGIN_SUCCESS, accessToken };
+  }
+
+  async logout(res: Response, refreshToken: string): Promise<IBaseResponse> {
+    this._cookieService.clearCookie(res);
+    await this._refreshTokenService.revokeRefreshToken(refreshToken);
+    return { message: 'Logout succsfully' };
+  }
+
+  // google login
+  async validateGoogleAuthUser(
+    userDetails: IGoogleUserAuthData,
+  ): Promise<UserResponseDto> {
+    console.log('google user details', userDetails);
+
+    const existingUser = await this._userService.findByEmail(userDetails.email);
+    if (existingUser) return existingUser;
+    const newUserData: ICreateUser = {
+      email: userDetails.email,
+      firstName: userDetails.firstName,
+      lastName: userDetails.lastName,
+      provider: AuthProvider.GOOGLE,
+    };
+
+    const savedUser = await this._userService.create(newUserData);
+    if (!savedUser) {
+      this._logger.error('AuthServce: Faild to save google user to db');
+      throw new InternalServerErrorException(AUTH_MESSAGES.LOGIN_FAILD);
+    }
+
+    return savedUser;
+  }
+
+  async loginGoogleUser(
+    res: Response,
+    userData: IUserData,
+  ): Promise<IBaseResponse> {
+    const payload: IPayload = {
       email: userData.email,
       userRole: userData.userRole,
+      id: userData.id,
     };
-    return this._setTokenInCookie(res, payload);
+
+    const refreshToken = await this._setTokensInCookie(res, payload);
+
+    console.log(refreshToken);
+    const savedRefreshToken = await this._refreshTokenService.saveRefreshToken(
+      refreshToken,
+      userData.id,
+    );
+
+    if (!savedRefreshToken) {
+      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
+
+    return { message: AUTH_MESSAGES.LOGIN_SUCCESS };
   }
 
-  logout(): Promise<IBaseResponse> {
-    throw new Error('Method not implemented.');
-  }
+  /*
+  To refresh tokens
+  */
+  async refreshToken(
+    res: Response,
+    refreshToken: string,
+  ): Promise<IBaseResponse> {
+    const payload: IPayload =
+      await this._tokenService.verifyToken(refreshToken);
 
-  refreshToken(res: Response, refreshToken: string): IAuthResponse {
-    const payload: IPayload = this._tokenService.verifyToken(refreshToken);
+    // to check, expiration and revoked status and userId same or not
+    await this._refreshTokenService.varifyRefreshTokenStatus(
+      refreshToken,
+      payload.id,
+    );
 
-    const tokens = this._tokenService.getTokens({
+    const newPayload: IPayload = {
       id: payload.id,
       email: payload.email,
-    });
+      userRole: payload.userRole,
+    };
+
+    const accessToken = await this._tokenService.getNewAccessToken(newPayload);
 
     this._cookieService.setCookie(
       res,
-      COOKIE_KEYS.REFERESH_KEY,
-      tokens.refreshToken,
-      COOKIE_TIME.REFRESH_TIME,
+      COOKIE_KEYS.ACCESS_KEY,
+      accessToken,
+      COOKIE_TIME.ACCESS_TIME,
     );
 
     return {
       message: 'Token refreshed',
-      accessToken: tokens.accessToken,
     };
   }
 
-  // Private helper methods
-  private _setTokenInCookie(res: Response, payload: IPayload): IAuthResponse {
-    const tokens = this._tokenService.getTokens(payload);
+  isAdmin(req: Request): IBaseResponse {
+    const payload = req.user as IPayload;
+    try {
+      console.log(payload.userRole);
 
+      if (!payload || payload.userRole !== UserRoles.ADMIN) {
+        throw new ForbiddenException('Access Denied');
+      }
+      return { message: 'Admin logged in' };
+    } catch (error) {
+      console.log(error);
+      throw new ForbiddenException('Access Denied');
+    }
+  }
+
+  // Private helper methods
+  private async _setTokensInCookie(
+    res: Response,
+    payload: IPayload,
+  ): Promise<string> {
+    const tokens = await this._tokenService.getAuthTokens(payload);
+
+    // access token
+    this._cookieService.setCookie(
+      res,
+      COOKIE_KEYS.ACCESS_KEY,
+      tokens.accessToken,
+      COOKIE_TIME.ACCESS_TIME,
+    );
+
+    // refresh token
     this._cookieService.setCookie(
       res,
       COOKIE_KEYS.REFERESH_KEY,
@@ -91,9 +223,14 @@ export class AuthService implements IAuthService {
       COOKIE_TIME.REFRESH_TIME,
     );
 
+    return tokens.refreshToken;
+  }
+
+  private _getPaylod(user: IUserData): IPayload {
     return {
-      message: AUTH_MESSAGES.LOGIN_SUCCESS,
-      accessToken: tokens.accessToken,
+      id: user.id,
+      email: user.email,
+      userRole: user.userRole,
     };
   }
 }

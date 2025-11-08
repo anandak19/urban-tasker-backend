@@ -49,4 +49,5 @@ export const AUTH_MESSAGES = {
 
 export const SESSION_MESSAGES = {
   SIGNUP_EXPIRED: 'Signup session expired. Please restart signup.',
+  AUTH_EXPIRED: 'Your session has expired, please login to continue',
 };

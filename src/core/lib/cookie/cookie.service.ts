@@ -1,8 +1,12 @@
-import { Injectable, Scope } from '@nestjs/common';
+import { type AppConfig } from '@config/app.config';
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { COOKIE_KEYS } from '@shared/constants/keys/cookie-keys.constant';
 import { type Response } from 'express';
 
-@Injectable({ scope: Scope.REQUEST })
+@Injectable()
 export class CookieService {
+  constructor(private configService: ConfigService<AppConfig>) {}
   // set a cookie with default 1 hr. accept time in sec
   setCookie(
     res: Response,
@@ -12,8 +16,22 @@ export class CookieService {
   ) {
     res.cookie(key, value, {
       httpOnly: true,
-      secure: false,
+      secure: this.configService.get('NODE_ENV') === 'production',
       maxAge: maxAgeSeconds * 1000,
+    });
+  }
+
+  clearCookie(res: Response) {
+    const isProd = this.configService.get('NODE_ENV') === 'production';
+
+    res.clearCookie(COOKIE_KEYS.REFERESH_KEY, {
+      httpOnly: true,
+      secure: isProd,
+    });
+
+    res.clearCookie(COOKIE_KEYS.ACCESS_KEY, {
+      httpOnly: true,
+      secure: isProd,
     });
   }
 }

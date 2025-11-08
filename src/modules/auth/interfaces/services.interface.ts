@@ -1,26 +1,62 @@
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
-import { type Response } from 'express';
+import { type Request, type Response } from 'express';
 import { BasicUserDto } from '../dtos/basicUserData.dto';
 import {
   IAuthResponse,
   IBasicUserResponse,
   ITimeLeftResponse,
 } from './response.interface';
-import { IPayload, ITokens } from './auth.interface';
+import { IGoogleUserAuthData, IPayload, ITokens } from './auth.interface';
 import { LoginDTo } from '../dtos/login.dto';
+import { UserResponseDto } from '@modules/users/dtos/user-response.dto';
+import { IUserData } from '@modules/users/interfaces/user.interface';
+import { IToken } from './token.interface';
 
+/**
+ * Methods needed for signup process
+ * Directly used in controllers
+ */
 export interface ISignupService {
+  /**
+   * Sigup step 1: To save basic user data to cache after validations and send otp
+   * @param {Response} res - response object
+   * @param {BasicUserDto} basicUserDto - basic user data
+   * @returns {Promise<IBasicUserResponse>} - contains saved user data and message
+   */
   saveBasicUserData(
     res: Response,
     basicUserDto: BasicUserDto,
   ): Promise<IBasicUserResponse>;
 
+  /**
+   * Singup step 2: To varify OTP
+   * @param {string} singupId - uuid of the basic user data in cache
+   * @param {string} otp - OTP enterd by user
+   * @returns {IBaseResponse} - message
+   */
   varifyOtp(singupId: string, otp: string): Promise<IBaseResponse>;
 
+  /**
+   * To resend OTP
+   * @param {string} singupId - uuid of the basic user data in cache
+   * @returns {IBasicUserResponse} - user data and message
+   */
   resendOtp(singupId: string): Promise<IBasicUserResponse>;
 
+  /**
+   * To get the time in seconds left for OTP expiration
+   * @param {string} singupId - uuid of the basic user data in cache
+   * @returns {ITimeLeftResponse} - time left and message
+   */
   getOtpTimeLeft(singupId: string): Promise<ITimeLeftResponse>;
 
+  /**
+   * Singup step 3: To validate new password and create new in database (complete signup)
+   * @param {Response} res - response object
+   * @param {string} singupId - uuid of the basic user data in cache
+   * @param {string} password - new password enterd by user
+   * @returns {IBaseResponse} - message
+   */
   signup(
     res: Response,
     singupId: string,
@@ -28,17 +64,130 @@ export interface ISignupService {
   ): Promise<IBaseResponse>;
 }
 
+/**
+ * Methods related to jwt tokens
+ * Used in another service methods
+ */
 export interface ITokenService {
-  getTokens(payload: IPayload): ITokens;
-  verifyToken(token: string): IPayload;
+  /**
+   * To get access token and refresh tokens
+   * @param {IPayload} payload - payload to include in token
+   * @returns {Promise<ITokens> | ITokens} - access Token and refresh Token
+   */
+  getAuthTokens(payload: IPayload): Promise<ITokens> | ITokens;
+
+  /**
+   * To get new accesstoken
+   * @param payload
+   */
+  getNewAccessToken(payload: IPayload): Promise<string>;
+
+  /**
+   * To varify a single token
+   * @param {string} token - token to check
+   * @returns {IPayload} - payload data stored in token
+   */
+  verifyToken(token: string): Promise<IPayload>;
+
+  /**
+   * To get a reset token, used in password reset link
+   * @param {IPayload} payload - payload to include in token
+   * @returns {string} - jwt token (reset token)
+   */
+  getResetToken(payload: IPayload): Promise<string>;
 }
 
-export interface IAuthService {
-  userLogin(res: Response, loginDto: LoginDTo): Promise<IAuthResponse>;
+export interface IRefreshTokenService {
+  /**
+   * Save Refresh token to db
+   * @param token
+   */
+  saveRefreshToken(token: string, userId: string): Promise<IToken>;
 
+  /**
+   * Get refresh token
+   *
+   */
+  getRefreshToken(token: string): Promise<IToken | null>;
+
+  /**
+   * To set revoke as true (blacklisting token/ logout)
+   * @param token
+   */
+  revokeRefreshToken(token: string): Promise<void>;
+
+  /**
+   * To varify referesh token status (expiry, userId and revoked flag)
+   * @param token
+   * @param userId
+   */
+  varifyRefreshTokenStatus(token: string, userId: string): Promise<void>;
+}
+
+/**
+ * Methods needed for authentications after signup
+ * Directly used in controllers
+ */
+export interface IAuthService {
+  /**
+   * To validate local user
+   * @param email
+   * @param password
+   */
+  validateLocalUser(email: string, password: string): Promise<UserResponseDto>;
+
+  /**
+   * Method for login of user & tasker
+   * @param {Response} res - response object
+   * @param {IUserData} userData - email and password
+   * @returns {Promise<IAuthResponse>} - message and access token
+   */
+  userLogin(res: Response, userData: IUserData): Promise<IBaseResponse>;
+
+  /**
+   * Method for login of admin
+   * @param {Response} res - response object
+   * @param {LoginDto} loginDto - email and password
+   * @returns {Promise<IAuthResponse>} - message and access token
+   */
   adminLogin(res: Response, loginDto: LoginDTo): Promise<IAuthResponse>;
 
-  refreshToken(res: Response, refreshToken: string): IAuthResponse;
+  /**
+   * Method to refresh access token and refresh tokens
+   * @param {Response} res - response object
+   * @param {string} refreshToken - refresh token
+   * @returns {Promise<IAuthResponse>} - message and access token (updated)
+   */
+  refreshToken(res: Response, refreshToken: string): Promise<IBaseResponse>;
 
-  logout(): Promise<IBaseResponse>;
+  /**
+   * Method that gets / create google user
+   * @param {IGoogleUserAuthData} userDetails - user details from google
+   * @returns {Promise<UserResponseDto>}
+   */
+  validateGoogleAuthUser(
+    userDetails: IGoogleUserAuthData,
+  ): Promise<UserResponseDto>;
+
+  loginGoogleUser(res: Response, userData: IUserData): Promise<IBaseResponse>;
+
+  logout(res: Response, refreshToken: string): Promise<IBaseResponse>;
+
+  isAdmin(req: Request): IBaseResponse;
+}
+
+export interface IPasswordService {
+  /**
+   * To varify email and send reset token to email
+   * @param {string} email - email id send by user to get rest link
+   * @returns {Promise<IBaseResponse>} - message
+   */
+  forgotPassword(email: string): Promise<IBaseResponse>;
+
+  /**
+   * To
+   * @param {string} newPassword - new password submitted by user
+   * @returns {Promise<IBaseResponse>} - message
+   */
+  resetPassword(token: string, newPassword: string): Promise<IBaseResponse>;
 }

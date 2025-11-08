@@ -1,27 +1,86 @@
+import { AppConfig } from '@config/app.config';
 import { IPayload, ITokens } from '@modules/auth/interfaces/auth.interface';
 import { ITokenService } from '@modules/auth/interfaces/services.interface';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { AUTH_MESSAGES } from '@shared/constants/messages/auth-messages.constant';
+import {
+  ForbiddenException,
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService, JwtSignOptions } from '@nestjs/jwt';
+import { SESSION_MESSAGES } from '@shared/constants/messages/auth-messages.constant';
+import { StringValue } from 'ms';
 
 @Injectable()
 export class TokenService implements ITokenService {
-  constructor(private _jwtService: JwtService) {}
-  verifyToken(token: string): IPayload {
+  private readonly _accessTokenTime = '20s';
+  private readonly _refereshTokenTime = '7d';
+  private readonly _resetTokenTime = '30m';
+  private readonly _defaultTokenTime = '10s';
+  private JWT_SECRET: string;
+  private _logger = new Logger(TokenService.name);
+
+  constructor(
+    private _jwtService: JwtService,
+    private _configService: ConfigService<AppConfig>,
+  ) {
+    this.JWT_SECRET = this._configService.get<string>('JWT_SECRET') || 'secret';
+  }
+  // varify token
+  async verifyToken(token: string): Promise<IPayload> {
     try {
-      return this._jwtService.verify<IPayload>(token);
-    } catch (_error) {
-      throw new UnauthorizedException(AUTH_MESSAGES.UNAUTH_USER);
+      const payload = await this._jwtService.verifyAsync<IPayload>(token, {
+        secret: this.JWT_SECRET,
+      });
+
+      if (!payload) {
+        throw new ForbiddenException(SESSION_MESSAGES.AUTH_EXPIRED);
+      }
+
+      return payload;
+    } catch {
+      this._logger.error('Token Varification faild');
+      throw new ForbiddenException(SESSION_MESSAGES.AUTH_EXPIRED);
     }
   }
 
-  getTokens(payload: IPayload): ITokens {
-    const accessToken = this._jwtService.sign(payload, {
-      expiresIn: '15m',
-    });
-    const refreshToken = this._jwtService.sign(payload, {
-      expiresIn: '7d',
-    });
+  // returns access and refresh tokens
+  async getAuthTokens(payload: IPayload): Promise<ITokens> {
+    const accessToken = await this._getToken(payload, this._accessTokenTime);
+    const refreshToken = await this._getToken(payload, this._refereshTokenTime);
     return { accessToken, refreshToken };
+  }
+
+  async getNewAccessToken(payload: IPayload): Promise<string> {
+    return await this._getToken(payload, this._accessTokenTime);
+  }
+
+  // returns reset password token
+  async getResetToken(payload: IPayload): Promise<string> {
+    return await this._getToken(payload, this._resetTokenTime);
+  }
+
+  /**
+   * Return new singned jwt token
+   * @param {IPayload} payload - payload for token
+   * @param {StringValue | number} expiresIn - The token's expiration duration.
+   * @returns {Promise<string>} A promise that resolves to the signed JWT token.
+   * */
+  private async _getToken(
+    payload: IPayload,
+    expiresIn: StringValue | number = this._defaultTokenTime,
+  ): Promise<string> {
+    console.log('Payload to create token', payload);
+    try {
+      const options: JwtSignOptions = {
+        secret: this.JWT_SECRET,
+        expiresIn,
+      };
+      return await this._jwtService.signAsync(payload, options);
+    } catch {
+      this._logger.error('Token generation faild');
+      throw new InternalServerErrorException('Failed to generate token');
+    }
   }
 }

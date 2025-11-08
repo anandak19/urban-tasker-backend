@@ -19,6 +19,16 @@ import { AuthService } from './services/auth/auth.service';
 import { TokenService } from './services/token/token.service';
 import { AuthController } from './controllers/auth/auth.controller';
 import { AUTH_TOKENS } from './auth-tokens';
+import { PasswordService } from './services/password/password.service';
+import { PasswordController } from './controllers/password/password.controller';
+import { LoggerModule } from '@core/lib/logger/logger.module';
+import { GoogleStrategy } from './strategies/google.strategy';
+import { LocalStrategy } from './strategies/local.strategy';
+import { RefreshTokenService } from './services/token/refresh-token.service';
+import { TokenRepository } from './repositories/token.repository';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Token, TokenSchema } from './schemas/token.schema';
+console.log('Loaded AuthModule');
 
 @Module({
   imports: [
@@ -28,18 +38,32 @@ import { AUTH_TOKENS } from './auth-tokens';
     OtpModule,
     EmailModule,
     CacheModule,
-    PassportModule,
+    LoggerModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'secret',
       signOptions: { expiresIn: '15m' },
     }),
+    PassportModule.register({ session: false }),
+    MongooseModule.forFeature([{ name: Token.name, schema: TokenSchema }]),
   ],
-  controllers: [SignupController, AuthController],
+  controllers: [SignupController, AuthController, PasswordController],
   providers: [
     { provide: AUTH_TOKENS.SIGNUP_SERVICE, useClass: SignupService },
     { provide: AUTH_TOKENS.AUTH_SERVICE, useClass: AuthService },
     { provide: AUTH_TOKENS.TOKEN_SERVICE, useClass: TokenService },
+    { provide: AUTH_TOKENS.PASSWORD_SERVICE, useClass: PasswordService },
+    {
+      provide: AUTH_TOKENS.REFERESH_TOKEN_SERVICE,
+      useClass: RefreshTokenService,
+    },
+    {
+      provide: AUTH_TOKENS.REFERESH_TOKEN_REPOSITORY,
+      useClass: TokenRepository,
+    },
+    GoogleStrategy,
+    LocalStrategy,
   ],
+  exports: [AUTH_TOKENS.AUTH_SERVICE],
 })
 export class AuthModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

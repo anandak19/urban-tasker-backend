@@ -1,21 +1,24 @@
-import { type Response } from 'express';
-import { LoginDTo } from '../dtos/login.dto';
-import {
-  IAuthResponse,
+import type { Request, Response } from 'express';
+import type {
   IBasicUserResponse,
   ITimeLeftResponse,
 } from './response.interface';
-import { IBaseResponse } from '@shared/interfaces/base-response.interface';
+import type { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { BasicUserDto } from '../dtos/basicUserData.dto';
 import { OtpDto } from '../dtos/otp.dto';
 import { PasswordDto } from '../dtos/password.dto';
 import { ForgotPasswordDto } from '../dtos/forgot-password.dto';
+import { ResetPasswordDto } from '../dtos/reset-password.dto';
 
 export interface IAuthController {
-  userLogin(res: Response, loginDto: LoginDTo): Promise<IAuthResponse>;
-  adminLogin(res: Response, loginDto: LoginDTo): Promise<IAuthResponse>;
-  refreshToken(res: Response, refreshToken: string): IAuthResponse;
-  logout(): Promise<IBaseResponse>;
+  /**
+   * Login method after local guard
+   * @param res
+   */
+  userLogin(req: Request, res: Response): Promise<IBaseResponse>;
+
+  refreshToken(res: Response, refreshToken: string): Promise<IBaseResponse>;
+  logout(res: Response, refreshToken: string): Promise<IBaseResponse>;
 }
 
 export interface ISignupController {
@@ -54,5 +57,5 @@ export interface ISignupController {
 
 export interface IPasswordController {
   forgotPassword(forgotDto: ForgotPasswordDto): Promise<IBaseResponse>;
-  resetPassword(resetDto: PasswordDto): Promise<IBaseResponse>;
+  resetPassword(resetDto: ResetPasswordDto): Promise<IBaseResponse>;
 }

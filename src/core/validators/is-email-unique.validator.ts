@@ -1,4 +1,4 @@
-import { type IUserService } from '@modules/users/interfaces/user-service.interface';
+import { type IUserService } from '@modules/users/interfaces/user-services.interface';
 import { USER_TOKENS } from '@modules/users/user-tokens';
 import { Inject, Injectable } from '@nestjs/common';
 import {
