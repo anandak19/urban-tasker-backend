@@ -4,6 +4,8 @@ export default () => {
   const config = {
     NODE_ENV: process.env.NODE_ENV,
 
+    APP_HOME_URL: process.env.APP_HOME_URL,
+
     PORT: Number(process.env.PORT),
     MONGO_URI: process.env.MONGO_URI,
 

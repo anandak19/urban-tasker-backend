@@ -68,7 +68,7 @@ export class RefreshTokenService implements IRefreshTokenService {
       refreshToken.revoked ||
       refreshToken.userId !== userId
     ) {
-      console.log('Refresh token was expird in db');
+      console.log('Refresh token was expird in db', refreshToken);
       throw new ForbiddenException(SESSION_MESSAGES.AUTH_EXPIRED);
     }
   }

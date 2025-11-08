@@ -169,7 +169,7 @@ export interface IAuthService {
     userDetails: IGoogleUserAuthData,
   ): Promise<UserResponseDto>;
 
-  loginGoogleUser(res: Response, userData: IUserData): Promise<IAuthResponse>;
+  loginGoogleUser(res: Response, userData: IUserData): Promise<IBaseResponse>;
 
   logout(res: Response, refreshToken: string): Promise<IBaseResponse>;
 

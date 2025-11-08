@@ -1,10 +1,10 @@
+import { AppConfig } from '@config/app.config';
 import { Cookies } from '@core/decorators/cookies.decorator';
 import { AuthGuard } from '@core/guards/auth/auth.guard';
 import { GoogleAuthGuard } from '@core/guards/google-auth/google-auth.guard';
 import { LocalAuthGuard } from '@core/guards/local-auth/local-auth.guard';
 import { AUTH_TOKENS } from '@modules/auth/auth-tokens';
 import { type IAuthController } from '@modules/auth/interfaces/controllers.interface';
-import { type IAuthResponse } from '@modules/auth/interfaces/response.interface';
 import { type IAuthService } from '@modules/auth/interfaces/services.interface';
 import { UserResponseDto } from '@modules/users/dtos/user-response.dto';
 import {
@@ -20,6 +20,7 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { COOKIE_KEYS } from '@shared/constants/keys/cookie-keys.constant';
 import type { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { type Request as TRequest, type Response } from 'express';
@@ -37,6 +38,7 @@ export class AuthController implements IAuthController {
 
   constructor(
     @Inject(AUTH_TOKENS.AUTH_SERVICE) private _authService: IAuthService,
+    private configService: ConfigService<AppConfig>,
   ) {}
 
   @UseGuards(LocalAuthGuard)
@@ -69,12 +71,9 @@ export class AuthController implements IAuthController {
     @Req() req: TRequest & { user: UserResponseDto },
     @Res() res: Response,
   ) {
-    const result: IAuthResponse = await this._authService.loginGoogleUser(
-      res,
-      req.user,
-    );
+    await this._authService.loginGoogleUser(res, req.user);
     res.redirect(
-      `http://localhost:4200/login/google-success?accessToken=${result.accessToken}`,
+      this.configService.get<string>('APP_HOME_URL', { infer: true })!,
     );
   }
 
@@ -103,11 +102,11 @@ export class AuthController implements IAuthController {
     return { message: 'protected data', user: req.user };
   }
 
-  // to check is the user login or not
+  // to get login user
   @UseGuards(AuthGuard)
-  @Get('is-login')
+  @Get('login-user')
   isLogin(@Request() req: TRequest) {
-    return { message: 'User is loggedin', user: req.user };
+    return { message: 'Login User Fetched successfully', user: req.user };
   }
 
   // to check if the admin login or not

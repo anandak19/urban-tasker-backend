@@ -23,8 +23,10 @@ export class AuthGuard implements CanActivate {
     // take the request
     const request = context.switchToHttp().getRequest<Request>();
 
+    // get access token from cookie
     const token = request.cookies?.[COOKIE_KEYS.ACCESS_KEY] as string;
 
+    // if no token found in cookie
     if (!token) {
       this._logger.verbose('Token not found in request header');
       // this will force clint to call - refresh
@@ -34,6 +36,7 @@ export class AuthGuard implements CanActivate {
     try {
       // extract paylod from token
       const payload = await this._tokenService.verifyToken(token);
+      // attach payload to request
       // here assing the payload to req.user
       request.user = payload;
     } catch {

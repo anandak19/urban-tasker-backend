@@ -127,16 +127,26 @@ export class AuthService implements IAuthService {
   async loginGoogleUser(
     res: Response,
     userData: IUserData,
-  ): Promise<IAuthResponse> {
+  ): Promise<IBaseResponse> {
     const payload: IPayload = {
       email: userData.email,
       userRole: userData.userRole,
       id: userData.id,
     };
 
-    const accessToken = await this._setTokensInCookie(res, payload);
+    const refreshToken = await this._setTokensInCookie(res, payload);
 
-    return { message: AUTH_MESSAGES.LOGIN_SUCCESS, accessToken };
+    console.log(refreshToken);
+    const savedRefreshToken = await this._refreshTokenService.saveRefreshToken(
+      refreshToken,
+      userData.id,
+    );
+
+    if (!savedRefreshToken) {
+      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
+
+    return { message: AUTH_MESSAGES.LOGIN_SUCCESS };
   }
 
   /*
