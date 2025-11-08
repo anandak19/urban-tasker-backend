@@ -1,8 +1,8 @@
 import { Cookies } from '@core/decorators/cookies.decorator';
 import { AuthGuard } from '@core/guards/auth/auth.guard';
 import { GoogleAuthGuard } from '@core/guards/google-auth/google-auth.guard';
+import { LocalAuthGuard } from '@core/guards/local-auth/local-auth.guard';
 import { AUTH_TOKENS } from '@modules/auth/auth-tokens';
-import { LoginDTo } from '@modules/auth/dtos/login.dto';
 import { type IAuthController } from '@modules/auth/interfaces/controllers.interface';
 import { type IAuthResponse } from '@modules/auth/interfaces/response.interface';
 import { type IAuthService } from '@modules/auth/interfaces/services.interface';
@@ -24,6 +24,13 @@ import { COOKIE_KEYS } from '@shared/constants/keys/cookie-keys.constant';
 import type { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { type Request as TRequest, type Response } from 'express';
 
+/*
+TODO/
+update refresh api
+
+update frontend
+*/
+
 @Controller('auth')
 export class AuthController implements IAuthController {
   private readonly _logger = new Logger(AuthController.name);
@@ -32,25 +39,21 @@ export class AuthController implements IAuthController {
     @Inject(AUTH_TOKENS.AUTH_SERVICE) private _authService: IAuthService,
   ) {}
 
+  @UseGuards(LocalAuthGuard)
   @Post('login')
   userLogin(
+    @Req() req: TRequest & { user: UserResponseDto },
     @Res({ passthrough: true }) res: Response,
-    @Body() loginDto: LoginDTo,
-  ): Promise<IAuthResponse> {
-    return this._authService.userLogin(res, loginDto);
-  }
-
-  @Post('admin/login')
-  adminLogin(
-    @Res({ passthrough: true }) res: Response,
-    @Body() loginDto: LoginDTo,
-  ): Promise<IAuthResponse> {
-    return this._authService.adminLogin(res, loginDto);
+  ): Promise<IBaseResponse> {
+    return this._authService.userLogin(res, req.user);
   }
 
   @Post('logout')
-  logout(@Res({ passthrough: true }) res: Response): IBaseResponse {
-    return this._authService.logout(res);
+  logout(
+    @Res({ passthrough: true }) res: Response,
+    @Cookies(COOKIE_KEYS.REFERESH_KEY) refreshToken: string,
+  ): Promise<IBaseResponse> {
+    return this._authService.logout(res, refreshToken);
   }
 
   /*
@@ -62,11 +65,17 @@ export class AuthController implements IAuthController {
 
   @Get('google/redirect')
   @UseGuards(GoogleAuthGuard)
-  googleRedirect(
+  async googleRedirect(
     @Req() req: TRequest & { user: UserResponseDto },
-    @Res({ passthrough: true }) res: Response,
+    @Res() res: Response,
   ) {
-    return this._authService.loginGoogleUser(res, req.user);
+    const result: IAuthResponse = await this._authService.loginGoogleUser(
+      res,
+      req.user,
+    );
+    res.redirect(
+      `http://localhost:4200/login/google-success?accessToken=${result.accessToken}`,
+    );
   }
 
   /*  
@@ -76,10 +85,11 @@ export class AuthController implements IAuthController {
   refreshToken(
     @Res({ passthrough: true }) res: Response,
     @Cookies(COOKIE_KEYS.REFERESH_KEY) refreshToken: string,
-  ): Promise<IAuthResponse> {
+  ): Promise<IBaseResponse> {
     this._logger.verbose('Refresh Token Called');
     // if there is no token in cookie
     if (!refreshToken) {
+      this._logger.warn('No refresh token in request');
       throw new ForbiddenException('Please login to continue');
     }
 

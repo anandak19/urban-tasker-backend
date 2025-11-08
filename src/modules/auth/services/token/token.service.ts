@@ -1,3 +1,4 @@
+import { AppConfig } from '@config/app.config';
 import { IPayload, ITokens } from '@modules/auth/interfaces/auth.interface';
 import { ITokenService } from '@modules/auth/interfaces/services.interface';
 import {
@@ -22,7 +23,7 @@ export class TokenService implements ITokenService {
 
   constructor(
     private _jwtService: JwtService,
-    private _configService: ConfigService,
+    private _configService: ConfigService<AppConfig>,
   ) {
     this.JWT_SECRET = this._configService.get<string>('JWT_SECRET') || 'secret';
   }
@@ -51,6 +52,10 @@ export class TokenService implements ITokenService {
     return { accessToken, refreshToken };
   }
 
+  async getNewAccessToken(payload: IPayload): Promise<string> {
+    return await this._getToken(payload, this._accessTokenTime);
+  }
+
   // returns reset password token
   async getResetToken(payload: IPayload): Promise<string> {
     return await this._getToken(payload, this._resetTokenTime);
@@ -66,6 +71,7 @@ export class TokenService implements ITokenService {
     payload: IPayload,
     expiresIn: StringValue | number = this._defaultTokenTime,
   ): Promise<string> {
+    console.log('Payload to create token', payload);
     try {
       const options: JwtSignOptions = {
         secret: this.JWT_SECRET,

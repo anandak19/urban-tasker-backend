@@ -50,6 +50,7 @@ export class UsersService implements IUserService {
     return await this._authenticate(email, password);
   }
 
+  // remove this later
   async authenticateAdmin(
     email: string,
     password: string,

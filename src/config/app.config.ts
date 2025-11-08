@@ -1,6 +1,8 @@
 import * as Joi from 'joi';
 
 export interface AppConfig {
+  NODE_ENV: string;
+
   PORT: number;
   MONGO_URI: string;
 
@@ -23,6 +25,8 @@ export interface AppConfig {
 
 // joi validation schema
 export const appConfigSchema = Joi.object<AppConfig, true>({
+  NODE_ENV: Joi.string().required(),
+
   PORT: Joi.number().default(3000),
   MONGO_URI: Joi.string().required(),
 

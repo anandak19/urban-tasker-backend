@@ -70,7 +70,7 @@ export abstract class BaseRepository<TDocument, TCreate>
     return await this._model.create(data);
   }
 
-  // UPDATE A DOC BY ID
+  // UPDATE A DOC BY ID: returns updated
   async updateById(
     id: string,
     update: UpdateQuery<InferRawDocType<TDocument>>,

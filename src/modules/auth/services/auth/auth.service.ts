@@ -13,9 +13,10 @@ import { type Request, type Response } from 'express';
 import { CookieService } from '@core/lib/cookie/cookie.service';
 import { IAuthResponse } from '@modules/auth/interfaces/response.interface';
 import { AUTH_TOKENS } from '@modules/auth/auth-tokens';
-import {
-  type IAuthService,
-  type ITokenService,
+import type {
+  IRefreshTokenService,
+  IAuthService,
+  ITokenService,
 } from '@modules/auth/interfaces/services.interface';
 import { LoginDTo } from '@modules/auth/dtos/login.dto';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
@@ -35,42 +36,67 @@ import {
   IUserData,
 } from '@modules/users/interfaces/user.interface';
 import { AuthProvider } from '@shared/constants/enums/auth-providers.enum';
+import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constants';
+
 let instance = 1;
 @Injectable({ scope: Scope.DEFAULT })
 export class AuthService implements IAuthService {
   constructor(
     @Inject(AUTH_TOKENS.TOKEN_SERVICE) private _tokenService: ITokenService,
+
     @Inject(USER_TOKENS.SERVICE) private _userService: IUserService,
+
     @Inject(LOGGER_SERVICE) private _logger: ILoggerService,
+
+    @Inject(AUTH_TOKENS.REFERESH_TOKEN_SERVICE)
+    private _refreshTokenService: IRefreshTokenService,
+
     private _cookieService: CookieService,
   ) {
     console.log('AuthService inint instance: ', instance++);
   }
 
-  async userLogin(res: Response, loginDto: LoginDTo): Promise<IAuthResponse> {
-    const userData = await this._userService.authenticateUser(
-      loginDto.email,
-      loginDto.password,
-    );
-    const payload = this._getPaylod(userData);
-    const accessToken = await this._setTokenInCookie(res, payload);
-
-    return { message: AUTH_MESSAGES.LOGIN_SUCCESS, accessToken };
+  // validate local user
+  async validateLocalUser(
+    email: string,
+    password: string,
+  ): Promise<UserResponseDto> {
+    return await this._userService.authenticateUser(email, password);
   }
 
+  // local user login
+  async userLogin(res: Response, userData: IUserData): Promise<IBaseResponse> {
+    const payload = this._getPaylod(userData);
+    const refreshToken = await this._setTokensInCookie(res, payload);
+    // save refresh token in db
+    console.log(refreshToken);
+    const savedRefreshToken = await this._refreshTokenService.saveRefreshToken(
+      refreshToken,
+      userData.id,
+    );
+
+    if (!savedRefreshToken) {
+      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
+
+    return { message: AUTH_MESSAGES.LOGIN_SUCCESS };
+  }
+
+  // remove this
   async adminLogin(res: Response, loginDto: LoginDTo): Promise<IAuthResponse> {
     const userData = await this._userService.authenticateAdmin(
       loginDto.email,
       loginDto.password,
     );
     const payload = this._getPaylod(userData);
-    const accessToken = await this._setTokenInCookie(res, payload);
+    const accessToken = await this._setTokensInCookie(res, payload);
 
     return { message: AUTH_MESSAGES.LOGIN_SUCCESS, accessToken };
   }
 
-  logout(res: Response): IBaseResponse {
+  async logout(res: Response, refreshToken: string): Promise<IBaseResponse> {
     this._cookieService.clearCookie(res);
+    await this._refreshTokenService.revokeRefreshToken(refreshToken);
     return { message: 'Logout succsfully' };
   }
 
@@ -108,39 +134,44 @@ export class AuthService implements IAuthService {
       id: userData.id,
     };
 
-    const accessToken = await this._setTokenInCookie(res, payload);
+    const accessToken = await this._setTokensInCookie(res, payload);
 
     return { message: AUTH_MESSAGES.LOGIN_SUCCESS, accessToken };
   }
 
   /*
   To refresh tokens
-  args: response, refreshToken
-  returns: message & accessToken And set new refreshToken in clint cookie
   */
   async refreshToken(
     res: Response,
     refreshToken: string,
-  ): Promise<IAuthResponse> {
+  ): Promise<IBaseResponse> {
     const payload: IPayload =
       await this._tokenService.verifyToken(refreshToken);
 
-    const tokens = await this._tokenService.getAuthTokens({
+    // to check, expiration and revoked status and userId same or not
+    await this._refreshTokenService.varifyRefreshTokenStatus(
+      refreshToken,
+      payload.id,
+    );
+
+    const newPayload: IPayload = {
       id: payload.id,
       email: payload.email,
       userRole: payload.userRole,
-    });
+    };
+
+    const accessToken = await this._tokenService.getNewAccessToken(newPayload);
 
     this._cookieService.setCookie(
       res,
-      COOKIE_KEYS.REFERESH_KEY,
-      tokens.refreshToken,
-      COOKIE_TIME.REFRESH_TIME,
+      COOKIE_KEYS.ACCESS_KEY,
+      accessToken,
+      COOKIE_TIME.ACCESS_TIME,
     );
 
     return {
       message: 'Token refreshed',
-      accessToken: tokens.accessToken,
     };
   }
 
@@ -160,12 +191,21 @@ export class AuthService implements IAuthService {
   }
 
   // Private helper methods
-  private async _setTokenInCookie(
+  private async _setTokensInCookie(
     res: Response,
     payload: IPayload,
   ): Promise<string> {
     const tokens = await this._tokenService.getAuthTokens(payload);
 
+    // access token
+    this._cookieService.setCookie(
+      res,
+      COOKIE_KEYS.ACCESS_KEY,
+      tokens.accessToken,
+      COOKIE_TIME.ACCESS_TIME,
+    );
+
+    // refresh token
     this._cookieService.setCookie(
       res,
       COOKIE_KEYS.REFERESH_KEY,
@@ -173,10 +213,10 @@ export class AuthService implements IAuthService {
       COOKIE_TIME.REFRESH_TIME,
     );
 
-    return tokens.accessToken;
+    return tokens.refreshToken;
   }
 
-  private _getPaylod(user: UserResponseDto): IPayload {
+  private _getPaylod(user: IUserData): IPayload {
     return {
       id: user.id,
       email: user.email,

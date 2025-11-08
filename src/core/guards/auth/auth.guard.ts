@@ -9,6 +9,7 @@ import {
   Scope,
   UnauthorizedException,
 } from '@nestjs/common';
+import { COOKIE_KEYS } from '@shared/constants/keys/cookie-keys.constant';
 import { type Request } from 'express';
 
 @Injectable({ scope: Scope.REQUEST })
@@ -21,8 +22,9 @@ export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     // take the request
     const request = context.switchToHttp().getRequest<Request>();
-    // extract access token from header
-    const token = this._extractTokenFromHeader(request);
+
+    const token = request.cookies?.[COOKIE_KEYS.ACCESS_KEY] as string;
+
     if (!token) {
       this._logger.verbose('Token not found in request header');
       // this will force clint to call - refresh
@@ -42,11 +44,5 @@ export class AuthGuard implements CanActivate {
     }
     // continue request to contoller :)
     return true;
-  }
-
-  // extracts token from auth header, else return undefind
-  private _extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers?.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
   }
 }

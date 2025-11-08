@@ -1,7 +1,5 @@
-import { type Response } from 'express';
-import { LoginDTo } from '../dtos/login.dto';
+import type { Request, Response } from 'express';
 import type {
-  IAuthResponse,
   IBasicUserResponse,
   ITimeLeftResponse,
 } from './response.interface';
@@ -13,10 +11,14 @@ import { ForgotPasswordDto } from '../dtos/forgot-password.dto';
 import { ResetPasswordDto } from '../dtos/reset-password.dto';
 
 export interface IAuthController {
-  userLogin(res: Response, loginDto: LoginDTo): Promise<IAuthResponse>;
-  adminLogin(res: Response, loginDto: LoginDTo): Promise<IAuthResponse>;
-  refreshToken(res: Response, refreshToken: string): Promise<IAuthResponse>;
-  logout(res: Response): IBaseResponse;
+  /**
+   * Login method after local guard
+   * @param res
+   */
+  userLogin(req: Request, res: Response): Promise<IBaseResponse>;
+
+  refreshToken(res: Response, refreshToken: string): Promise<IBaseResponse>;
+  logout(res: Response, refreshToken: string): Promise<IBaseResponse>;
 }
 
 export interface ISignupController {

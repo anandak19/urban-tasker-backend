@@ -10,6 +10,7 @@ import { IGoogleUserAuthData, IPayload, ITokens } from './auth.interface';
 import { LoginDTo } from '../dtos/login.dto';
 import { UserResponseDto } from '@modules/users/dtos/user-response.dto';
 import { IUserData } from '@modules/users/interfaces/user.interface';
+import { IToken } from './token.interface';
 
 /**
  * Methods needed for signup process
@@ -76,6 +77,12 @@ export interface ITokenService {
   getAuthTokens(payload: IPayload): Promise<ITokens> | ITokens;
 
   /**
+   * To get new accesstoken
+   * @param payload
+   */
+  getNewAccessToken(payload: IPayload): Promise<string>;
+
+  /**
    * To varify a single token
    * @param {string} token - token to check
    * @returns {IPayload} - payload data stored in token
@@ -90,18 +97,52 @@ export interface ITokenService {
   getResetToken(payload: IPayload): Promise<string>;
 }
 
+export interface IRefreshTokenService {
+  /**
+   * Save Refresh token to db
+   * @param token
+   */
+  saveRefreshToken(token: string, userId: string): Promise<IToken>;
+
+  /**
+   * Get refresh token
+   *
+   */
+  getRefreshToken(token: string): Promise<IToken | null>;
+
+  /**
+   * To set revoke as true (blacklisting token/ logout)
+   * @param token
+   */
+  revokeRefreshToken(token: string): Promise<void>;
+
+  /**
+   * To varify referesh token status (expiry, userId and revoked flag)
+   * @param token
+   * @param userId
+   */
+  varifyRefreshTokenStatus(token: string, userId: string): Promise<void>;
+}
+
 /**
  * Methods needed for authentications after signup
  * Directly used in controllers
  */
 export interface IAuthService {
   /**
+   * To validate local user
+   * @param email
+   * @param password
+   */
+  validateLocalUser(email: string, password: string): Promise<UserResponseDto>;
+
+  /**
    * Method for login of user & tasker
    * @param {Response} res - response object
-   * @param {LoginDto} loginDto - email and password
+   * @param {IUserData} userData - email and password
    * @returns {Promise<IAuthResponse>} - message and access token
    */
-  userLogin(res: Response, loginDto: LoginDTo): Promise<IAuthResponse>;
+  userLogin(res: Response, userData: IUserData): Promise<IBaseResponse>;
 
   /**
    * Method for login of admin
@@ -117,7 +158,7 @@ export interface IAuthService {
    * @param {string} refreshToken - refresh token
    * @returns {Promise<IAuthResponse>} - message and access token (updated)
    */
-  refreshToken(res: Response, refreshToken: string): Promise<IAuthResponse>;
+  refreshToken(res: Response, refreshToken: string): Promise<IBaseResponse>;
 
   /**
    * Method that gets / create google user
@@ -130,7 +171,7 @@ export interface IAuthService {
 
   loginGoogleUser(res: Response, userData: IUserData): Promise<IAuthResponse>;
 
-  logout(res: Response): IBaseResponse;
+  logout(res: Response, refreshToken: string): Promise<IBaseResponse>;
 
   isAdmin(req: Request): IBaseResponse;
 }

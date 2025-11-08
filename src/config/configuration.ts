@@ -2,6 +2,8 @@ import { appConfigSchema } from './app.config';
 
 export default () => {
   const config = {
+    NODE_ENV: process.env.NODE_ENV,
+
     PORT: Number(process.env.PORT),
     MONGO_URI: process.env.MONGO_URI,
 
