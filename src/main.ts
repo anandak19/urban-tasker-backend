@@ -10,8 +10,11 @@ import { ResponseInterceptor } from '@core/interceptors/response.interceptor';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
-    origin: 'http://localhost:4200', // Angular app URL
-    credentials: true, // allow cookies/auth headers
+    origin: [
+      'https://1tks06cq-4200.inc1.devtunnels.ms',
+      'http://localhost:4200',
+    ], // Angular app URL
+    credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
   });
   app.use(json());

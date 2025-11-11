@@ -3,17 +3,17 @@ import { Cookies } from '@core/decorators/cookies.decorator';
 import { AuthGuard } from '@core/guards/auth/auth.guard';
 import { GoogleAuthGuard } from '@core/guards/google-auth/google-auth.guard';
 import { LocalAuthGuard } from '@core/guards/local-auth/local-auth.guard';
+import type { ILoggerService } from '@core/lib/logger/logger.interface';
+import { LOGGER_SERVICE } from '@core/lib/logger/logger.service';
 import { AUTH_TOKENS } from '@modules/auth/auth-tokens';
 import { type IAuthController } from '@modules/auth/interfaces/controllers.interface';
 import { type IAuthService } from '@modules/auth/interfaces/services.interface';
 import { UserResponseDto } from '@modules/users/dtos/user-response.dto';
 import {
-  Body,
   Controller,
   ForbiddenException,
   Get,
   Inject,
-  Logger,
   Post,
   Req,
   Request,
@@ -34,10 +34,9 @@ update frontend
 
 @Controller('auth')
 export class AuthController implements IAuthController {
-  private readonly _logger = new Logger(AuthController.name);
-
   constructor(
     @Inject(AUTH_TOKENS.AUTH_SERVICE) private _authService: IAuthService,
+    @Inject(LOGGER_SERVICE) private _logger: ILoggerService,
     private configService: ConfigService<AppConfig>,
   ) {}
 

@@ -20,20 +20,6 @@ export class OtpService {
     await this._cacheService.set(`otp:${uuid}`, otp, ttl);
   }
 
-  // generate otp html
-  generateOtpHtml(otp: string): string {
-    return `
-      <div style="font-family:Arial,sans-serif;">
-        <h3>Email Verification</h3>
-         <p>Your one-time password (OTP) is:</p>
-         <div style="background:#f4f4f4;padding:10px 20px;width:'fit-content';border-radius:6px;font-size:18px;">
-          <b>${otp}</b>
-         </div>
-         <p>This OTP will expire in 120 seconds.</p>
-      </div>
-    `;
-  }
-
   async getOtpTimeLeft(uuid: string) {
     return await this._cacheService.getReminingTime(`otp:${uuid}`);
   }

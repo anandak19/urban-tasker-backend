@@ -1,13 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Profile, Strategy } from 'passport-google-oauth20';
-import { UuidService } from '@core/lib/uuid/uuid.service';
 import { ConfigService } from '@nestjs/config';
 import { AUTH_TOKENS } from '../auth-tokens';
 import { type IAuthService } from '../interfaces/services.interface';
 import { IGoogleUserAuthData } from '../interfaces/auth.interface';
 import { AppConfig } from '@config/app.config';
-// import { IGoogleUserAuthData } from '../interfaces/auth.interface';
 
 // ERROR: I can't inject auth service from the di container
 // scope is having an effect on this too
@@ -16,11 +14,9 @@ import { AppConfig } from '@config/app.config';
 // fix this
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
-  private uuid: UuidService;
-
   constructor(
-    private readonly configService: ConfigService<AppConfig>,
     @Inject(AUTH_TOKENS.AUTH_SERVICE) private _authService: IAuthService,
+    private readonly configService: ConfigService<AppConfig>,
   ) {
     console.log('Inside GoogleStrategy constructor');
     super({
