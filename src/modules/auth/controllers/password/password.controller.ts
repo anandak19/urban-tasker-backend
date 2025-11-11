@@ -11,9 +11,10 @@ import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 @Controller('password')
 export class PasswordController implements IPasswordController {
   constructor(
-    @Inject(AUTH_TOKENS.PASSWORD_SERVICE)
     @Inject(LOGGER_SERVICE)
     private _logger: ILoggerService,
+
+    @Inject(AUTH_TOKENS.PASSWORD_SERVICE)
     private _passwordService: IPasswordService,
   ) {}
   // varify email and send reset link
