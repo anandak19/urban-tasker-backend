@@ -8,7 +8,7 @@ export class Category {
   name: string;
 
   @Prop({ required: true })
-  imageUrl: string;
+  image: string;
 
   @Prop({ required: false, default: true })
   isActive: boolean;

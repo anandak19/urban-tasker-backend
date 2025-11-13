@@ -12,7 +12,7 @@ export class SubCategory {
   description: string;
 
   @Prop({ required: true })
-  imageUrl: string;
+  image: string;
 
   @Prop({ required: true, ref: Category.name, type: Types.ObjectId })
   categoryId: Types.ObjectId;

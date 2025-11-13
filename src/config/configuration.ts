@@ -24,6 +24,11 @@ export default () => {
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
     GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL,
+
+    AWS_ACCESS_KEY: process.env.AWS_ACCESS_KEY,
+    AWS_SECRET_KEY: process.env.AWS_SECRET_KEY,
+    AWS_REGION: process.env.AWS_REGION,
+    AWS_BUCKET_NAME: process.env.AWS_BUCKET_NAME,
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -33,6 +38,7 @@ export default () => {
   });
 
   if (error) {
+    console.log(error);
     throw new Error(`Config validation error: ${error.message}`);
   }
 

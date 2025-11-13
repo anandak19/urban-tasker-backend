@@ -5,4 +5,6 @@ import { ICreateCategory } from './category.interface';
 export interface ICategoryRepository
   extends IBaseRepository<CategoryDocument, ICreateCategory> {
   deleteCategory(id: string);
+
+  findByName(name: string): Promise<CategoryDocument | null>;
 }

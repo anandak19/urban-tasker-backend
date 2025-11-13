@@ -4,6 +4,11 @@ import { Category, CategorySchema } from './schemas/categories.schema';
 import { SubCategory, SubCategorySchema } from './schemas/subcategories.schema';
 import { CategoryRepository } from './repositories/category-repository';
 import { CATEGORY_TOKEN } from './categories.token';
+import { MulterModule } from '@nestjs/platform-express';
+import { CategoryAdminController } from './controllers/admin/category-admin.controller';
+import { LoggerModule } from '@core/lib/logger/logger.module';
+import { CategoryService } from './services/category/category.service';
+import { S3Module } from '@core/lib/s3/s3.module';
 
 @Module({
   imports: [
@@ -11,12 +16,21 @@ import { CATEGORY_TOKEN } from './categories.token';
       { name: Category.name, schema: CategorySchema },
       { name: SubCategory.name, schema: SubCategorySchema },
     ]),
+    LoggerModule,
+    S3Module,
+    // register multer module
+    MulterModule.register(),
   ],
-  controllers: [],
+  controllers: [CategoryAdminController],
+
   providers: [
     {
       provide: CATEGORY_TOKEN.CATEGORY_REPOSITORY,
       useClass: CategoryRepository,
+    },
+    {
+      provide: CATEGORY_TOKEN.CATEGORY_SERVICE,
+      useClass: CategoryService,
     },
   ],
   exports: [],
