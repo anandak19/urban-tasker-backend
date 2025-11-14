@@ -9,7 +9,10 @@ import type {
   ICategory,
   ICreateCategory,
 } from '@modules/categories/interfaces/category.interface';
-import { ICategoryResponse } from '@modules/categories/interfaces/responses.interface';
+import {
+  ICategoryResponse,
+  IFindAllCategoryResponse,
+} from '@modules/categories/interfaces/responses.interface';
 import { CategoryMapper } from '@modules/categories/mappers/category.mapper';
 import {
   ConflictException,
@@ -22,6 +25,8 @@ import {
   CATEGORY_SUCCESS_MESSAGES,
 } from '@shared/constants/messages/category-messages.constants';
 import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constants';
+import { GetDocsDto } from '@shared/dtos/get-docs.dto';
+import { IPaginationQuery } from '@shared/interfaces/query.interface';
 import { type Express } from 'express';
 
 @Injectable()
@@ -87,5 +92,39 @@ export class CategoryService implements ICategoryService {
       console.log(error);
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }
+  }
+
+  async findAllCategories(
+    categoryQuery?: GetDocsDto,
+  ): Promise<IFindAllCategoryResponse> {
+    const pagination: IPaginationQuery | undefined = categoryQuery
+      ? {
+          page: categoryQuery.page,
+          limit: categoryQuery.limit,
+        }
+      : undefined;
+
+    const result = await this._categoryRepo.findAll(pagination);
+    if (!result || !result.documents || !result.meta) {
+      throw new InternalServerErrorException(
+        CATEGORY_ERROR_MESSAGES.FIND_ALL_FAILD,
+      );
+    }
+
+    // pupulate image url and map response
+    const categories = await Promise.all(
+      result.documents.map(async (c) => {
+        const category = CategoryMapper.toResponse(c);
+        if (category.image) {
+          category.image = await this._s3.getImageUrl(c.image);
+        }
+        return category;
+      }),
+    );
+
+    return {
+      documents: categories,
+      meta: result.meta,
+    };
   }
 }

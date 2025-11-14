@@ -1,6 +1,6 @@
-import { PaginationDto } from '@shared/dtos/pagination.dto';
 import { UserResponseDto } from '../dtos/user-response.dto';
 import { ICreateUser } from './user.interface';
+import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 
 export interface IUserService {
   findByEmail(email: string): Promise<UserResponseDto | null>;
@@ -21,5 +21,5 @@ export interface IUserService {
 }
 
 export interface IAdminUserService {
-  findAllUsers(paginationDto: PaginationDto);
+  findAllUsers(userQuery: GetDocsDto);
 }

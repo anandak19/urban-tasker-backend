@@ -43,7 +43,7 @@ export abstract class BaseRepository<TDocument, TCreate>
     ]);
 
     return {
-      data,
+      documents: data,
       meta: {
         total,
         page,

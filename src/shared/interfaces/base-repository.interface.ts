@@ -6,7 +6,7 @@ export interface IBaseRepository<TDocument, TCreate> {
   /**
    * To find all documents
    * @param {IPaginationQuery} paginationDto? - contains: page, limit
-   * @param {FilterQuery<InferRawDocType<TDocument>>} paginationDto? actual mongoose filter query and its TDoc object
+   * @param {FilterQuery<InferRawDocType<TDocument>>} filter? actual mongoose filter query and its TDoc object
    * @returns {Promise<PaginatedResult<TDocument>>} object that contains array of docs and metaData
    */
   findAll(

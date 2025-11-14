@@ -11,10 +11,12 @@ import {
   Get,
   Inject,
   Post,
+  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 import { type Express } from 'express';
 
 @Controller('admin/category')
@@ -45,5 +47,8 @@ export class CategoryAdminController {
   }
 
   @Get()
-  getCategories() {}
+  getCategories(@Query() categoryQuery: GetDocsDto) {
+    console.log('The query is', categoryQuery);
+    return this._categoryService.findAllCategories(categoryQuery);
+  }
 }
