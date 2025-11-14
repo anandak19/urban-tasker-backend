@@ -1,6 +1,7 @@
 import type { ILoggerService } from '@core/lib/logger/logger.interface';
 import { LOGGER_SERVICE } from '@core/lib/logger/logger.service';
 import { ImageValidationPipe } from '@core/pipes/image-validation.pipe';
+import { ValidateIdPipe } from '@core/pipes/validate-id/validate-id.pipe';
 import { CATEGORY_TOKEN } from '@modules/categories/categories.token';
 import { CreateCategoryDto } from '@modules/categories/dtos/create-category.dto';
 import type { ICategoryService } from '@modules/categories/interfaces/categories-services.interface';
@@ -10,6 +11,7 @@ import {
   Controller,
   Get,
   Inject,
+  Param,
   Post,
   Query,
   UploadedFile,
@@ -50,5 +52,12 @@ export class CategoryAdminController {
   getCategories(@Query() categoryQuery: GetDocsDto) {
     console.log('The query is', categoryQuery);
     return this._categoryService.findAllCategories(categoryQuery);
+  }
+
+  @Get(':id')
+  findById(@Param('id', ValidateIdPipe) id: string) {
+    this._logger.verbose('Id of category is');
+    this._logger.log(id);
+    return this._categoryService.findById(id);
   }
 }

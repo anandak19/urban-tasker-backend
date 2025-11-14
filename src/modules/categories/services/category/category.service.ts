@@ -19,6 +19,7 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import {
   CATEGORY_ERROR_MESSAGES,
@@ -115,10 +116,7 @@ export class CategoryService implements ICategoryService {
     const categories = await Promise.all(
       result.documents.map(async (c) => {
         const category = CategoryMapper.toResponse(c);
-        if (category.image) {
-          category.image = await this._s3.getImageUrl(c.image);
-        }
-        return category;
+        return await this.decorateWithImageUrl(category);
       }),
     );
 
@@ -126,5 +124,36 @@ export class CategoryService implements ICategoryService {
       documents: categories,
       meta: result.meta,
     };
+  }
+
+  async findById(id: string): Promise<ICategory | null> {
+    try {
+      const category = await this._categoryRepo.findById(id);
+      if (!category) {
+        throw new NotFoundException(CATEGORY_ERROR_MESSAGES.NOT_FOUND);
+      }
+
+      const categoryObject = CategoryMapper.toResponse(category);
+
+      return await this.decorateWithImageUrl(categoryObject);
+    } catch (error) {
+      this._logger.error('Error in finding category by id');
+      this._logger.log(error as object);
+
+      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
+  }
+
+  /**
+   * Takes raw category object with image key
+   * returns category object with signed image URL
+   * @param item
+   * @returns {Promise<ICategory>} - object with signed image url
+   */
+  private async decorateWithImageUrl(item: ICategory): Promise<ICategory> {
+    if (item.image) {
+      item.image = await this._s3.getImageUrl(item.image);
+    }
+    return item;
   }
 }

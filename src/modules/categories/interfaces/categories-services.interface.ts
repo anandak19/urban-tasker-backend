@@ -27,4 +27,6 @@ export interface ICategoryService {
   findAllCategories(
     categoryQuery?: GetDocsDto,
   ): Promise<IFindAllCategoryResponse>;
+
+  findById(id: string): Promise<ICategory | null>;
 }
