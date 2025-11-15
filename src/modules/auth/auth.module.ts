@@ -50,6 +50,7 @@ console.log('Loaded AuthModule');
   providers: [
     { provide: AUTH_TOKENS.SIGNUP_SERVICE, useClass: SignupService },
     { provide: AUTH_TOKENS.AUTH_SERVICE, useClass: AuthService },
+    AuthService, // Also provide the class directly for direct injection
     { provide: AUTH_TOKENS.TOKEN_SERVICE, useClass: TokenService },
     { provide: AUTH_TOKENS.PASSWORD_SERVICE, useClass: PasswordService },
     {
@@ -63,7 +64,7 @@ console.log('Loaded AuthModule');
     GoogleStrategy,
     LocalStrategy,
   ],
-  exports: [AUTH_TOKENS.AUTH_SERVICE],
+  exports: [AUTH_TOKENS.AUTH_SERVICE, AuthService], // Also export the class directly
 })
 export class AuthModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
