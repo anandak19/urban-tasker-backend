@@ -41,6 +41,12 @@ export class CategoryService implements ICategoryService {
     @Inject(S3_SERVICE) private _s3: IS3Service,
   ) {}
 
+  /**
+   * To create new category
+   * @param file
+   * @param categoryData
+   * @returns
+   */
   async create(
     file: Express.Multer.File,
     categoryData: ICreateCategory,
@@ -82,6 +88,11 @@ export class CategoryService implements ICategoryService {
     }
   }
 
+  /**
+   * To get a category by its name
+   * @param categoryName
+   * @returns
+   */
   async getCategoryByName(categoryName: string): Promise<ICategory | null> {
     try {
       const category = await this._categoryRepo.findByName(categoryName);
@@ -95,6 +106,11 @@ export class CategoryService implements ICategoryService {
     }
   }
 
+  /**
+   * To find all categories (excluding deleted)
+   * @param categoryQuery
+   * @returns
+   */
   async findAllCategories(
     categoryQuery?: GetDocsDto,
   ): Promise<IFindAllCategoryResponse> {
@@ -144,6 +160,32 @@ export class CategoryService implements ICategoryService {
     }
   }
 
+  async changeIsActive(
+    id: string,
+    isActive: boolean,
+  ): Promise<ICategory | null> {
+    try {
+      const updatedCategory = await this._categoryRepo.changeIsActive(
+        id,
+        isActive,
+      );
+
+      if (!updatedCategory) {
+        throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+      }
+      this._logger.log(updatedCategory as object);
+
+      const categoryObject = CategoryMapper.toResponse(updatedCategory);
+
+      return await this.decorateWithImageUrl(categoryObject);
+    } catch (error) {
+      this._logger.error('Faild to update is active status');
+      this._logger.log(error as object);
+      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
+  }
+
+  // PRIVATE METHODS
   /**
    * Takes raw category object with image key
    * returns category object with signed image URL

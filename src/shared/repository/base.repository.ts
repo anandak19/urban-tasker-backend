@@ -73,10 +73,10 @@ export abstract class BaseRepository<TDocument, TCreate>
   // UPDATE A DOC BY ID: returns updated
   async updateById(
     id: string,
-    update: UpdateQuery<InferRawDocType<TDocument>>,
+    update: UpdateQuery<TDocument>,
   ): Promise<TDocument | null> {
     return await this._model
-      .findByIdAndUpdate(id, { update }, { new: true })
+      .findByIdAndUpdate(id, update, { new: true })
       .exec();
   }
 

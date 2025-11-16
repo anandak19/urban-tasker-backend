@@ -20,6 +20,7 @@ export const CATEGORY_ERROR_MESSAGES = {
 export const CATEGORY_SUCCESS_MESSAGES = {
   CREATE_SUCCESS: 'Category created succssfully',
   UPDATE_SUCCESS: 'Updated category successfully',
+  CHANGE_IS_ACTIVE_SUCCESS: 'Updated active status successfully',
 
   FIND_ALL_SUCCESS: 'Categories fetched successfully',
 };

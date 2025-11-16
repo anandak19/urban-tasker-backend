@@ -14,9 +14,13 @@ export class CookieService {
     value: string,
     maxAgeSeconds: number = 3600,
   ) {
+    const isProd = this.configService.get('NODE_ENV') === 'production';
+
     res.cookie(key, value, {
       httpOnly: true,
-      secure: this.configService.get('NODE_ENV') === 'production',
+      secure: isProd,
+      sameSite: 'none',
+      path: '/',
       maxAge: maxAgeSeconds * 1000,
     });
   }
@@ -27,11 +31,15 @@ export class CookieService {
     res.clearCookie(COOKIE_KEYS.REFERESH_KEY, {
       httpOnly: true,
       secure: isProd,
+      path: '/',
+      sameSite: 'none',
     });
 
     res.clearCookie(COOKIE_KEYS.ACCESS_KEY, {
       httpOnly: true,
       secure: isProd,
+      path: '/',
+      sameSite: 'none',
     });
   }
 }

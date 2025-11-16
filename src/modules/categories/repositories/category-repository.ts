@@ -15,6 +15,13 @@ export class CategoryRepository
     super(_categoryModel);
   }
 
+  async changeIsActive(
+    id: string,
+    isActive: boolean,
+  ): Promise<CategoryDocument | null> {
+    return await this.updateById(id, { $set: { isActive } });
+  }
+
   async findByName(name: string): Promise<CategoryDocument | null> {
     return await this.findOne({ name });
   }

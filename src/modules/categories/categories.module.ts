@@ -9,6 +9,7 @@ import { CategoryAdminController } from './controllers/admin/category-admin.cont
 import { LoggerModule } from '@core/lib/logger/logger.module';
 import { CategoryService } from './services/category/category.service';
 import { S3Module } from '@core/lib/s3/s3.module';
+import { CategoryExistsGuard } from './guards/category-exists/category-exists.guard';
 
 @Module({
   imports: [
@@ -32,6 +33,8 @@ import { S3Module } from '@core/lib/s3/s3.module';
       provide: CATEGORY_TOKEN.CATEGORY_SERVICE,
       useClass: CategoryService,
     },
+
+    CategoryExistsGuard,
   ],
   exports: [],
 })

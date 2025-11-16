@@ -24,9 +24,20 @@ export interface ICategoryService {
    */
   getCategoryByName(categoryName: string): Promise<ICategory | null>;
 
+  /**
+   * Find all categories (Excluding deleted ones)
+   * Paginated and includes optional filters
+   * @param categoryQuery
+   */
   findAllCategories(
     categoryQuery?: GetDocsDto,
   ): Promise<IFindAllCategoryResponse>;
 
+  /**
+   * Find a category by id
+   * @param id
+   */
   findById(id: string): Promise<ICategory | null>;
+
+  changeIsActive(id: string, isActive: boolean): Promise<ICategory | null>;
 }

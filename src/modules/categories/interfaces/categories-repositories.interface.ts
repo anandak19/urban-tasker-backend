@@ -7,4 +7,9 @@ export interface ICategoryRepository
   deleteCategory(id: string);
 
   findByName(name: string): Promise<CategoryDocument | null>;
+
+  changeIsActive(
+    id: string,
+    isActive: boolean,
+  ): Promise<CategoryDocument | null>;
 }

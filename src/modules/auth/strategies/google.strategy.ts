@@ -18,7 +18,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     @Inject(AUTH_TOKENS.AUTH_SERVICE) private _authService: IAuthService,
     private readonly configService: ConfigService<AppConfig>,
   ) {
-    console.log('Inside GoogleStrategy constructor');
     super({
       clientID: configService.get('GOOGLE_CLIENT_ID', { infer: true })!,
       clientSecret: configService.get('GOOGLE_CLIENT_SECRET', {
@@ -34,8 +33,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     _refreshToken: string,
     profile: Profile,
   ) {
-    console.log('Profile', profile);
-
     // check if the required values are there
     if (
       !profile._json.email ||
@@ -54,7 +51,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
 
     // validate user / create user
     const user = await this._authService.validateGoogleAuthUser(userDetails);
-    console.log('Google user in validate', user);
     return user || null;
   }
 }
