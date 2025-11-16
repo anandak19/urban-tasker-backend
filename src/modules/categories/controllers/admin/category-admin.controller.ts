@@ -11,6 +11,7 @@ import { ICreateCategory } from '@modules/categories/interfaces/category.interfa
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Inject,
   Param,
@@ -79,5 +80,11 @@ export class CategoryAdminController {
     this._logger.log(`Id to update status: ${id}`);
     // TODO: Call changeIsActive method here
     return this._categoryService.changeIsActive(id, isActiveDto.isActive);
+  }
+
+  @Delete(':id')
+  @UseGuards(CategoryExistsGuard)
+  delete(@Param('id') id: string) {
+    return this._categoryService.deleteById(id);
   }
 }

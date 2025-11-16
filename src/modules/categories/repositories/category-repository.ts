@@ -25,9 +25,4 @@ export class CategoryRepository
   async findByName(name: string): Promise<CategoryDocument | null> {
     return await this.findOne({ name });
   }
-
-  deleteCategory(id: string) {
-    console.log('Category to delete', id);
-    throw new Error('Method not implemented.');
-  }
 }

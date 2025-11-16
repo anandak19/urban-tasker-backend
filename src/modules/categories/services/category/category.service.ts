@@ -27,6 +27,7 @@ import {
 } from '@shared/constants/messages/category-messages.constants';
 import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constants';
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
+import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { IPaginationQuery } from '@shared/interfaces/query.interface';
 import { type Express } from 'express';
 
@@ -142,6 +143,11 @@ export class CategoryService implements ICategoryService {
     };
   }
 
+  /**
+   * Finds category by its id
+   * @param id
+   * @returns {Promise<ICategory | null>}
+   */
   async findById(id: string): Promise<ICategory | null> {
     try {
       const category = await this._categoryRepo.findById(id);
@@ -160,6 +166,11 @@ export class CategoryService implements ICategoryService {
     }
   }
 
+  /**
+   * Change is active status of category
+   * @param id
+   * @param isActive
+   */
   async changeIsActive(
     id: string,
     isActive: boolean,
@@ -180,6 +191,27 @@ export class CategoryService implements ICategoryService {
       return await this.decorateWithImageUrl(categoryObject);
     } catch (error) {
       this._logger.error('Faild to update is active status');
+      this._logger.log(error as object);
+      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
+  }
+
+  /**
+   * Delete a category by id
+   * @param id
+   * @returns - success message
+   */
+  async deleteById(id: string): Promise<IBaseResponse> {
+    try {
+      const deleted = await this._categoryRepo.deleteOneById(id);
+
+      if (!deleted) {
+        throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+      }
+
+      return { message: CATEGORY_SUCCESS_MESSAGES.DELETE_ONE_SUCCESS };
+    } catch (error) {
+      this._logger.error('Faild to delete one category');
       this._logger.log(error as object);
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }
