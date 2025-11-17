@@ -3,6 +3,10 @@ import { CategoryDocument } from '../schemas/categories.schema';
 import { ICreateCategory } from './category.interface';
 import { SubCategoryDocument } from '../schemas/subcategories.schema';
 import { ICreateSubCategory } from './subcategory.interface';
+import {
+  IFindAllQuery,
+  PaginatedResult,
+} from '@shared/interfaces/query.interface';
 
 export interface ICategoryRepository
   extends IBaseRepository<CategoryDocument, ICreateCategory> {
@@ -22,4 +26,8 @@ export interface ISubCategoryRepository
     id: string,
     isActive: boolean,
   ): Promise<SubCategoryDocument | null>;
+
+  findAllSubCategories(
+    pagination?: IFindAllQuery,
+  ): Promise<PaginatedResult<SubCategoryDocument>>;
 }

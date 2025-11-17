@@ -8,7 +8,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
-import { IPaginationQuery } from '@shared/interfaces/query.interface';
+import { IFindAllQuery } from '@shared/interfaces/query.interface';
 
 @Injectable()
 export class AdminUserService implements IAdminUserService {
@@ -17,7 +17,7 @@ export class AdminUserService implements IAdminUserService {
   ) {}
 
   async findAllUsers(userQuery: GetDocsDto) {
-    const pagination: IPaginationQuery = {
+    const pagination: IFindAllQuery = {
       page: userQuery?.page,
       limit: userQuery?.limit,
     };

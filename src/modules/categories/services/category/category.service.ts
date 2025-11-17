@@ -28,7 +28,7 @@ import {
 import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constants';
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
-import { IPaginationQuery } from '@shared/interfaces/query.interface';
+import { IFindAllOptions } from '@shared/interfaces/repository.interface';
 import { type Express } from 'express';
 
 @Injectable()
@@ -115,14 +115,12 @@ export class CategoryService implements ICategoryService {
   async findAllCategories(
     categoryQuery?: GetDocsDto,
   ): Promise<IFindAllCategoryResponse> {
-    const pagination: IPaginationQuery | undefined = categoryQuery
-      ? {
-          page: categoryQuery.page,
-          limit: categoryQuery.limit,
-        }
-      : undefined;
+    const options: IFindAllOptions = {
+      page: categoryQuery?.page || 1,
+      limit: categoryQuery?.limit,
+    };
 
-    const result = await this._categoryRepo.findAll(pagination);
+    const result = await this._categoryRepo.findAll(options); // fix it
     if (!result || !result.documents || !result.meta) {
       throw new InternalServerErrorException(
         CATEGORY_ERROR_MESSAGES.FIND_ALL_FAILD,

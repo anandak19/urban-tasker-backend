@@ -8,7 +8,8 @@ export interface PaginatedResult<T> {
   };
 }
 
-export interface IPaginationQuery {
+export interface IFindAllQuery {
   page?: number;
   limit?: number;
+  search?: string;
 }

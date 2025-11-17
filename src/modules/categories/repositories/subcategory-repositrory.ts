@@ -7,6 +7,11 @@ import { ICreateSubCategory } from '../interfaces/subcategory.interface';
 import { ISubCategoryRepository } from '../interfaces/categories-repositories.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import {
+  IFindAllQuery,
+  PaginatedResult,
+} from '@shared/interfaces/query.interface';
+import { IFindAllOptions } from '@shared/interfaces/repository.interface';
 
 export class SubCategoryRepository
   extends BaseRepository<SubCategoryDocument, ICreateSubCategory>
@@ -17,6 +22,17 @@ export class SubCategoryRepository
     private _subCategoryModel: Model<SubCategoryDocument>,
   ) {
     super(_subCategoryModel);
+  }
+
+  async findAllSubCategories(
+    pagination?: IFindAllQuery,
+  ): Promise<PaginatedResult<SubCategoryDocument>> {
+    const options: IFindAllOptions = {
+      page: pagination?.page,
+      limit: pagination?.limit,
+    };
+
+    return await this.findAll(options);
   }
 
   async findByName(name: string): Promise<SubCategoryDocument | null> {

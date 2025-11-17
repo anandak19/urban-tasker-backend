@@ -30,7 +30,7 @@ import {
 import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constants';
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
-import { IPaginationQuery } from '@shared/interfaces/query.interface';
+import { IFindAllQuery } from '@shared/interfaces/query.interface';
 import { Types } from 'mongoose';
 
 @Injectable()
@@ -162,14 +162,14 @@ export class SubcategoryService implements ISubCategoryService {
   async findAllCategories(
     categoryQuery?: GetDocsDto,
   ): Promise<IFindAllSubCategoryResponse> {
-    const pagination: IPaginationQuery | undefined = categoryQuery
+    const pagination: IFindAllQuery | undefined = categoryQuery
       ? {
           page: categoryQuery.page,
           limit: categoryQuery.limit,
         }
       : undefined;
 
-    const result = await this._subCategoryRepo.findAll(pagination);
+    const result = await this._subCategoryRepo.findAllSubCategories(pagination);
     if (!result || !result.documents || !result.meta) {
       throw new InternalServerErrorException(
         CATEGORY_ERROR_MESSAGES.FIND_ALL_FAILD,

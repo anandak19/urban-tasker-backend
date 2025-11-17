@@ -1,10 +1,17 @@
 import { Logger } from '@nestjs/common';
 import { IBaseRepository } from '@shared/interfaces/base-repository.interface';
+import { PaginatedResult } from '@shared/interfaces/query.interface';
 import {
-  IPaginationQuery,
-  PaginatedResult,
-} from '@shared/interfaces/query.interface';
-import { FilterQuery, InferRawDocType, Model, UpdateQuery } from 'mongoose';
+  IFindAllAggregationResult,
+  IFindAllOptions,
+} from '@shared/interfaces/repository.interface';
+import {
+  FilterQuery,
+  InferRawDocType,
+  Model,
+  PipelineStage,
+  UpdateQuery,
+} from 'mongoose';
 
 export abstract class BaseRepository<TDocument, TCreate>
   implements IBaseRepository<TDocument, TCreate>
@@ -16,15 +23,16 @@ export abstract class BaseRepository<TDocument, TCreate>
 
   // GET ALL DOCS : paginated, isDeleted: false
   async findAll(
-    paginationDto: IPaginationQuery = {
-      page: this._defaultPage,
-      limit: this._defaultLimit,
-    },
+    options: IFindAllOptions = {},
     filter: FilterQuery<InferRawDocType<TDocument>> = {},
   ): Promise<PaginatedResult<TDocument>> {
-    // extract page and limit --has default
-    const { page = this._defaultPage, limit = this._defaultLimit } =
-      paginationDto;
+    // extract page and limit and sort object
+    const {
+      page = this._defaultPage,
+      limit = this._defaultLimit,
+      sort = {},
+      select = {},
+    } = options;
 
     // calculate skip
     const skip = (page - 1) * limit;
@@ -36,12 +44,35 @@ export abstract class BaseRepository<TDocument, TCreate>
     };
     this._logger.log(finalFilter);
 
-    // get data and total document
-    const [data, total] = await Promise.all([
-      this._model.find(finalFilter).skip(skip).limit(limit).exec(),
-      this._model.countDocuments(finalFilter).exec(),
-    ]);
+    // Pipeline creation
+    const pipeline: PipelineStage[] = [
+      { $match: finalFilter },
+      { $sort: Object.keys(sort).length ? sort : { createdAt: -1 } },
+    ];
 
+    if (Object.keys(select).length > 0) {
+      pipeline.push({ $project: select });
+    }
+
+    pipeline.push({
+      $facet: {
+        data: [{ $skip: skip }, { $limit: limit }],
+        total: [{ $count: 'count' }],
+      },
+    });
+
+    const result = await this._model
+      .aggregate<IFindAllAggregationResult<TDocument>>(pipeline)
+      .exec();
+
+    const data = result[0]?.data || [];
+    const total = result[0]?.total[0]?.count || 0;
+
+    /**
+     * Returns
+     * data: array of result docs
+     * meta: total, page, limit and pages(total pages)
+     */
     return {
       documents: data,
       meta: {
