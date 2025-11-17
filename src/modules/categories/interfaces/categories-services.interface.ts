@@ -3,9 +3,11 @@ import type { ICategory, ICreateCategory } from './category.interface';
 import type {
   ICategoryResponse,
   IFindAllCategoryResponse,
+  ISubCategoryResponse,
 } from './responses.interface';
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
+import { ICreateSubCategory } from './subcategory.interface';
 
 export interface ICategoryService {
   /**
@@ -53,4 +55,20 @@ export interface ICategoryService {
    * @returns - success message
    */
   deleteById(id: string): Promise<IBaseResponse>;
+}
+
+/**
+ * SUB-CATEGORIES
+ */
+export interface ISubCategoryService {
+  // add category
+  create(
+    file: Express.Multer.File,
+    categoryData: ICreateSubCategory,
+  ): Promise<ISubCategoryResponse>;
+
+  // chagne status
+  // delete cateogry
+  // get category by id
+  // get all subcategories
 }

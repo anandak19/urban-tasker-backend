@@ -17,9 +17,10 @@ import { LOGGER_SERVICE } from '../logger/logger.service';
 import { type ILoggerService } from '../logger/logger.interface';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constants';
+import { IS3Service } from './s3.interface';
 
 @Injectable()
-export class S3Service {
+export class S3Service implements IS3Service {
   private urlExpireTime = 3600; // 1h
   private s3: S3Client;
   private bucket: string;
@@ -63,6 +64,10 @@ export class S3Service {
 
   async uploadCategoryImage(file: Express.Multer.File): Promise<string> {
     return await this._uploadFile(file, 'categories');
+  }
+
+  async uploadSubCategoryImage(file: Express.Multer.File): Promise<string> {
+    return await this._uploadFile(file, 'subcategories');
   }
 
   private async _uploadFile(

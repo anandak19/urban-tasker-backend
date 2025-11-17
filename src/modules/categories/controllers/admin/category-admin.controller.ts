@@ -40,14 +40,14 @@ export class CategoryAdminController {
   createCategory(
     @UploadedFile(ImageValidationPipe)
     image: Express.Multer.File,
-    @Body() body: CreateCategoryDto,
+    @Body() dto: CreateCategoryDto,
   ) {
     this._logger.verbose('[Category iamge] file uploaded');
     this._logger.log(image);
-    this._logger.log(body);
+    this._logger.log(dto);
 
     const createCategory: ICreateCategory = {
-      name: body.name,
+      name: dto.name,
     };
 
     return this._categoryService.create(image, createCategory);

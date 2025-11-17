@@ -25,3 +25,23 @@ export const CATEGORY_SUCCESS_MESSAGES = {
 
   FIND_ALL_SUCCESS: 'Categories fetched successfully',
 };
+
+// sub category
+
+export const SUBCATEGORY_ERROR_MESSAGES = {
+  NOT_FOUND: 'Sub-Category Not found',
+  NAME_CONFLICT: 'A Sub-Category with the same name exists',
+  DESCRIPTION_REQUIRED: 'Description is required',
+  CATEGORYID_REQUIRED: 'Please select a valid category',
+  CREATE_FAILD: 'Faild to create new sub-category',
+  FIND_ALL_FAILD: 'Faild to get all sub-categories',
+};
+
+export const SUBCATEGORY_SUCCESS_MESSAGES = {
+  CREATE_SUCCESS: 'Sub-Category created succssfully',
+  UPDATE_SUCCESS: 'Updated sub-category successfully',
+  CHANGE_IS_ACTIVE_SUCCESS: 'Updated active status successfully',
+  DELETE_ONE_SUCCESS: 'Sub-Category Deleted Successfully',
+
+  FIND_ALL_SUCCESS: 'Sub-Categories fetched successfully',
+};

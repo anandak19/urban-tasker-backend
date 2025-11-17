@@ -10,6 +10,9 @@ import { LoggerModule } from '@core/lib/logger/logger.module';
 import { CategoryService } from './services/category/category.service';
 import { S3Module } from '@core/lib/s3/s3.module';
 import { CategoryExistsGuard } from './guards/category-exists/category-exists.guard';
+import { SubCategoryRepository } from './repositories/subcategory-repositrory';
+import { SubcategoryService } from './services/subcategory/subcategory.service';
+import { SubCategoryAdminController } from './controllers/admin/sub-category-admin/sub-category-admin.controller';
 
 @Module({
   imports: [
@@ -22,7 +25,7 @@ import { CategoryExistsGuard } from './guards/category-exists/category-exists.gu
     // register multer module
     MulterModule.register(),
   ],
-  controllers: [CategoryAdminController],
+  controllers: [CategoryAdminController, SubCategoryAdminController],
 
   providers: [
     {
@@ -32,6 +35,14 @@ import { CategoryExistsGuard } from './guards/category-exists/category-exists.gu
     {
       provide: CATEGORY_TOKEN.CATEGORY_SERVICE,
       useClass: CategoryService,
+    },
+    {
+      provide: CATEGORY_TOKEN.SUBCATEGORY_REPOSITORY,
+      useClass: SubCategoryRepository,
+    },
+    {
+      provide: CATEGORY_TOKEN.SUBCATEGORY_SERVICE,
+      useClass: SubcategoryService,
     },
 
     CategoryExistsGuard,
