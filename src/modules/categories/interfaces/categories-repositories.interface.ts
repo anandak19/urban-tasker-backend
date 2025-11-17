@@ -21,5 +21,5 @@ export interface ISubCategoryRepository
   changeIsActive(
     id: string,
     isActive: boolean,
-  ): Promise<CategoryDocument | null>;
+  ): Promise<SubCategoryDocument | null>;
 }

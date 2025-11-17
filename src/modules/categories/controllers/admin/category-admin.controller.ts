@@ -78,7 +78,6 @@ export class CategoryAdminController {
     @Body() isActiveDto: ChangeIsActiveDto,
   ) {
     this._logger.log(`Id to update status: ${id}`);
-    // TODO: Call changeIsActive method here
     return this._categoryService.changeIsActive(id, isActiveDto.isActive);
   }
 

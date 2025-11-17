@@ -3,11 +3,12 @@ import type { ICategory, ICreateCategory } from './category.interface';
 import type {
   ICategoryResponse,
   IFindAllCategoryResponse,
+  IFindAllSubCategoryResponse,
   ISubCategoryResponse,
 } from './responses.interface';
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
-import { ICreateSubCategory } from './subcategory.interface';
+import { ICreateSubCategory, ISubCategory } from './subcategory.interface';
 
 export interface ICategoryService {
   /**
@@ -67,8 +68,14 @@ export interface ISubCategoryService {
     categoryData: ICreateSubCategory,
   ): Promise<ISubCategoryResponse>;
 
-  // chagne status
+  // change status
+  changeIsActive(id: string, isActive: boolean): Promise<ISubCategory | null>;
   // delete cateogry
+  deleteById(id: string): Promise<IBaseResponse>;
   // get category by id
+  findById(id: string): Promise<ISubCategory | null>;
   // get all subcategories
+  findAllCategories(
+    categoryQuery?: GetDocsDto,
+  ): Promise<IFindAllSubCategoryResponse>;
 }

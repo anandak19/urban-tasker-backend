@@ -7,7 +7,6 @@ import { ICreateSubCategory } from '../interfaces/subcategory.interface';
 import { ISubCategoryRepository } from '../interfaces/categories-repositories.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CategoryDocument } from '../schemas/categories.schema';
 
 export class SubCategoryRepository
   extends BaseRepository<SubCategoryDocument, ICreateSubCategory>
@@ -24,12 +23,10 @@ export class SubCategoryRepository
     return await this.findOne({ name });
   }
 
-  changeIsActive(
+  async changeIsActive(
     id: string,
     isActive: boolean,
-  ): Promise<CategoryDocument | null> {
-    console.log(id);
-    console.log(isActive);
-    throw new Error('Method not implemented.');
+  ): Promise<SubCategoryDocument | null> {
+    return await this.updateById(id, { $set: { isActive } });
   }
 }
