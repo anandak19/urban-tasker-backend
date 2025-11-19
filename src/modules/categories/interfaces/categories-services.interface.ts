@@ -76,6 +76,7 @@ export interface ISubCategoryService {
   findById(id: string): Promise<ISubCategory | null>;
   // get all subcategories
   findAllCategories(
+    parentCategoryId: string,
     categoryQuery?: GetDocsDto,
   ): Promise<IFindAllSubCategoryResponse>;
 }

@@ -6,7 +6,7 @@ import {
 import { ICreateSubCategory } from '../interfaces/subcategory.interface';
 import { ISubCategoryRepository } from '../interfaces/categories-repositories.interface';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, InferRawDocType, Model, Types } from 'mongoose';
 import {
   IFindAllQuery,
   PaginatedResult,
@@ -25,6 +25,7 @@ export class SubCategoryRepository
   }
 
   async findAllSubCategories(
+    parentCategoryId: string,
     pagination?: IFindAllQuery,
   ): Promise<PaginatedResult<SubCategoryDocument>> {
     const options: IFindAllOptions = {
@@ -32,7 +33,12 @@ export class SubCategoryRepository
       limit: pagination?.limit,
     };
 
-    return await this.findAll(options);
+    // filter by subcategories of parent category
+    const filter: FilterQuery<InferRawDocType<SubCategoryDocument>> = {
+      categoryId: new Types.ObjectId(parentCategoryId),
+    };
+
+    return await this.findAll(options, filter);
   }
 
   async findByName(name: string): Promise<SubCategoryDocument | null> {

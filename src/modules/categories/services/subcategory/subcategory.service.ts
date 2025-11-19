@@ -160,6 +160,7 @@ export class SubcategoryService implements ISubCategoryService {
    * @returns
    */
   async findAllCategories(
+    parentCategoryId: string,
     categoryQuery?: GetDocsDto,
   ): Promise<IFindAllSubCategoryResponse> {
     const pagination: IFindAllQuery | undefined = categoryQuery
@@ -169,7 +170,11 @@ export class SubcategoryService implements ISubCategoryService {
         }
       : undefined;
 
-    const result = await this._subCategoryRepo.findAllSubCategories(pagination);
+    const result = await this._subCategoryRepo.findAllSubCategories(
+      parentCategoryId,
+      pagination,
+    );
+
     if (!result || !result.documents || !result.meta) {
       throw new InternalServerErrorException(
         CATEGORY_ERROR_MESSAGES.FIND_ALL_FAILD,

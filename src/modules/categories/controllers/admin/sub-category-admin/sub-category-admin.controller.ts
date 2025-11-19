@@ -48,11 +48,11 @@ export class SubCategoryAdminController {
   }
 
   @Get()
-  findAll(@Query() query: GetDocsDto) {
-    return this._subCategoryService.findAllCategories(query);
+  findAll(@Param('id') parentCategoryId: string, @Query() query: GetDocsDto) {
+    return this._subCategoryService.findAllCategories(parentCategoryId, query);
   }
 
-  @Get(':subCategoryId')
+  @Get(':subCategoryId') // add aguard to check the is sub category exists
   findOne(@Param('subCategoryId') subCategoryId: string) {
     return this._subCategoryService.findById(subCategoryId);
   }

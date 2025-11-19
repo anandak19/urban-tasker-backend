@@ -28,6 +28,7 @@ export interface ISubCategoryRepository
   ): Promise<SubCategoryDocument | null>;
 
   findAllSubCategories(
+    parentCategoryId: string,
     pagination?: IFindAllQuery,
   ): Promise<PaginatedResult<SubCategoryDocument>>;
 }
