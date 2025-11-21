@@ -5,7 +5,7 @@ import {
 import { CATEGORY_TOKEN } from '@modules/categories/categories.token';
 import { ChangeIsActiveDto } from '@modules/categories/dtos/change-isactive.dto';
 import { CreateSubCategoryDto } from '@modules/categories/dtos/create-subcategory.dto';
-import { UpdateCategoryDto } from '@modules/categories/dtos/update-category.dto';
+import { UpdateSubCategory } from '@modules/categories/dtos/update-subcategory';
 import { CategoryExistsGuard } from '@modules/categories/guards/category-exists/category-exists.guard';
 import type { ISubCategoryService } from '@modules/categories/interfaces/categories-services.interface';
 import { ICreateSubCategory } from '@modules/categories/interfaces/subcategory.interface';
@@ -81,7 +81,7 @@ export class SubCategoryAdminController {
   @UseInterceptors(FileInterceptor('image'))
   updateCategory(
     @Param('subCategoryId') subCategoryId: string,
-    @Body() dto: UpdateCategoryDto,
+    @Body() dto: UpdateSubCategory,
     @UploadedFile(OptionalImageValidationPipe) imgFile?: Express.Multer.File,
   ) {
     return this._subCategoryService.updateCategoryById(
