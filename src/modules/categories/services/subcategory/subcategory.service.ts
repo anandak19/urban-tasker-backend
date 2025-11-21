@@ -5,6 +5,7 @@ import { S3_SERVICE } from '@core/lib/s3/s3.module';
 import { CATEGORY_TOKEN } from '@modules/categories/categories.token';
 import type { ISubCategoryRepository } from '@modules/categories/interfaces/categories-repositories.interface';
 import { ISubCategoryService } from '@modules/categories/interfaces/categories-services.interface';
+import { IUpdateCategory } from '@modules/categories/interfaces/category.interface';
 import {
   IFindAllSubCategoryResponse,
   ISubCategoryResponse,
@@ -193,6 +194,45 @@ export class SubcategoryService implements ISubCategoryService {
       documents: categories,
       meta: result.meta,
     };
+  }
+
+  /**
+   * Update subcategory by id
+   * @param id
+   * @param update
+   * @param imagFile
+   */
+  async updateCategoryById(
+    id: string,
+    update: IUpdateCategory,
+    imagFile: Express.Multer.File | null = null,
+  ): Promise<ISubCategoryResponse> {
+    if (imagFile) {
+      const imageKey = await this._s3.uploadSubCategoryImage(imagFile);
+      update.image = imageKey;
+    }
+
+    try {
+      const updatedCategory = await this._subCategoryRepo.updateById(
+        id,
+        update,
+      );
+      if (!updatedCategory) {
+        this._logger.log('No update returned');
+        throw new InternalServerErrorException(
+          SUBCATEGORY_ERROR_MESSAGES.UPDATE_FAILD,
+        );
+      }
+      const categoryData = SubCategoryMapper.toResponse(updatedCategory);
+      return {
+        subcategory: await this.decorateWithImageUrl(categoryData),
+        message: SUBCATEGORY_SUCCESS_MESSAGES.UPDATE_SUCCESS,
+      };
+    } catch (error) {
+      this._logger.error('Faild to update category');
+      this._logger.log(error as object);
+      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
   }
 
   // PRIVATE METHODS

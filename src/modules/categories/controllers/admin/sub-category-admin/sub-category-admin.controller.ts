@@ -1,7 +1,11 @@
-import { ImageValidationPipe } from '@core/pipes/image-validation.pipe';
+import {
+  ImageValidationPipe,
+  OptionalImageValidationPipe,
+} from '@core/pipes/image-validation.pipe';
 import { CATEGORY_TOKEN } from '@modules/categories/categories.token';
 import { ChangeIsActiveDto } from '@modules/categories/dtos/change-isactive.dto';
 import { CreateSubCategoryDto } from '@modules/categories/dtos/create-subcategory.dto';
+import { UpdateCategoryDto } from '@modules/categories/dtos/update-category.dto';
 import { CategoryExistsGuard } from '@modules/categories/guards/category-exists/category-exists.guard';
 import type { ISubCategoryService } from '@modules/categories/interfaces/categories-services.interface';
 import { ICreateSubCategory } from '@modules/categories/interfaces/subcategory.interface';
@@ -71,5 +75,19 @@ export class SubCategoryAdminController {
   @Delete(':subCategoryId') // add aguard to check the is sub category exists
   deleteOne(@Param('subCategoryId') subCategoryId: string) {
     return this._subCategoryService.deleteById(subCategoryId);
+  }
+
+  @Patch(':subCategoryId') // add aguard to check the is sub category exists
+  @UseInterceptors(FileInterceptor('image'))
+  updateCategory(
+    @Param('subCategoryId') subCategoryId: string,
+    @Body() dto: UpdateCategoryDto,
+    @UploadedFile(OptionalImageValidationPipe) imgFile?: Express.Multer.File,
+  ) {
+    return this._subCategoryService.updateCategoryById(
+      subCategoryId,
+      dto,
+      imgFile ?? null,
+    );
   }
 }

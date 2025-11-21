@@ -1,5 +1,9 @@
 import { type Express } from 'express';
-import type { ICategory, ICreateCategory } from './category.interface';
+import type {
+  ICategory,
+  ICreateCategory,
+  IUpdateCategory,
+} from './category.interface';
 import type {
   ICategoryResponse,
   IFindAllCategoryResponse,
@@ -56,6 +60,12 @@ export interface ICategoryService {
    * @returns - success message
    */
   deleteById(id: string): Promise<IBaseResponse>;
+
+  updateCategoryById(
+    id: string,
+    update: IUpdateCategory,
+    imagFile: Express.Multer.File | null,
+  ): Promise<ICategoryResponse>;
 }
 
 /**
@@ -79,4 +89,10 @@ export interface ISubCategoryService {
     parentCategoryId: string,
     categoryQuery?: GetDocsDto,
   ): Promise<IFindAllSubCategoryResponse>;
+
+  updateCategoryById(
+    id: string,
+    update: IUpdateCategory,
+    imagFile: Express.Multer.File | null,
+  ): Promise<ISubCategoryResponse>;
 }

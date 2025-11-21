@@ -15,6 +15,7 @@ export const CATEGORY_ERROR_MESSAGES = {
   INVALID_FILE: 'Invalid image file type',
 
   FIND_ALL_FAILD: 'Faild to get all categories',
+  UPDATE_FAILD: 'Faild to update category',
 };
 
 export const CATEGORY_SUCCESS_MESSAGES = {
@@ -35,6 +36,7 @@ export const SUBCATEGORY_ERROR_MESSAGES = {
   CATEGORYID_REQUIRED: 'Please select a valid category',
   CREATE_FAILD: 'Faild to create new sub-category',
   FIND_ALL_FAILD: 'Faild to get all sub-categories',
+  UPDATE_FAILD: 'Faild to update sub category',
 };
 
 export const SUBCATEGORY_SUCCESS_MESSAGES = {

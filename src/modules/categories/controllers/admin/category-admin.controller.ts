@@ -1,10 +1,14 @@
 import type { ILoggerService } from '@core/lib/logger/logger.interface';
 import { LOGGER_SERVICE } from '@core/lib/logger/logger.service';
-import { ImageValidationPipe } from '@core/pipes/image-validation.pipe';
+import {
+  ImageValidationPipe,
+  OptionalImageValidationPipe,
+} from '@core/pipes/image-validation.pipe';
 import { ValidateIdPipe } from '@core/pipes/validate-id/validate-id.pipe';
 import { CATEGORY_TOKEN } from '@modules/categories/categories.token';
 import { ChangeIsActiveDto } from '@modules/categories/dtos/change-isactive.dto';
 import { CreateCategoryDto } from '@modules/categories/dtos/create-category.dto';
+import { UpdateCategoryDto } from '@modules/categories/dtos/update-category.dto';
 import { CategoryExistsGuard } from '@modules/categories/guards/category-exists/category-exists.guard';
 import type { ICategoryService } from '@modules/categories/interfaces/categories-services.interface';
 import { ICreateCategory } from '@modules/categories/interfaces/category.interface';
@@ -67,8 +71,14 @@ export class CategoryAdminController {
   }
 
   @Patch(':id')
-  updateById(@Param('id', ValidateIdPipe) id: string) {
-    this._logger.log(id);
+  @UseGuards(CategoryExistsGuard)
+  @UseInterceptors(FileInterceptor('image'))
+  updateCategory(
+    @Param('id') id: string,
+    @Body() dto: UpdateCategoryDto,
+    @UploadedFile(OptionalImageValidationPipe) imgFile?: Express.Multer.File,
+  ) {
+    return this._categoryService.updateCategoryById(id, dto, imgFile ?? null);
   }
 
   @Patch(':id/status')

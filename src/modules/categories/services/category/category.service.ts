@@ -8,6 +8,7 @@ import { ICategoryService } from '@modules/categories/interfaces/categories-serv
 import type {
   ICategory,
   ICreateCategory,
+  IUpdateCategory,
 } from '@modules/categories/interfaces/category.interface';
 import {
   ICategoryResponse,
@@ -210,6 +211,42 @@ export class CategoryService implements ICategoryService {
       return { message: CATEGORY_SUCCESS_MESSAGES.DELETE_ONE_SUCCESS };
     } catch (error) {
       this._logger.error('Faild to delete one category');
+      this._logger.log(error as object);
+      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
+  }
+
+  /**
+   * Update category by id
+   * @param id
+   * @param update
+   * @param imagFile
+   * @returns
+   */
+  async updateCategoryById(
+    id: string,
+    update: IUpdateCategory,
+    imagFile: Express.Multer.File | null = null,
+  ): Promise<ICategoryResponse> {
+    if (imagFile !== null) {
+      const imageKey = await this._s3.uploadCategoryImage(imagFile);
+      update.image = imageKey;
+    }
+
+    try {
+      const updatedCategory = await this._categoryRepo.updateById(id, update);
+      if (!updatedCategory) {
+        throw new InternalServerErrorException(
+          CATEGORY_ERROR_MESSAGES.UPDATE_FAILD,
+        );
+      }
+      const categoryData = CategoryMapper.toResponse(updatedCategory);
+      return {
+        category: await this.decorateWithImageUrl(categoryData),
+        message: CATEGORY_SUCCESS_MESSAGES.UPDATE_SUCCESS,
+      };
+    } catch (error) {
+      this._logger.error('Faild to update category');
       this._logger.log(error as object);
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }

@@ -3,6 +3,8 @@ export interface ICreateCategory {
   image?: string;
 }
 
+export type IUpdateCategory = Partial<ICreateCategory>;
+
 export interface ICategory {
   id: string;
 
