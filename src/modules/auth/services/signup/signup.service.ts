@@ -6,7 +6,6 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
-  Logger,
   NotFoundException,
   Scope,
 } from '@nestjs/common';
@@ -30,12 +29,15 @@ import { USER_TOKENS } from '@modules/users/user-tokens';
 import { ISignupService } from '@modules/auth/interfaces/services.interface';
 import { CacheService } from '@core/lib/cache/cache.service';
 import { AuthProvider } from '@shared/constants/enums/auth-providers.enum';
+import { generateOtpHtml } from '@shared/constants/email/email-templates';
+import { LOGGER_SERVICE } from '@core/lib/logger/logger.service';
+import type { ILoggerService } from '@core/lib/logger/logger.interface';
 
 @Injectable({ scope: Scope.REQUEST })
 export class SignupService implements ISignupService {
-  private _logger = new Logger(SignupService.name);
   constructor(
     @Inject(USER_TOKENS.SERVICE) private _userService: IUserService,
+    @Inject(LOGGER_SERVICE) private _logger: ILoggerService,
     private _cookieService: CookieService,
     private _uuidService: UuidService,
     private _cacheService: CacheService,
@@ -83,7 +85,7 @@ export class SignupService implements ISignupService {
       await this._emailService.sendEmail({
         recipient: basicUserDto.email,
         subject: 'Varify Your Email',
-        html: this._otpService.generateOtpHtml(otp),
+        html: generateOtpHtml(otp),
       });
 
       // Save OTP to Redis
@@ -131,7 +133,7 @@ export class SignupService implements ISignupService {
       await this._emailService.sendEmail({
         recipient: userData.email,
         subject: 'Varify Your Email',
-        html: this._otpService.generateOtpHtml(otp),
+        html: generateOtpHtml(otp),
       });
 
       await this._otpService.storeOtp(signupId, otp);

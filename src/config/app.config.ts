@@ -23,6 +23,11 @@ export interface AppConfig {
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
   GOOGLE_CALLBACK_URL: string;
+
+  AWS_ACCESS_KEY: string;
+  AWS_SECRET_KEY: string;
+  AWS_REGION: string;
+  AWS_BUCKET_NAME: string;
 }
 
 // joi validation schema
@@ -49,4 +54,9 @@ export const appConfigSchema = Joi.object<AppConfig, true>({
   GOOGLE_CLIENT_ID: Joi.string().required(),
   GOOGLE_CLIENT_SECRET: Joi.string().required(),
   GOOGLE_CALLBACK_URL: Joi.string().required(),
+
+  AWS_ACCESS_KEY: Joi.string().required(),
+  AWS_SECRET_KEY: Joi.string().required(),
+  AWS_REGION: Joi.string().required(),
+  AWS_BUCKET_NAME: Joi.string().required(),
 });

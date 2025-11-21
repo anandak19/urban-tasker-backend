@@ -1,4 +1,3 @@
-import { UserQueryDto } from '@modules/users/dtos/user-query.dto';
 import type { IUserRepository } from '@modules/users/interfaces/user-repositories.interface';
 import { IAdminUserService } from '@modules/users/interfaces/user-services.interface';
 import { UserMapper } from '@modules/users/mappers/user.mapper';
@@ -8,7 +7,8 @@ import {
   Injectable,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { IPaginationQuery } from '@shared/interfaces/query.interface';
+import { GetDocsDto } from '@shared/dtos/get-docs.dto';
+import { IFindAllQuery } from '@shared/interfaces/query.interface';
 
 @Injectable()
 export class AdminUserService implements IAdminUserService {
@@ -16,8 +16,8 @@ export class AdminUserService implements IAdminUserService {
     @Inject(USER_TOKENS.REPOSITORY) private _userRepo: IUserRepository,
   ) {}
 
-  async findAllUsers(userQuery: UserQueryDto) {
-    const pagination: IPaginationQuery = {
+  async findAllUsers(userQuery: GetDocsDto) {
+    const pagination: IFindAllQuery = {
       page: userQuery?.page,
       limit: userQuery?.limit,
     };
@@ -29,8 +29,10 @@ export class AdminUserService implements IAdminUserService {
         throw new InternalServerErrorException('Faild to fetch users');
       }
 
-      console.log(users.data);
-      const allUsers = users.data.map((user) => UserMapper.toResponse(user));
+      console.log(users.documents);
+      const allUsers = users.documents.map((user) =>
+        UserMapper.toResponse(user),
+      );
       return {
         allUsers,
         metaData: users.meta,

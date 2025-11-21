@@ -1,11 +1,13 @@
 import { AppConfig } from '@config/app.config';
+import type { ILoggerService } from '@core/lib/logger/logger.interface';
+import { LOGGER_SERVICE } from '@core/lib/logger/logger.service';
 import { IPayload, ITokens } from '@modules/auth/interfaces/auth.interface';
 import { ITokenService } from '@modules/auth/interfaces/services.interface';
 import {
   ForbiddenException,
+  Inject,
   Injectable,
   InternalServerErrorException,
-  Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
@@ -19,9 +21,9 @@ export class TokenService implements ITokenService {
   private readonly _resetTokenTime = '30m';
   private readonly _defaultTokenTime = '10s';
   private JWT_SECRET: string;
-  private _logger = new Logger(TokenService.name);
 
   constructor(
+    @Inject(LOGGER_SERVICE) private _logger: ILoggerService,
     private _jwtService: JwtService,
     private _configService: ConfigService<AppConfig>,
   ) {

@@ -1,5 +1,5 @@
 export interface PaginatedResult<T> {
-  data: T[];
+  documents: T[];
   meta: {
     total: number;
     page: number;
@@ -8,7 +8,8 @@ export interface PaginatedResult<T> {
   };
 }
 
-export interface IPaginationQuery {
+export interface IFindAllQuery {
   page?: number;
   limit?: number;
+  search?: string;
 }

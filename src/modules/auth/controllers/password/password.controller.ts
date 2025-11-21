@@ -1,15 +1,19 @@
+import type { ILoggerService } from '@core/lib/logger/logger.interface';
+import { LOGGER_SERVICE } from '@core/lib/logger/logger.service';
 import { AUTH_TOKENS } from '@modules/auth/auth-tokens';
 import { ForgotPasswordDto } from '@modules/auth/dtos/forgot-password.dto';
 import { ResetPasswordDto } from '@modules/auth/dtos/reset-password.dto';
 import { IPasswordController } from '@modules/auth/interfaces/controllers.interface';
 import type { IPasswordService } from '@modules/auth/interfaces/services.interface';
-import { Body, Controller, Inject, Logger, Post } from '@nestjs/common';
+import { Body, Controller, Inject, Post } from '@nestjs/common';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 
 @Controller('password')
 export class PasswordController implements IPasswordController {
-  private _logger = new Logger(PasswordController.name);
   constructor(
+    @Inject(LOGGER_SERVICE)
+    private _logger: ILoggerService,
+
     @Inject(AUTH_TOKENS.PASSWORD_SERVICE)
     private _passwordService: IPasswordService,
   ) {}

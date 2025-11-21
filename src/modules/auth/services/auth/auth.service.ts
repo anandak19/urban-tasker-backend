@@ -11,14 +11,12 @@ import {
 } from '@modules/auth/interfaces/auth.interface';
 import { type Request, type Response } from 'express';
 import { CookieService } from '@core/lib/cookie/cookie.service';
-import { IAuthResponse } from '@modules/auth/interfaces/response.interface';
 import { AUTH_TOKENS } from '@modules/auth/auth-tokens';
 import type {
   IRefreshTokenService,
   IAuthService,
   ITokenService,
 } from '@modules/auth/interfaces/services.interface';
-import { LoginDTo } from '@modules/auth/dtos/login.dto';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { USER_TOKENS } from '@modules/users/user-tokens';
 import { type IUserService } from '@modules/users/interfaces/user-services.interface';
@@ -38,7 +36,6 @@ import {
 import { AuthProvider } from '@shared/constants/enums/auth-providers.enum';
 import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constants';
 
-let instance = 1;
 @Injectable({ scope: Scope.DEFAULT })
 export class AuthService implements IAuthService {
   constructor(
@@ -52,9 +49,7 @@ export class AuthService implements IAuthService {
     private _refreshTokenService: IRefreshTokenService,
 
     private _cookieService: CookieService,
-  ) {
-    console.log('AuthService inint instance: ', instance++);
-  }
+  ) {}
 
   // validate local user
   async validateLocalUser(
@@ -80,18 +75,6 @@ export class AuthService implements IAuthService {
     }
 
     return { message: AUTH_MESSAGES.LOGIN_SUCCESS };
-  }
-
-  // remove this
-  async adminLogin(res: Response, loginDto: LoginDTo): Promise<IAuthResponse> {
-    const userData = await this._userService.authenticateAdmin(
-      loginDto.email,
-      loginDto.password,
-    );
-    const payload = this._getPaylod(userData);
-    const accessToken = await this._setTokensInCookie(res, payload);
-
-    return { message: AUTH_MESSAGES.LOGIN_SUCCESS, accessToken };
   }
 
   async logout(res: Response, refreshToken: string): Promise<IBaseResponse> {
