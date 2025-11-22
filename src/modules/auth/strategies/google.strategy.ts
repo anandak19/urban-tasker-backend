@@ -6,18 +6,11 @@ import { AUTH_TOKENS } from '../auth-tokens';
 import { type IAuthService } from '../interfaces/services.interface';
 import { IGoogleUserAuthData } from '../interfaces/auth.interface';
 import { AppConfig } from '@config/app.config';
-import { AuthService } from '../services/auth/auth.service';
-
-// ERROR: I can't inject auth service from the di container
-// scope is having an effect on this too
-// circular dependecy is initial thougt for error
-// when i inject service normally with out the injection token its working. (google login screen pops up)
-// fix this
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(
-    private readonly _authService: AuthService, // Direct injection instead of using injection token
+    @Inject(AUTH_TOKENS.AUTH_SERVICE) private readonly _authService: IAuthService,
     private readonly configService: ConfigService<AppConfig>,
   ) {
     super({

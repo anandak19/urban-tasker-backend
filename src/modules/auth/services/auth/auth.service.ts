@@ -51,7 +51,7 @@ export class AuthService implements IAuthService {
     @Inject(AUTH_TOKENS.REFERESH_TOKEN_SERVICE)
     private _refreshTokenService: IRefreshTokenService,
 
-    private _cookieService: CookieService,
+    @Inject(CookieService) private _cookieService: CookieService,
   ) {
     console.log('AuthService inint instance: ', instance++);
   }
