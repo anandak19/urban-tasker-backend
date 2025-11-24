@@ -32,6 +32,7 @@ import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constan
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { IFindAllQuery } from '@shared/interfaces/query.interface';
+import { IFindAllOptions } from '@shared/interfaces/repository.interface';
 import { Types } from 'mongoose';
 
 @Injectable()
@@ -231,6 +232,31 @@ export class SubcategoryService implements ISubCategoryService {
     } catch (error) {
       this._logger.error('Faild to update category');
       this._logger.log(error as object);
+      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
+  }
+
+  /**
+   * Get all sub active subcategories
+   */
+  async getAllActiveSubCategories(): Promise<ISubCategory[]> {
+    const options: IFindAllOptions = {
+      limit: Number.MAX_SAFE_INTEGER,
+      page: 1,
+      sort: { name: 1 },
+    };
+
+    const filter = {
+      isActive: true,
+    };
+
+    try {
+      const categories = await this._subCategoryRepo.findAll(options, filter);
+      if (!categories)
+        throw new InternalServerErrorException('Faild to get all categories');
+      return categories.documents.map((c) => SubCategoryMapper.toResponse(c));
+    } catch (error) {
+      console.log(error);
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }
   }

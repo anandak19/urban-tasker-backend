@@ -95,4 +95,6 @@ export interface ISubCategoryService {
     update: IUpdateCategory,
     imagFile: Express.Multer.File | null,
   ): Promise<ISubCategoryResponse>;
+
+  getAllActiveSubCategories(): Promise<ISubCategory[]>;
 }
