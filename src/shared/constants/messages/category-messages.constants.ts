@@ -4,8 +4,6 @@ export const CATEGORY_ERROR_MESSAGES = {
   NAME_MAX: 'Category name is too long!. Maximum 15 charecters allowed',
 
   IMAGE_REQUIRED: 'Category image is requred',
-  IMAGE_LARGE: 'Image should be less than or equal to 1MB',
-  IMAGE_FILE_INVALID: 'Only images of type jpg/jpeg/png are allowed',
 
   NOT_FOUND: 'Category Not found',
   NAME_CONFLICT: 'Category with the same name exists',

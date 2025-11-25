@@ -3,6 +3,10 @@ export const GENERAL_ERRORS = {
   SERVER_ERROR: 'Internal server error',
   INVALID_ID: 'Invalid id',
   PARAMS_ID_REQUIRED: 'Id is requered',
+
+  IMAGE_REQUIRED: 'Image is required',
+  IMAGE_LARGE: 'Image should be less than or equal to 1MB',
+  IMAGE_FILE_INVALID: 'Only images of type jpg/jpeg/png are allowed',
 };
 
 export const USER_ERRORS = {

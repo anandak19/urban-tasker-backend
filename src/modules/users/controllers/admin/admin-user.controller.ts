@@ -14,7 +14,6 @@ export class AdminUserController {
   @Get()
   findAll(@Query() getDocsDto: GetDocsDto) {
     //call service to get all users
-    this._logger.verbose('Reached control');
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return this._adminUserService.findAllUsers(getDocsDto);
   }

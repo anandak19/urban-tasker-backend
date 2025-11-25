@@ -36,10 +36,12 @@ export abstract class BaseRepository<TDocument, TCreate>
 
     // calculate skip
     const skip = (page - 1) * limit;
+    const search = filter.search as string;
 
     // create final filater query
     const finalFilter: FilterQuery<InferRawDocType<TDocument>> = {
       ...(filter?.isDeleted !== undefined ? {} : { isDeleted: false }),
+      ...(search ? { $text: { $search: search } } : {}),
       ...filter,
     };
     this._logger.log(finalFilter);

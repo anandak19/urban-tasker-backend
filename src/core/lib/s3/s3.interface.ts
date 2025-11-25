@@ -18,4 +18,10 @@ export interface IS3Service {
    * @param file
    */
   uploadSubCategoryImage(file: Express.Multer.File): Promise<string>;
+
+  /**
+   * Upload id proofs
+   * @param file
+   */
+  uploadIdProofImage(file: Express.Multer.File): Promise<string>;
 }
