@@ -1,3 +1,4 @@
+import { TaskerApplicationStatus } from '@shared/constants/enums/status.enum';
 import mongoose from 'mongoose';
 
 export type IworkCategories = string[] | mongoose.Types.ObjectId[];
@@ -8,12 +9,29 @@ export interface IIdProof {
   backImage: Express.Multer.File | string;
 }
 
-export interface ICreateTaskerApplication {
-  userId: string | mongoose.Types.ObjectId;
+// TaskerApplication - BASE
+export interface IBaseTaskerApplication {
   firstName: string;
   lastName: string;
   city: string;
   hourlyRate: string | number;
-  workCategories: IworkCategories;
   idProof: IIdProof;
+}
+
+// TaskerApplication - CREATE
+export interface ICreateTaskerApplication extends IBaseTaskerApplication {
+  userId: string | mongoose.Types.ObjectId;
+  workCategories: IworkCategories;
+}
+
+export interface IWorkCategoriesObject {
+  name: string;
+  id: string;
+}
+
+// TaskerApplication - RETURN
+export interface ITaskerApplication extends IBaseTaskerApplication {
+  workCategories: IWorkCategoriesObject[];
+  applicationStatus: TaskerApplicationStatus;
+  adminFeedback: string;
 }

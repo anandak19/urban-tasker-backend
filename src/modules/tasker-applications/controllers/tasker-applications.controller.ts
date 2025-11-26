@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Inject,
   Post,
   UploadedFiles,
@@ -75,5 +76,12 @@ export class TaskerApplicationsController {
     };
 
     return this._taskerApplicationService.create(newTaskerApplication);
+  }
+
+  @UseGuards(AuthGuard)
+  @Get()
+  getTaskerApplication(@UserId() userId: string) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return this._taskerApplicationService.getLoggedInUsersApplication(userId);
   }
 }

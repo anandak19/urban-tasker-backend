@@ -5,6 +5,7 @@ import {
   IFindAllAggregationResult,
   IFindAllOptions,
 } from '@shared/interfaces/repository.interface';
+import { TFilter } from '@shared/types/db-types';
 import {
   FilterQuery,
   InferRawDocType,
@@ -92,9 +93,7 @@ export abstract class BaseRepository<TDocument, TCreate>
   }
 
   // GET FIRST DOC WITH FILTER
-  async findOne(
-    filter: FilterQuery<InferRawDocType<TDocument>>,
-  ): Promise<TDocument | null> {
+  async findOne(filter: TFilter<TDocument>): Promise<TDocument | null> {
     return await this._model.findOne(filter).exec();
   }
 

@@ -1,6 +1,7 @@
 export const GENERAL_ERRORS = {
   USER_NOT_FOUND: 'User not found',
   SERVER_ERROR: 'Internal server error',
+  ERROR: 'An error occured',
   INVALID_ID: 'Invalid id',
   PARAMS_ID_REQUIRED: 'Id is requered',
 

@@ -5,4 +5,5 @@ export const TASKER_APPLICATION_SUCCESS_MESSAGES = {
 export const TASKER_APPLICATION_ERROR_MESSAGES = {
   CREATE_FAILD: 'Faild to send tasker application!',
   CATEGORY_VALIDATION_FAILD: 'Please choose valid categories',
+  NOT_FOUND: 'No Tasker Application found for this user',
 };

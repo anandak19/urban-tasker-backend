@@ -24,8 +24,7 @@ export class TaskerApplication {
 
   @Prop({
     required: true,
-    type: mongoose.Types.ObjectId,
-    ref: SubCategory.name,
+    type: [{ type: mongoose.Types.ObjectId, ref: SubCategory.name }],
   })
   workCategories: mongoose.Types.ObjectId[];
 
@@ -37,6 +36,9 @@ export class TaskerApplication {
 
   @Prop({ required: false })
   adminFeedback: string;
+
+  @Prop({ required: false, type: Boolean, default: false })
+  isDeleted: boolean;
 }
 
 export type TaskerApplicationDocument = HydratedDocument<TaskerApplication>;

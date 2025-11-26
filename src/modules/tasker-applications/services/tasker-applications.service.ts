@@ -3,21 +3,30 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
 import { ITaskerApplicationService } from '../interfaces/tasker-applications-services.interface';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
-import { ICreateTaskerApplication } from '../interfaces/tasker-applications.interface';
+import {
+  ICreateTaskerApplication,
+  ITaskerApplication,
+} from '../interfaces/tasker-applications.interface';
 import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constants';
 import { type IS3Service } from '@core/lib/s3/s3.interface';
 import { TASKER_APPLICATION_TOKENS } from '../tasker-applications.token';
 import { type ITaskerApplicationRepository } from '../interfaces/tasker-applications-repositories.interface';
 import { S3_SERVICE } from '@core/lib/s3/s3.module';
-import { TASKER_APPLICATION_SUCCESS_MESSAGES } from '@shared/constants/messages/tasker-application-messages.constants';
+import {
+  TASKER_APPLICATION_ERROR_MESSAGES,
+  TASKER_APPLICATION_SUCCESS_MESSAGES,
+} from '@shared/constants/messages/tasker-application-messages.constants';
 import { toObjectId } from '@shared/utility/db/to-objectid.util';
 import { CATEGORY_TOKEN } from '@modules/categories/categories.token';
 import { type ISubCategoryService } from '@modules/categories/interfaces/categories-services.interface';
 import { TObjectId } from '@shared/types/db-types';
 import { SUBCATEGORY_ERROR_MESSAGES } from '@shared/constants/messages/category-messages.constants';
+import { LOGGER_SERVICE } from '@core/lib/logger/logger.service';
+import { type ILoggerService } from '@core/lib/logger/logger.interface';
 
 @Injectable()
 export class TaskerApplicationsService implements ITaskerApplicationService {
@@ -28,6 +37,8 @@ export class TaskerApplicationsService implements ITaskerApplicationService {
 
     @Inject(CATEGORY_TOKEN.SUBCATEGORY_SERVICE)
     private _subcategoryService: ISubCategoryService,
+
+    @Inject(LOGGER_SERVICE) private _logger: ILoggerService,
   ) {}
 
   /**
@@ -79,6 +90,40 @@ export class TaskerApplicationsService implements ITaskerApplicationService {
     }
   }
 
+  async getLoggedInUsersApplication(
+    userId: string,
+  ): Promise<ITaskerApplication> {
+    try {
+      const userObjectId = toObjectId(userId);
+      if (!userObjectId) {
+        throw new BadRequestException(GENERAL_ERRORS.ERROR);
+      }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const taskerApplication: ITaskerApplication =
+        await this._taskerApplicationRepo.findOneTaskerApplication({
+          userId: userObjectId,
+          isDeleted: false,
+        });
+
+      if (!taskerApplication) {
+        throw new NotFoundException(
+          TASKER_APPLICATION_ERROR_MESSAGES.NOT_FOUND,
+        );
+      }
+
+      return await this.populateImages(taskerApplication);
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
+  }
+
+  /**
+   * Converts each ids to object ids
+   * Validate each work categories with db
+   * @param ids
+   * @returns array of validated category object ids
+   */
   private async validateAndConvertWorkCategories(ids: string[]) {
     // if the ids is emtpy of not array throw error
     if (!Array.isArray(ids) || ids.length === 0) {
@@ -101,5 +146,31 @@ export class TaskerApplicationsService implements ITaskerApplicationService {
     await this._subcategoryService.isActiveCategoryIds(objectIds);
 
     return objectIds;
+  }
+
+  private async populateImages(
+    taskerApplication: ITaskerApplication,
+  ): Promise<ITaskerApplication> {
+    try {
+      const frontImageUrl = await this._s3.getImageUrl(
+        taskerApplication.idProof.frontImage as string,
+      );
+
+      const backImageUrl = await this._s3.getImageUrl(
+        taskerApplication.idProof.backImage as string,
+      );
+
+      return {
+        ...taskerApplication,
+        idProof: {
+          idProofType: taskerApplication.idProof.idProofType,
+          frontImage: frontImageUrl,
+          backImage: backImageUrl,
+        },
+      };
+    } catch {
+      this._logger.verbose('Error occured while fetching url');
+      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
   }
 }

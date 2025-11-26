@@ -1,5 +1,8 @@
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
-import { ICreateTaskerApplication } from './tasker-applications.interface';
+import {
+  ICreateTaskerApplication,
+  ITaskerApplication,
+} from './tasker-applications.interface';
 
 export interface ITaskerApplicationService {
   /**
@@ -8,4 +11,10 @@ export interface ITaskerApplicationService {
    * @param taskerApplication
    */
   create(taskerApplication: ICreateTaskerApplication): Promise<IBaseResponse>;
+
+  /**
+   * Gets tasker application of logged in user
+   * @param userId
+   */
+  getLoggedInUsersApplication(userId: string): Promise<ITaskerApplication>;
 }
