@@ -66,4 +66,12 @@ export interface IBaseRepository<TDocument, TCreate> {
    * @returns {Promise<TDocument | null>} - deleted document / null if no match
    */
   deleteOneById(id: string): Promise<TDocument | null>;
+
+  /**
+   * Find all the docs with given condition
+   * @param {FilterQuery<InferRawDocType<TDocument>>} filter
+   */
+  find(
+    filter: FilterQuery<InferRawDocType<TDocument>>,
+  ): Promise<TDocument[] | null>;
 }

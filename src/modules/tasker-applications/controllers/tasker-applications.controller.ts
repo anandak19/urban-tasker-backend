@@ -4,6 +4,7 @@ import {
   Inject,
   Post,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { CreateTaskerApplicationDto } from '../dtos/create-tasker-application.dto';
@@ -14,6 +15,8 @@ import type { ILoggerService } from '@core/lib/logger/logger.interface';
 import { MultiImageValidatorPipe } from '@core/pipes/multi-image-validator/multi-image-validator.pipe';
 import { TASKER_APPLICATION_TOKENS } from '../tasker-applications.token';
 import { type ITaskerApplicationService } from '../interfaces/tasker-applications-services.interface';
+import { AuthGuard } from '@core/guards/auth/auth.guard';
+import { UserId } from '@core/decorators/param/user-id/user-id.decorator';
 
 @Controller('tasker-applications')
 export class TaskerApplicationsController {
@@ -23,6 +26,7 @@ export class TaskerApplicationsController {
     private _taskerApplicationService: ITaskerApplicationService,
   ) {}
   // to create tasker application
+  @UseGuards(AuthGuard)
   @Post()
   @UseInterceptors(
     FileFieldsInterceptor([
@@ -37,6 +41,7 @@ export class TaskerApplicationsController {
     ]),
   )
   async create(
+    @UserId() userId: string,
     @Body() dto: CreateTaskerApplicationDto,
     @UploadedFiles()
     files: {
@@ -56,6 +61,7 @@ export class TaskerApplicationsController {
     const backImage = validatedBack[0];
 
     const newTaskerApplication: ICreateTaskerApplication = {
+      userId,
       firstName: dto.firstName,
       lastName: dto.lastName,
       hourlyRate: dto.hourlyRate,

@@ -12,6 +12,7 @@ import {
   PaginatedResult,
 } from '@shared/interfaces/query.interface';
 import { IFindAllOptions } from '@shared/interfaces/repository.interface';
+import { TObjectId } from '@shared/types/db-types';
 
 export class SubCategoryRepository
   extends BaseRepository<SubCategoryDocument, ICreateSubCategory>
@@ -50,5 +51,15 @@ export class SubCategoryRepository
     isActive: boolean,
   ): Promise<SubCategoryDocument | null> {
     return await this.updateById(id, { $set: { isActive } });
+  }
+
+  async findActiveCategoriesById(
+    ids: TObjectId[],
+  ): Promise<SubCategoryDocument[] | null> {
+    return this.find({
+      _id: { $in: ids },
+      isActive: true,
+      isDeleted: false,
+    });
   }
 }

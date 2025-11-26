@@ -7,6 +7,7 @@ import {
   IFindAllQuery,
   PaginatedResult,
 } from '@shared/interfaces/query.interface';
+import { TObjectId } from '@shared/types/db-types';
 
 export interface ICategoryRepository
   extends IBaseRepository<CategoryDocument, ICreateCategory> {
@@ -31,4 +32,12 @@ export interface ISubCategoryRepository
     parentCategoryId: string,
     pagination?: IFindAllQuery,
   ): Promise<PaginatedResult<SubCategoryDocument>>;
+
+  /**
+   * Gets all docs with given ids
+   * @param ids
+   */
+  findActiveCategoriesById(
+    ids: TObjectId[],
+  ): Promise<SubCategoryDocument[] | null>;
 }

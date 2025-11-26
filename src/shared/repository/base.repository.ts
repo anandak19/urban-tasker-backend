@@ -121,4 +121,10 @@ export abstract class BaseRepository<TDocument, TCreate>
 
     return deleted;
   }
+
+  async find(
+    filter: FilterQuery<InferRawDocType<TDocument>>,
+  ): Promise<TDocument[] | null> {
+    return await this._model.find(filter).exec();
+  }
 }

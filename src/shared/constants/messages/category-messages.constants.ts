@@ -35,6 +35,9 @@ export const SUBCATEGORY_ERROR_MESSAGES = {
   CREATE_FAILD: 'Faild to create new sub-category',
   FIND_ALL_FAILD: 'Faild to get all sub-categories',
   UPDATE_FAILD: 'Faild to update sub category',
+
+  CATEGOY_MIN_REQUIRED: 'Atleast one category is required',
+  ALL_CATEGORY_INVALID: 'All categories are not valid!',
 };
 
 export const SUBCATEGORY_SUCCESS_MESSAGES = {

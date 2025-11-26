@@ -16,6 +16,7 @@ import {
 } from '@modules/categories/interfaces/subcategory.interface';
 import { SubCategoryMapper } from '@modules/categories/mappers/subcategory.mapper';
 import {
+  BadRequestException,
   ConflictException,
   Inject,
   Injectable,
@@ -33,6 +34,7 @@ import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { IFindAllQuery } from '@shared/interfaces/query.interface';
 import { IFindAllOptions } from '@shared/interfaces/repository.interface';
+import { TObjectId } from '@shared/types/db-types';
 import { Types } from 'mongoose';
 
 @Injectable()
@@ -134,6 +136,23 @@ export class SubcategoryService implements ISubCategoryService {
       this._logger.error('Error in finding category by id');
       this._logger.log(error as object);
 
+      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
+  }
+
+  async isActiveCategoryIds(ids: TObjectId[]): Promise<void> {
+    try {
+      const category =
+        await this._subCategoryRepo.findActiveCategoriesById(ids);
+
+      if (!category || category.length !== ids.length) {
+        throw new BadRequestException(
+          SUBCATEGORY_ERROR_MESSAGES.ALL_CATEGORY_INVALID,
+        );
+      }
+    } catch (err) {
+      this._logger.error('Faild to check category exists or not');
+      console.log(err);
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }
   }

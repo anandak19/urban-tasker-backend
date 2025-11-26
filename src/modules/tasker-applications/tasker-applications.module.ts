@@ -10,6 +10,8 @@ import {
 } from './schemas/tasker-application.schema';
 import { TaskerApplicationRepository } from './repositories/tasker-applications.repository';
 import { S3Module } from '@core/lib/s3/s3.module';
+import { AuthModule } from '@modules/auth/auth.module';
+import { CategoriesModule } from '@modules/categories/categories.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { S3Module } from '@core/lib/s3/s3.module';
     ]),
     LoggerModule,
     S3Module,
+    AuthModule,
+    CategoriesModule,
   ],
   controllers: [TaskerApplicationsController],
   providers: [

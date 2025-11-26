@@ -52,6 +52,6 @@ import { CategoryController } from './controllers/user/category.controller';
 
     CategoryExistsGuard,
   ],
-  exports: [],
+  exports: [CATEGORY_TOKEN.SUBCATEGORY_SERVICE],
 })
 export class CategoriesModule {}

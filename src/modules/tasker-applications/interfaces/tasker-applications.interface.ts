@@ -9,6 +9,7 @@ export interface IIdProof {
 }
 
 export interface ICreateTaskerApplication {
+  userId: string | mongoose.Types.ObjectId;
   firstName: string;
   lastName: string;
   city: string;

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -12,6 +13,11 @@ import { TASKER_APPLICATION_TOKENS } from '../tasker-applications.token';
 import { type ITaskerApplicationRepository } from '../interfaces/tasker-applications-repositories.interface';
 import { S3_SERVICE } from '@core/lib/s3/s3.module';
 import { TASKER_APPLICATION_SUCCESS_MESSAGES } from '@shared/constants/messages/tasker-application-messages.constants';
+import { toObjectId } from '@shared/utility/db/to-objectid.util';
+import { CATEGORY_TOKEN } from '@modules/categories/categories.token';
+import { type ISubCategoryService } from '@modules/categories/interfaces/categories-services.interface';
+import { TObjectId } from '@shared/types/db-types';
+import { SUBCATEGORY_ERROR_MESSAGES } from '@shared/constants/messages/category-messages.constants';
 
 @Injectable()
 export class TaskerApplicationsService implements ITaskerApplicationService {
@@ -19,6 +25,9 @@ export class TaskerApplicationsService implements ITaskerApplicationService {
     @Inject(S3_SERVICE) private _s3: IS3Service,
     @Inject(TASKER_APPLICATION_TOKENS.REPOSITORY)
     private _taskerApplicationRepo: ITaskerApplicationRepository,
+
+    @Inject(CATEGORY_TOKEN.SUBCATEGORY_SERVICE)
+    private _subcategoryService: ISubCategoryService,
   ) {}
 
   /**
@@ -34,6 +43,16 @@ export class TaskerApplicationsService implements ITaskerApplicationService {
     const backImage = taskerApplication.idProof
       .backImage as Express.Multer.File;
 
+    const userObjectId = toObjectId(taskerApplication.userId as string);
+    if (!userObjectId) {
+      throw new BadRequestException(GENERAL_ERRORS.INVALID_ID);
+    }
+
+    // convert the array of string ids to object ids in workcategories
+    const validatedCategoryIds = await this.validateAndConvertWorkCategories(
+      taskerApplication.workCategories as string[],
+    );
+
     try {
       const [frontImageKey, backImageKey] = await Promise.all([
         this._s3.uploadIdProofImage(frontImage),
@@ -42,6 +61,8 @@ export class TaskerApplicationsService implements ITaskerApplicationService {
 
       const payload: ICreateTaskerApplication = {
         ...taskerApplication,
+        userId: userObjectId,
+        workCategories: validatedCategoryIds,
         idProof: {
           idProofType: taskerApplication.idProof.idProofType,
           backImage: backImageKey,
@@ -56,5 +77,29 @@ export class TaskerApplicationsService implements ITaskerApplicationService {
       console.log(error);
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }
+  }
+
+  private async validateAndConvertWorkCategories(ids: string[]) {
+    // if the ids is emtpy of not array throw error
+    if (!Array.isArray(ids) || ids.length === 0) {
+      throw new BadRequestException(
+        SUBCATEGORY_ERROR_MESSAGES.CATEGOY_MIN_REQUIRED,
+      );
+    }
+
+    // convert all string ids to object after validating id type
+    const objectIds: TObjectId[] = [];
+    for (const id of ids) {
+      const objectId = toObjectId(id);
+      if (!objectId) {
+        throw new BadRequestException(GENERAL_ERRORS.INVALID_ID);
+      }
+      objectIds.push(objectId);
+    }
+
+    // call the method to check all ids are exists in db
+    await this._subcategoryService.isActiveCategoryIds(objectIds);
+
+    return objectIds;
   }
 }
