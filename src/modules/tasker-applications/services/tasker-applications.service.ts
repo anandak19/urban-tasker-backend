@@ -127,6 +127,30 @@ export class TaskerApplicationsService implements ITaskerApplicationService {
     }
   }
 
+  async findById(id: string): Promise<ITaskerApplication> {
+    try {
+      const objectId = toObjectId(id);
+      if (!objectId) {
+        throw new BadRequestException(GENERAL_ERRORS.INVALID_ID);
+      }
+      const application =
+        await this._taskerApplicationRepo.findOneTaskerApplication({
+          _id: objectId,
+        });
+
+      if (!application) {
+        throw new NotFoundException(
+          TASKER_APPLICATION_ERROR_MESSAGES.NOT_FOUND,
+        );
+      }
+
+      return await this.populateImages(application);
+    } catch {
+      this._logger.error('Error in finding tasker application by id');
+      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
+  }
+
   /**
    * Returns all tasker applications
    * @param query

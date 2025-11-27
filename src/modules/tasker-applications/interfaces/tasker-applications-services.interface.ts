@@ -21,4 +21,6 @@ export interface ITaskerApplicationService {
   getLoggedInUsersApplication(userId: string): Promise<ITaskerApplication>;
 
   findAll(query: IFindAllQuery): Promise<IFindAllTaskerApplicationResponse>;
+
+  findById(id: string): Promise<ITaskerApplication>;
 }
