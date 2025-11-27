@@ -3,6 +3,8 @@ import {
   ICreateTaskerApplication,
   ITaskerApplication,
 } from './tasker-applications.interface';
+import { IFindAllTaskerApplicationResponse } from './api-responses.interface';
+import { IFindAllQuery } from '@shared/interfaces/query.interface';
 
 export interface ITaskerApplicationService {
   /**
@@ -17,4 +19,6 @@ export interface ITaskerApplicationService {
    * @param userId
    */
   getLoggedInUsersApplication(userId: string): Promise<ITaskerApplication>;
+
+  findAll(query: IFindAllQuery): Promise<IFindAllTaskerApplicationResponse>;
 }

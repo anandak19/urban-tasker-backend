@@ -10,6 +10,9 @@ export class TaskerApplication {
   @Prop({ required: true, ref: User.name })
   userId: mongoose.Types.ObjectId;
 
+  @Prop({ required: true, type: String })
+  email: string;
+
   @Prop({ type: String })
   firstName: string;
 

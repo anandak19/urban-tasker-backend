@@ -17,7 +17,9 @@ import { MultiImageValidatorPipe } from '@core/pipes/multi-image-validator/multi
 import { TASKER_APPLICATION_TOKENS } from '../tasker-applications.token';
 import { type ITaskerApplicationService } from '../interfaces/tasker-applications-services.interface';
 import { AuthGuard } from '@core/guards/auth/auth.guard';
-import { UserId } from '@core/decorators/param/user-id/user-id.decorator';
+import { UserId } from '@core/decorators/param/user-id.decorator';
+import { CookiePayload } from '@core/decorators/param/cookie-payload.decorator';
+import { type IPayload } from '@modules/auth/interfaces/auth.interface';
 
 @Controller('tasker-applications')
 export class TaskerApplicationsController {
@@ -42,7 +44,7 @@ export class TaskerApplicationsController {
     ]),
   )
   async create(
-    @UserId() userId: string,
+    @CookiePayload() payload: IPayload,
     @Body() dto: CreateTaskerApplicationDto,
     @UploadedFiles()
     files: {
@@ -62,7 +64,8 @@ export class TaskerApplicationsController {
     const backImage = validatedBack[0];
 
     const newTaskerApplication: ICreateTaskerApplication = {
-      userId,
+      userId: payload.id,
+      email: payload.email,
       firstName: dto.firstName,
       lastName: dto.lastName,
       hourlyRate: dto.hourlyRate,
@@ -81,7 +84,6 @@ export class TaskerApplicationsController {
   @UseGuards(AuthGuard)
   @Get()
   getTaskerApplication(@UserId() userId: string) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return this._taskerApplicationService.getLoggedInUsersApplication(userId);
   }
 }

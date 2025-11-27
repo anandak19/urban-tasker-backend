@@ -21,6 +21,7 @@ export interface IBaseTaskerApplication {
 // TaskerApplication - CREATE
 export interface ICreateTaskerApplication extends IBaseTaskerApplication {
   userId: string | mongoose.Types.ObjectId;
+  email: string;
   workCategories: IworkCategories;
 }
 
@@ -34,4 +35,11 @@ export interface ITaskerApplication extends IBaseTaskerApplication {
   workCategories: IWorkCategoriesObject[];
   applicationStatus: TaskerApplicationStatus;
   adminFeedback: string;
+}
+
+export interface ITaskerApplicationListItem
+  extends Omit<IBaseTaskerApplication, 'idProof'> {
+  id: string;
+  email: string;
+  applicationStatus: TaskerApplicationStatus;
 }

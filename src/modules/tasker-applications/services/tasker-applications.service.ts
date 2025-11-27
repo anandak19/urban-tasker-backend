@@ -27,6 +27,10 @@ import { TObjectId } from '@shared/types/db-types';
 import { SUBCATEGORY_ERROR_MESSAGES } from '@shared/constants/messages/category-messages.constants';
 import { LOGGER_SERVICE } from '@core/lib/logger/logger.service';
 import { type ILoggerService } from '@core/lib/logger/logger.interface';
+import { IFindAllQuery } from '@shared/interfaces/query.interface';
+import { IFindAllTaskerApplicationResponse } from '../interfaces/api-responses.interface';
+import { IFindAllOptions } from '@shared/interfaces/repository.interface';
+import { TaskerApplicationMapper } from '../mappers/tasker-application.mapper';
 
 @Injectable()
 export class TaskerApplicationsService implements ITaskerApplicationService {
@@ -90,6 +94,11 @@ export class TaskerApplicationsService implements ITaskerApplicationService {
     }
   }
 
+  /**
+   * Returns the tasker application of logged in user
+   * @param userId
+   * @returns
+   */
   async getLoggedInUsersApplication(
     userId: string,
   ): Promise<ITaskerApplication> {
@@ -98,8 +107,8 @@ export class TaskerApplicationsService implements ITaskerApplicationService {
       if (!userObjectId) {
         throw new BadRequestException(GENERAL_ERRORS.ERROR);
       }
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      const taskerApplication: ITaskerApplication =
+
+      const taskerApplication: ITaskerApplication | null =
         await this._taskerApplicationRepo.findOneTaskerApplication({
           userId: userObjectId,
           isDeleted: false,
@@ -114,6 +123,39 @@ export class TaskerApplicationsService implements ITaskerApplicationService {
       return await this.populateImages(taskerApplication);
     } catch (error) {
       console.log(error);
+      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
+  }
+
+  /**
+   * Returns all tasker applications
+   * @param query
+   */
+  async findAll(
+    query: IFindAllQuery,
+  ): Promise<IFindAllTaskerApplicationResponse> {
+    const options: IFindAllOptions = {
+      page: query.page,
+      limit: query.limit,
+    };
+
+    try {
+      const result = await this._taskerApplicationRepo.findAll(options);
+
+      if (!result) {
+        throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+      }
+
+      const applications = result.documents.map((a) => {
+        return TaskerApplicationMapper.toListingResponse(a);
+      });
+
+      return {
+        documents: applications,
+        meta: result.meta,
+      };
+    } catch {
+      this._logger.error('Faild to fetch applications');
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }
   }
@@ -148,6 +190,11 @@ export class TaskerApplicationsService implements ITaskerApplicationService {
     return objectIds;
   }
 
+  /**
+   * Populate the doc with actual signed image url of front and back id proofs
+   * @param taskerApplication
+   * @returns {Promise<taskerApplication>}
+   */
   private async populateImages(
     taskerApplication: ITaskerApplication,
   ): Promise<ITaskerApplication> {

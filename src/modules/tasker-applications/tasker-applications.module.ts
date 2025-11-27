@@ -12,6 +12,7 @@ import { TaskerApplicationRepository } from './repositories/tasker-applications.
 import { S3Module } from '@core/lib/s3/s3.module';
 import { AuthModule } from '@modules/auth/auth.module';
 import { CategoriesModule } from '@modules/categories/categories.module';
+import { TaskerApplicationsAdminController } from './controllers/admin/tasker-applications-admin.controller';
 
 @Module({
   imports: [
@@ -23,7 +24,10 @@ import { CategoriesModule } from '@modules/categories/categories.module';
     AuthModule,
     CategoriesModule,
   ],
-  controllers: [TaskerApplicationsController],
+  controllers: [
+    TaskerApplicationsController,
+    TaskerApplicationsAdminController,
+  ],
   providers: [
     {
       provide: TASKER_APPLICATION_TOKENS.SERVICE,
