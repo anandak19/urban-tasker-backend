@@ -63,7 +63,7 @@ console.log('Loaded AuthModule');
     GoogleStrategy,
     LocalStrategy,
   ],
-  exports: [AUTH_TOKENS.AUTH_SERVICE],
+  exports: [AUTH_TOKENS.AUTH_SERVICE, AUTH_TOKENS.TOKEN_SERVICE],
 })
 export class AuthModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

@@ -13,6 +13,7 @@ import { CategoryExistsGuard } from './guards/category-exists/category-exists.gu
 import { SubCategoryRepository } from './repositories/subcategory-repositrory';
 import { SubcategoryService } from './services/subcategory/subcategory.service';
 import { SubCategoryAdminController } from './controllers/admin/sub-category-admin/sub-category-admin.controller';
+import { CategoryController } from './controllers/user/category.controller';
 
 @Module({
   imports: [
@@ -25,7 +26,11 @@ import { SubCategoryAdminController } from './controllers/admin/sub-category-adm
     // register multer module
     MulterModule.register(),
   ],
-  controllers: [CategoryAdminController, SubCategoryAdminController],
+  controllers: [
+    CategoryAdminController,
+    SubCategoryAdminController,
+    CategoryController,
+  ],
 
   providers: [
     {
@@ -47,6 +52,6 @@ import { SubCategoryAdminController } from './controllers/admin/sub-category-adm
 
     CategoryExistsGuard,
   ],
-  exports: [],
+  exports: [CATEGORY_TOKEN.SUBCATEGORY_SERVICE],
 })
 export class CategoriesModule {}

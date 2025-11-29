@@ -13,6 +13,7 @@ import type {
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { ICreateSubCategory, ISubCategory } from './subcategory.interface';
+import { TObjectId } from '@shared/types/db-types';
 
 export interface ICategoryService {
   /**
@@ -95,4 +96,8 @@ export interface ISubCategoryService {
     update: IUpdateCategory,
     imagFile: Express.Multer.File | null,
   ): Promise<ISubCategoryResponse>;
+
+  getAllActiveSubCategories(): Promise<ISubCategory[]>;
+
+  isActiveCategoryIds(ids: TObjectId[]): Promise<void>;
 }

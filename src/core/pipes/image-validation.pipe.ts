@@ -3,12 +3,13 @@ import {
   MaxFileSizeValidator,
   ParseFilePipe,
 } from '@nestjs/common';
-import { CATEGORY_ERROR_MESSAGES } from '@shared/constants/messages/category-messages.constants';
+
+import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constants';
 
 const imageValidators = [
   new MaxFileSizeValidator({
     maxSize: 1024 * 1024,
-    message: CATEGORY_ERROR_MESSAGES.IMAGE_LARGE,
+    message: GENERAL_ERRORS.IMAGE_LARGE,
   }),
 
   new FileTypeValidator({

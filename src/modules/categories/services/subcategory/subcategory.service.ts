@@ -16,6 +16,7 @@ import {
 } from '@modules/categories/interfaces/subcategory.interface';
 import { SubCategoryMapper } from '@modules/categories/mappers/subcategory.mapper';
 import {
+  BadRequestException,
   ConflictException,
   Inject,
   Injectable,
@@ -32,6 +33,8 @@ import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constan
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { IFindAllQuery } from '@shared/interfaces/query.interface';
+import { IFindAllOptions } from '@shared/interfaces/repository.interface';
+import { TObjectId } from '@shared/types/db-types';
 import { Types } from 'mongoose';
 
 @Injectable()
@@ -137,6 +140,23 @@ export class SubcategoryService implements ISubCategoryService {
     }
   }
 
+  async isActiveCategoryIds(ids: TObjectId[]): Promise<void> {
+    try {
+      const category =
+        await this._subCategoryRepo.findActiveCategoriesById(ids);
+
+      if (!category || category.length !== ids.length) {
+        throw new BadRequestException(
+          SUBCATEGORY_ERROR_MESSAGES.ALL_CATEGORY_INVALID,
+        );
+      }
+    } catch (err) {
+      this._logger.error('Faild to check category exists or not');
+      console.log(err);
+      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
+  }
+
   /**
    * To get a category by its name
    * @param categoryName
@@ -231,6 +251,31 @@ export class SubcategoryService implements ISubCategoryService {
     } catch (error) {
       this._logger.error('Faild to update category');
       this._logger.log(error as object);
+      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
+  }
+
+  /**
+   * Get all sub active subcategories
+   */
+  async getAllActiveSubCategories(): Promise<ISubCategory[]> {
+    const options: IFindAllOptions = {
+      limit: Number.MAX_SAFE_INTEGER,
+      page: 1,
+      sort: { name: 1 },
+    };
+
+    const filter = {
+      isActive: true,
+    };
+
+    try {
+      const categories = await this._subCategoryRepo.findAll(options, filter);
+      if (!categories)
+        throw new InternalServerErrorException('Faild to get all categories');
+      return categories.documents.map((c) => SubCategoryMapper.toResponse(c));
+    } catch (error) {
+      console.log(error);
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }
   }

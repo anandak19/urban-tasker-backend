@@ -5,6 +5,7 @@ import {
   IFindAllAggregationResult,
   IFindAllOptions,
 } from '@shared/interfaces/repository.interface';
+import { TFilter } from '@shared/types/db-types';
 import {
   FilterQuery,
   InferRawDocType,
@@ -36,10 +37,12 @@ export abstract class BaseRepository<TDocument, TCreate>
 
     // calculate skip
     const skip = (page - 1) * limit;
+    const search = filter.search as string;
 
     // create final filater query
     const finalFilter: FilterQuery<InferRawDocType<TDocument>> = {
       ...(filter?.isDeleted !== undefined ? {} : { isDeleted: false }),
+      ...(search ? { $text: { $search: search } } : {}),
       ...filter,
     };
     this._logger.log(finalFilter);
@@ -90,9 +93,7 @@ export abstract class BaseRepository<TDocument, TCreate>
   }
 
   // GET FIRST DOC WITH FILTER
-  async findOne(
-    filter: FilterQuery<InferRawDocType<TDocument>>,
-  ): Promise<TDocument | null> {
+  async findOne(filter: TFilter<TDocument>): Promise<TDocument | null> {
     return await this._model.findOne(filter).exec();
   }
 
@@ -118,5 +119,11 @@ export abstract class BaseRepository<TDocument, TCreate>
       .exec();
 
     return deleted;
+  }
+
+  async find(
+    filter: FilterQuery<InferRawDocType<TDocument>>,
+  ): Promise<TDocument[] | null> {
+    return await this._model.find(filter).exec();
   }
 }
