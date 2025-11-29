@@ -1,5 +1,6 @@
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import {
+  IApplicationStatusInfo,
   ICreateTaskerApplication,
   ITaskerApplication,
 } from './tasker-applications.interface';
@@ -23,4 +24,9 @@ export interface ITaskerApplicationService {
   findAll(query: IFindAllQuery): Promise<IFindAllTaskerApplicationResponse>;
 
   findById(id: string): Promise<ITaskerApplication>;
+
+  updateStatus(
+    applicationId: string,
+    statusInfo: IApplicationStatusInfo,
+  ): Promise<IBaseResponse>;
 }

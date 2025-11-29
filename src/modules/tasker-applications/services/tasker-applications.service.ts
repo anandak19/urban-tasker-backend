@@ -8,6 +8,7 @@ import {
 import { ITaskerApplicationService } from '../interfaces/tasker-applications-services.interface';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import {
+  IApplicationStatusInfo,
   ICreateTaskerApplication,
   ITaskerApplication,
 } from '../interfaces/tasker-applications.interface';
@@ -180,6 +181,33 @@ export class TaskerApplicationsService implements ITaskerApplicationService {
       };
     } catch {
       this._logger.error('Faild to fetch applications');
+      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
+  }
+
+  /**
+   * Update status with feedback(optional)
+   * @param statusInfo
+   */
+  async updateStatus(
+    applicationId: string,
+    statusInfo: IApplicationStatusInfo,
+  ): Promise<IBaseResponse> {
+    try {
+      console.log(statusInfo);
+
+      const updated = await this._taskerApplicationRepo.updateById(
+        applicationId,
+        statusInfo,
+      );
+
+      console.log(updated);
+
+      return { message: 'Update success' };
+    } catch (err) {
+      this._logger.error('Error in update');
+      console.log(err);
+
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }
   }

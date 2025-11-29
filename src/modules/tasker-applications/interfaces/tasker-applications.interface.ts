@@ -30,11 +30,17 @@ export interface IWorkCategoriesObject {
   id: string;
 }
 
-// TaskerApplication - RETURN
-export interface ITaskerApplication extends IBaseTaskerApplication {
-  workCategories: IWorkCategoriesObject[];
+export interface IApplicationStatusInfo {
   applicationStatus: TaskerApplicationStatus;
-  adminFeedback: string;
+  adminFeedback?: string;
+}
+
+// TaskerApplication - RETURN
+export interface ITaskerApplication
+  extends IBaseTaskerApplication,
+    IApplicationStatusInfo {
+  workCategories: IWorkCategoriesObject[];
+  id: string;
 }
 
 export interface ITaskerApplicationListItem
