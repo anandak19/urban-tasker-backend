@@ -1,6 +1,14 @@
 import type { IAdminUserService } from '@modules/users/interfaces/user-services.interface';
 import { USER_TOKENS } from '@modules/users/user-tokens';
-import { Controller, Get, Inject, Logger, Patch, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Inject,
+  Logger,
+  Param,
+  Patch,
+  Query,
+} from '@nestjs/common';
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 
 @Controller('admin/user')
@@ -18,10 +26,10 @@ export class AdminUserController {
     return this._adminUserService.findAllUsers(getDocsDto);
   }
 
-  // @Get(':id')
-  // findOne() {
-  //   //call service to get one user data
-  // }
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this._adminUserService.findOne(id);
+  }
 
   @Patch(':id')
   suspendUser() {

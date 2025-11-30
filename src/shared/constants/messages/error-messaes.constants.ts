@@ -13,4 +13,5 @@ export const GENERAL_ERRORS = {
 export const USER_ERRORS = {
   UPDATE_USER_FAIL: 'Faild to update user data',
   UPDATE_PASSWORD_FAIL: 'Faild to update user password',
+  USER_NOT_FOUND: 'User not found',
 };
