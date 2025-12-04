@@ -1,5 +1,6 @@
+import { SuspendUserDto } from '../dtos/suspend-user.dto';
 import { UserResponseDto } from '../dtos/user-response.dto';
-import { ICreateUser } from './user.interface';
+import { ICreateUser, IUserData } from './user.interface';
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 
 export interface IUserService {
@@ -22,4 +23,10 @@ export interface IUserService {
 
 export interface IAdminUserService {
   findAllUsers(userQuery: GetDocsDto);
+
+  findOne(id: string): Promise<IUserData>;
+
+  suspendUser(id: string, reasonData: SuspendUserDto): Promise<IUserData>;
+
+  unSuspendUser(id: string): Promise<IUserData>;
 }

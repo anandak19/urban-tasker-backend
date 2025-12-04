@@ -24,14 +24,13 @@ import { PasswordController } from './controllers/password/password.controller';
 import { LoggerModule } from '@core/lib/logger/logger.module';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
-import { RefreshTokenService } from './services/token/refresh-token.service';
-import { TokenRepository } from './repositories/token.repository';
-import { MongooseModule } from '@nestjs/mongoose';
-import { Token, TokenSchema } from './schemas/token.schema';
+
+import { TokenModule } from '@modules/Token/token.module';
 console.log('Loaded AuthModule');
 
 @Module({
   imports: [
+    TokenModule,
     UsersModule,
     UuidModule,
     CookieModule,
@@ -44,7 +43,6 @@ console.log('Loaded AuthModule');
       signOptions: { expiresIn: '15m' },
     }),
     PassportModule.register({ session: false }),
-    MongooseModule.forFeature([{ name: Token.name, schema: TokenSchema }]),
   ],
   controllers: [SignupController, AuthController, PasswordController],
   providers: [
@@ -52,14 +50,6 @@ console.log('Loaded AuthModule');
     { provide: AUTH_TOKENS.AUTH_SERVICE, useClass: AuthService },
     { provide: AUTH_TOKENS.TOKEN_SERVICE, useClass: TokenService },
     { provide: AUTH_TOKENS.PASSWORD_SERVICE, useClass: PasswordService },
-    {
-      provide: AUTH_TOKENS.REFERESH_TOKEN_SERVICE,
-      useClass: RefreshTokenService,
-    },
-    {
-      provide: AUTH_TOKENS.REFERESH_TOKEN_REPOSITORY,
-      useClass: TokenRepository,
-    },
     GoogleStrategy,
     LocalStrategy,
   ],

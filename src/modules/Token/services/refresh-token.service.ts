@@ -1,8 +1,3 @@
-import { AUTH_TOKENS } from '@modules/auth/auth-tokens';
-import type { ITokenRepository } from '@modules/auth/interfaces/auth-repositories.interface';
-import { IRefreshTokenService } from '@modules/auth/interfaces/services.interface';
-import { ICreateToken, IToken } from '@modules/auth/interfaces/token.interface';
-import { TokenMapper } from '@modules/auth/mappers/token.mapper';
 import {
   ForbiddenException,
   Inject,
@@ -10,14 +5,20 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { SESSION_MESSAGES } from '@shared/constants/messages/auth-messages.constant';
+import { TObjectId } from '@shared/types/db-types';
 import { Types } from 'mongoose';
+import { type IRefreshTokenService } from '../interfaces/services.interface';
+import { type ITokenRepository } from '../interfaces/auth-repositories.interface';
+import { ICreateToken, IToken } from '../interfaces/token.interface';
+import { TokenMapper } from '../mappers/token.mapper';
+import { TOKEN_TOKENS } from '../token-tokens';
 
 @Injectable()
 export class RefreshTokenService implements IRefreshTokenService {
   private refreshTokenTime = 7 * 24 * 60 * 60 * 1000;
 
   constructor(
-    @Inject(AUTH_TOKENS.REFERESH_TOKEN_REPOSITORY)
+    @Inject(TOKEN_TOKENS.REFERESH_TOKEN_REPOSITORY)
     private _tokenRepo: ITokenRepository,
   ) {}
 
@@ -28,6 +29,10 @@ export class RefreshTokenService implements IRefreshTokenService {
     if (tokenData && tokenData.id) {
       await this._tokenRepo.revokeTokenById(tokenData.id);
     }
+  }
+
+  async blackListAllUserTokens(userId: TObjectId): Promise<boolean> {
+    return this._tokenRepo.revokeTokenByUserId(userId);
   }
 
   async saveRefreshToken(token: string, userId: string): Promise<IToken> {

@@ -1,6 +1,16 @@
+import { SuspendUserDto } from '@modules/users/dtos/suspend-user.dto';
 import type { IAdminUserService } from '@modules/users/interfaces/user-services.interface';
 import { USER_TOKENS } from '@modules/users/user-tokens';
-import { Controller, Get, Inject, Logger, Patch, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Logger,
+  Param,
+  Patch,
+  Query,
+} from '@nestjs/common';
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 
 @Controller('admin/user')
@@ -18,13 +28,21 @@ export class AdminUserController {
     return this._adminUserService.findAllUsers(getDocsDto);
   }
 
-  // @Get(':id')
-  // findOne() {
-  //   //call service to get one user data
-  // }
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this._adminUserService.findOne(id);
+  }
 
-  @Patch(':id')
-  suspendUser() {
-    // call service to suspend a user
+  @Patch(':id/suspend')
+  suspendUser(@Param('id') userId: string, @Body() dto: SuspendUserDto) {
+    console.log(userId);
+    console.log(dto);
+    return this._adminUserService.suspendUser(userId, dto);
+  }
+
+  @Patch(':id/unsuspend')
+  unsuspendUser(@Param('id') userId: string) {
+    console.log(userId);
+    return this._adminUserService.unSuspendUser(userId);
   }
 }

@@ -122,6 +122,12 @@ export class UsersService implements IUserService {
       throw new NotFoundException(AUTH_MESSAGES.EMAIL_NOT_FOUND);
     }
 
+    if (user.isSuspended) {
+      throw new BadRequestException(
+        `Account is suspended for the reason: ${user.suspendedReason}`,
+      );
+    }
+
     try {
       const isPasswordMatch = await this._hashService.comparePassword(
         password,

@@ -7,6 +7,7 @@ import {
 } from '@shared/interfaces/repository.interface';
 import { TFilter } from '@shared/types/db-types';
 import {
+  ClientSession,
   FilterQuery,
   InferRawDocType,
   Model,
@@ -27,7 +28,6 @@ export abstract class BaseRepository<TDocument, TCreate>
     options: IFindAllOptions = {},
     filter: FilterQuery<InferRawDocType<TDocument>> = {},
   ): Promise<PaginatedResult<TDocument>> {
-    // extract page and limit and sort object
     const {
       page = this._defaultPage,
       limit = this._defaultLimit,
@@ -35,47 +35,53 @@ export abstract class BaseRepository<TDocument, TCreate>
       select = {},
     } = options;
 
-    // calculate skip
     const skip = (page - 1) * limit;
-    const search = filter.search as string;
 
-    // create final filater query
+    // --- Extract search ---
+    const searchText = (filter as TFilter<TDocument>)?.search as
+      | string
+      | undefined;
+    if (searchText) delete (filter as TFilter<TDocument>).search;
+
+    // --- Build final filter ---
     const finalFilter: FilterQuery<InferRawDocType<TDocument>> = {
       ...(filter?.isDeleted !== undefined ? {} : { isDeleted: false }),
-      ...(search ? { $text: { $search: search } } : {}),
       ...filter,
     };
+
+    if (searchText) {
+      finalFilter.$text = { $search: searchText };
+    }
+
+    this._logger.verbose('Final ');
     this._logger.log(finalFilter);
 
-    // Pipeline creation
+    // --- Build Pipeline ---
     const pipeline: PipelineStage[] = [
       { $match: finalFilter },
       { $sort: Object.keys(sort).length ? sort : { createdAt: -1 } },
+      {
+        $facet: {
+          data: [{ $skip: skip }, { $limit: limit }],
+          total: [{ $count: 'count' }],
+        },
+      },
     ];
 
     if (Object.keys(select).length > 0) {
-      pipeline.push({ $project: select });
+      // project is more efficient BEFORE facet
+      pipeline.splice(2, 0, { $project: select });
     }
 
-    pipeline.push({
-      $facet: {
-        data: [{ $skip: skip }, { $limit: limit }],
-        total: [{ $count: 'count' }],
-      },
-    });
-
-    const result = await this._model
+    // --- Execute ---
+    const [result] = await this._model
       .aggregate<IFindAllAggregationResult<TDocument>>(pipeline)
       .exec();
 
-    const data = result[0]?.data || [];
-    const total = result[0]?.total[0]?.count || 0;
+    const data = result?.data ?? [];
+    const total = result?.total?.[0]?.count ?? 0;
 
-    /**
-     * Returns
-     * data: array of result docs
-     * meta: total, page, limit and pages(total pages)
-     */
+    // --- Response ---
     return {
       documents: data,
       meta: {
@@ -106,9 +112,10 @@ export abstract class BaseRepository<TDocument, TCreate>
   async updateById(
     id: string,
     update: UpdateQuery<TDocument>,
+    session?: ClientSession,
   ): Promise<TDocument | null> {
     return await this._model
-      .findByIdAndUpdate(id, update, { new: true })
+      .findByIdAndUpdate(id, update, { new: true, session })
       .exec();
   }
 

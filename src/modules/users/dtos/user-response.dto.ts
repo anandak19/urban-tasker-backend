@@ -6,4 +6,6 @@ export class UserResponseDto extends OmitType(CreateUserDto, ['password']) {
   id: string;
   userRole: UserRoles;
   isTaskerApplied: boolean;
+  isSuspended: boolean;
+  suspendedReason: string;
 }

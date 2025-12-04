@@ -22,6 +22,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { COOKIE_KEYS } from '@shared/constants/keys/cookie-keys.constant';
+import { AUTH_MESSAGES } from '@shared/constants/messages/auth-messages.constant';
 import type { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { type Request as TRequest, type Response } from 'express';
 
@@ -88,7 +89,7 @@ export class AuthController implements IAuthController {
     // if there is no token in cookie
     if (!refreshToken) {
       this._logger.warn('No refresh token in request');
-      throw new ForbiddenException('Please login to continue');
+      throw new ForbiddenException(AUTH_MESSAGES.DO_LOGIN);
     }
 
     return this._authService.refreshToken(res, refreshToken);

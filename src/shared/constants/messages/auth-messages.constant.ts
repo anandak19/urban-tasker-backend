@@ -43,6 +43,7 @@ export const AUTH_MESSAGES = {
   SIGNUP_SUCCESS: 'Account created successfully, please login to continue',
 
   UNAUTH_USER: 'Unauthorized user',
+  DO_LOGIN: 'Please Login to continue',
 
   ADMIN_ONLY: 'Access denied, only admins can perform this action',
 };
