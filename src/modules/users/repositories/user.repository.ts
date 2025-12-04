@@ -30,12 +30,14 @@ export class UserRepository
     pagination?: IFindAllQuery,
     filter?: IUserFilter,
   ): Promise<PaginatedResult<UserDocument>> {
+    console.log('Filer below');
     console.log(filter);
     // prepare filter query here
     const filterQuery = {
       ...filter,
       userRole: { $ne: 'admin' },
     };
+
     // prepare options
     const options: IFindAllOptions = {
       page: pagination?.page,

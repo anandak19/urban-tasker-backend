@@ -2,6 +2,7 @@ import { type IRefreshTokenService } from '@modules/Token/interfaces/services.in
 import { TOKEN_TOKENS } from '@modules/Token/token-tokens';
 // import { type IRefreshTokenService } from '@modules/auth/interfaces/services.interface';
 import { SuspendUserDto } from '@modules/users/dtos/suspend-user.dto';
+import { IUserFilter } from '@modules/users/interfaces/user-query.interface';
 import type { IUserRepository } from '@modules/users/interfaces/user-repositories.interface';
 import { IAdminUserService } from '@modules/users/interfaces/user-services.interface';
 import { IUserData } from '@modules/users/interfaces/user.interface';
@@ -29,13 +30,20 @@ export class AdminUserService implements IAdminUserService {
   ) {}
 
   async findAllUsers(userQuery: GetDocsDto) {
+    console.log(userQuery);
     const pagination: IFindAllQuery = {
       page: userQuery?.page,
       limit: userQuery?.limit,
     };
 
+    const filter: IUserFilter = {
+      search: userQuery.search,
+    };
+
     try {
-      const users = await this._userRepo.findAllUsers(pagination);
+      console.log('The user query has changed to');
+
+      const users = await this._userRepo.findAllUsers(pagination, filter);
 
       if (!users) {
         throw new InternalServerErrorException('Faild to fetch users');
