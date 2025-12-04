@@ -12,6 +12,8 @@ export class UserMapper {
       phone: userDoc.phone ?? '',
       userRole: userDoc.userRole,
       isTaskerApplied: userDoc.isTaskerApplied,
+      isSuspended: userDoc.isSuspended,
+      suspendedReason: userDoc.suspendedReason,
     };
   }
 }

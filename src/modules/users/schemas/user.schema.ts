@@ -33,11 +33,17 @@ export class User {
   @Prop({ required: false, type: Boolean, default: false })
   isTaskerApplied: boolean;
 
+  @Prop({ required: true, default: AuthProvider.LOCAL })
+  provider: AuthProvider;
+
   @Prop({ required: false, type: Boolean, default: false })
   isDeleted: boolean;
 
-  @Prop({ required: true, default: AuthProvider.LOCAL })
-  provider: AuthProvider;
+  @Prop({ type: Boolean, default: false })
+  isSuspended: boolean;
+
+  @Prop({ type: String, default: '' })
+  suspendedReason: string;
 }
 
 export type UserDocument = HydratedDocument<User>;

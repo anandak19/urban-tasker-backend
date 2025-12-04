@@ -7,6 +7,7 @@ import {
 } from '@shared/interfaces/repository.interface';
 import { TFilter } from '@shared/types/db-types';
 import {
+  ClientSession,
   FilterQuery,
   InferRawDocType,
   Model,
@@ -106,9 +107,10 @@ export abstract class BaseRepository<TDocument, TCreate>
   async updateById(
     id: string,
     update: UpdateQuery<TDocument>,
+    session?: ClientSession,
   ): Promise<TDocument | null> {
     return await this._model
-      .findByIdAndUpdate(id, update, { new: true })
+      .findByIdAndUpdate(id, update, { new: true, session })
       .exec();
   }
 

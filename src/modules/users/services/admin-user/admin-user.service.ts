@@ -1,3 +1,7 @@
+import { type IRefreshTokenService } from '@modules/Token/interfaces/services.interface';
+import { TOKEN_TOKENS } from '@modules/Token/token-tokens';
+// import { type IRefreshTokenService } from '@modules/auth/interfaces/services.interface';
+import { SuspendUserDto } from '@modules/users/dtos/suspend-user.dto';
 import type { IUserRepository } from '@modules/users/interfaces/user-repositories.interface';
 import { IAdminUserService } from '@modules/users/interfaces/user-services.interface';
 import { IUserData } from '@modules/users/interfaces/user.interface';
@@ -20,6 +24,8 @@ import { IFindAllQuery } from '@shared/interfaces/query.interface';
 export class AdminUserService implements IAdminUserService {
   constructor(
     @Inject(USER_TOKENS.REPOSITORY) private _userRepo: IUserRepository,
+    @Inject(TOKEN_TOKENS.REFERESH_TOKEN_SERVICE)
+    private _refreshTokenService: IRefreshTokenService,
   ) {}
 
   async findAllUsers(userQuery: GetDocsDto) {
@@ -60,6 +66,52 @@ export class AdminUserService implements IAdminUserService {
       return UserMapper.toResponse(user);
     } catch {
       console.log('errror in finding oneuser');
+      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
+  }
+
+  async suspendUser(
+    id: string,
+    reasonData: SuspendUserDto,
+  ): Promise<IUserData> {
+    try {
+      const updated = await this._userRepo.updateById(id, {
+        isSuspended: true,
+        suspendedReason: reasonData.suspendedReason,
+      });
+
+      if (!updated) {
+        throw new InternalServerErrorException(USER_ERRORS.SUSPEND_FAIL);
+      }
+
+      const isBlackListed =
+        await this._refreshTokenService.blackListAllUserTokens(updated._id);
+
+      if (!isBlackListed) {
+        throw new InternalServerErrorException(GENERAL_ERRORS.ERROR);
+      }
+
+      return UserMapper.toResponse(updated);
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
+  }
+
+  async unSuspendUser(id: string): Promise<IUserData> {
+    try {
+      const updated = await this._userRepo.updateById(id, {
+        isSuspended: false,
+        suspendedReason: '',
+      });
+
+      if (!updated) {
+        throw new InternalServerErrorException(USER_ERRORS.UNSUSPEND_FAIL);
+      }
+
+      return UserMapper.toResponse(updated);
+    } catch (error) {
+      console.log(error);
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }
   }

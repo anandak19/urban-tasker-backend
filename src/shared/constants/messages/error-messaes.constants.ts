@@ -14,4 +14,6 @@ export const USER_ERRORS = {
   UPDATE_USER_FAIL: 'Faild to update user data',
   UPDATE_PASSWORD_FAIL: 'Faild to update user password',
   USER_NOT_FOUND: 'User not found',
+  SUSPEND_FAIL: 'Faild to suspend user',
+  UNSUSPEND_FAIL: 'Faild to unsuspend user',
 };

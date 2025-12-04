@@ -9,12 +9,14 @@ import { USER_TOKENS } from './user-tokens';
 import { AdminUserService } from './services/admin-user/admin-user.service';
 import { AdminUserController } from './controllers/admin/admin-user.controller';
 import { LoggerModule } from '@core/lib/logger/logger.module';
+import { TokenModule } from '@modules/Token/token.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     HashModule,
     LoggerModule,
+    TokenModule,
   ],
   controllers: [AdminUserController],
   providers: [

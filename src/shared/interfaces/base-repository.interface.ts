@@ -1,4 +1,4 @@
-import { InferRawDocType, UpdateQuery } from 'mongoose';
+import { ClientSession, InferRawDocType, UpdateQuery } from 'mongoose';
 import { FilterQuery } from 'mongoose';
 import { PaginatedResult } from './query.interface';
 import { IFindAllOptions } from './repository.interface';
@@ -58,6 +58,7 @@ export interface IBaseRepository<TDocument, TCreate> {
   updateById(
     id: string,
     update: UpdateQuery<InferRawDocType<TDocument>>,
+    session?: ClientSession,
   ): Promise<TDocument | null>;
 
   /**

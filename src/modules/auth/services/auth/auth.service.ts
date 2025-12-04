@@ -13,7 +13,6 @@ import { type Request, type Response } from 'express';
 import { CookieService } from '@core/lib/cookie/cookie.service';
 import { AUTH_TOKENS } from '@modules/auth/auth-tokens';
 import type {
-  IRefreshTokenService,
   IAuthService,
   ITokenService,
 } from '@modules/auth/interfaces/services.interface';
@@ -35,6 +34,8 @@ import {
 } from '@modules/users/interfaces/user.interface';
 import { AuthProvider } from '@shared/constants/enums/auth-providers.enum';
 import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constants';
+import { type IRefreshTokenService } from '@modules/Token/interfaces/services.interface';
+import { TOKEN_TOKENS } from '@modules/Token/token-tokens';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AuthService implements IAuthService {
@@ -45,7 +46,7 @@ export class AuthService implements IAuthService {
 
     @Inject(LOGGER_SERVICE) private _logger: ILoggerService,
 
-    @Inject(AUTH_TOKENS.REFERESH_TOKEN_SERVICE)
+    @Inject(TOKEN_TOKENS.REFERESH_TOKEN_SERVICE)
     private _refreshTokenService: IRefreshTokenService,
 
     private _cookieService: CookieService,
