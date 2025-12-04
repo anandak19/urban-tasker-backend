@@ -91,6 +91,14 @@ export class AuthService implements IAuthService {
     console.log('google user details', userDetails);
 
     const existingUser = await this._userService.findByEmail(userDetails.email);
+
+    // NOTE: Fix this. Find way to show error message for login with google
+    // if (existingUser?.isSuspended) {
+    //   throw new BadRequestException(
+    //     `Account is suspended for the reason: ${existingUser.suspendedReason}`,
+    //   );
+    // }
+
     if (existingUser) return existingUser;
     const newUserData: ICreateUser = {
       email: userDetails.email,

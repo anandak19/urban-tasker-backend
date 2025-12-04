@@ -11,12 +11,16 @@ import { AppController } from './app.controller';
 import { CacheModule } from '@core/lib/cache/cache.module';
 import { PassportModule } from '@nestjs/passport';
 import { LoggerMiddleware } from '@core/lib/logger/logger.middleware';
+import { CookieModule } from '@core/lib/cookie/cookie.module';
+import { TokenModule } from '@modules/Token/token.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(configOptions),
     CacheModule,
     AuthModule,
+    CookieModule,
+    TokenModule,
     MongooseModule.forRootAsync(mongooseOption),
     UsersModule,
     CategoriesModule,

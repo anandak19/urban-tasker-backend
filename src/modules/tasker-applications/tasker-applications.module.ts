@@ -13,6 +13,7 @@ import { S3Module } from '@core/lib/s3/s3.module';
 import { AuthModule } from '@modules/auth/auth.module';
 import { CategoriesModule } from '@modules/categories/categories.module';
 import { TaskerApplicationsAdminController } from './controllers/admin/tasker-applications-admin.controller';
+// import { TokenModule } from '@modules/Token/token.module';
 
 @Module({
   imports: [

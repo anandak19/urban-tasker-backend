@@ -1,10 +1,11 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Token, TokenSchema } from './schemas/token.schema';
 import { TOKEN_TOKENS } from './token-tokens';
 import { RefreshTokenService } from './services/refresh-token.service';
 import { TokenRepository } from './repositories/token.repository';
 
+@Global()
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Token.name, schema: TokenSchema }]),
