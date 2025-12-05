@@ -41,6 +41,7 @@ export class AuthController implements IAuthController {
     private configService: ConfigService<AppConfig>,
   ) {}
 
+  // Local login of user
   @UseGuards(LocalAuthGuard)
   @Post('login')
   userLogin(
@@ -71,7 +72,8 @@ export class AuthController implements IAuthController {
     @Req() req: TRequest & { user: UserResponseDto },
     @Res() res: Response,
   ) {
-    await this._authService.loginGoogleUser(res, req.user);
+    await this._authService.loginGoogleUser(res, req.user); // TODO: return user role
+    // TODO: Based on user role , tasker -> tasker dashsboard, others -> normal home page
     res.redirect(
       this.configService.get<string>('APP_HOME_URL', { infer: true })!,
     );

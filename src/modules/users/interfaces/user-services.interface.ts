@@ -1,7 +1,9 @@
+import { TObjectId } from '@shared/types/db-types';
 import { SuspendUserDto } from '../dtos/suspend-user.dto';
 import { UserResponseDto } from '../dtos/user-response.dto';
 import { ICreateUser, IUserData } from './user.interface';
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
+import { UserRoles } from '@shared/constants/enums/user.enum';
 
 export interface IUserService {
   findByEmail(email: string): Promise<UserResponseDto | null>;
@@ -29,4 +31,6 @@ export interface IAdminUserService {
   suspendUser(id: string, reasonData: SuspendUserDto): Promise<IUserData>;
 
   unSuspendUser(id: string): Promise<IUserData>;
+
+  changeUserRoleById(id: TObjectId, userRole: UserRoles): Promise<IUserData>;
 }

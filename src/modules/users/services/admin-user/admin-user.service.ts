@@ -2,6 +2,7 @@ import { type IRefreshTokenService } from '@modules/Token/interfaces/services.in
 import { TOKEN_TOKENS } from '@modules/Token/token-tokens';
 // import { type IRefreshTokenService } from '@modules/auth/interfaces/services.interface';
 import { SuspendUserDto } from '@modules/users/dtos/suspend-user.dto';
+import { UserResponseDto } from '@modules/users/dtos/user-response.dto';
 import { IUserFilter } from '@modules/users/interfaces/user-query.interface';
 import type { IUserRepository } from '@modules/users/interfaces/user-repositories.interface';
 import { IAdminUserService } from '@modules/users/interfaces/user-services.interface';
@@ -14,12 +15,14 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { UserRoles } from '@shared/constants/enums/user.enum';
 import {
   GENERAL_ERRORS,
   USER_ERRORS,
 } from '@shared/constants/messages/error-messaes.constants';
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 import { IFindAllQuery } from '@shared/interfaces/query.interface';
+import { TObjectId } from '@shared/types/db-types';
 
 @Injectable()
 export class AdminUserService implements IAdminUserService {
@@ -121,6 +124,21 @@ export class AdminUserService implements IAdminUserService {
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
+  }
+
+  async changeUserRoleById(
+    id: TObjectId,
+    userRole: UserRoles,
+  ): Promise<UserResponseDto> {
+    try {
+      const updated = await this._userRepo.updateById(id, { userRole });
+      if (!updated) {
+        throw new InternalServerErrorException(GENERAL_ERRORS.ERROR);
+      }
+      return UserMapper.toResponse(updated);
+    } catch {
+      throw new InternalServerErrorException(GENERAL_ERRORS.ERROR);
     }
   }
 }

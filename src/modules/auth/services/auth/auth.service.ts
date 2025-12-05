@@ -36,6 +36,7 @@ import { AuthProvider } from '@shared/constants/enums/auth-providers.enum';
 import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constants';
 import { type IRefreshTokenService } from '@modules/Token/interfaces/services.interface';
 import { TOKEN_TOKENS } from '@modules/Token/token-tokens';
+import { ILoginResponse } from '@modules/auth/interfaces/response.interface';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AuthService implements IAuthService {
@@ -61,11 +62,10 @@ export class AuthService implements IAuthService {
   }
 
   // local user login
-  async userLogin(res: Response, userData: IUserData): Promise<IBaseResponse> {
+  async userLogin(res: Response, userData: IUserData): Promise<ILoginResponse> {
     const payload = this._getPaylod(userData);
     const refreshToken = await this._setTokensInCookie(res, payload);
     // save refresh token in db
-    console.log(refreshToken);
     const savedRefreshToken = await this._refreshTokenService.saveRefreshToken(
       refreshToken,
       userData.id,
@@ -75,7 +75,8 @@ export class AuthService implements IAuthService {
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }
 
-    return { message: AUTH_MESSAGES.LOGIN_SUCCESS };
+    // return data contains user role
+    return { message: AUTH_MESSAGES.LOGIN_SUCCESS, user: payload };
   }
 
   async logout(res: Response, refreshToken: string): Promise<IBaseResponse> {

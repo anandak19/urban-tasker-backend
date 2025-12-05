@@ -2,6 +2,7 @@ import { ClientSession, InferRawDocType, UpdateQuery } from 'mongoose';
 import { FilterQuery } from 'mongoose';
 import { PaginatedResult } from './query.interface';
 import { IFindAllOptions } from './repository.interface';
+import { TObjectId } from '@shared/types/db-types';
 
 export interface IBaseRepository<TDocument, TCreate> {
   /**
@@ -56,7 +57,7 @@ export interface IBaseRepository<TDocument, TCreate> {
    * @returns {Promise<TDocument | null>} - updated document, if no update - null
    */
   updateById(
-    id: string,
+    id: string | TObjectId,
     update: UpdateQuery<InferRawDocType<TDocument>>,
     session?: ClientSession,
   ): Promise<TDocument | null>;

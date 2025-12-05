@@ -1,7 +1,11 @@
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { type Request, type Response } from 'express';
 import { BasicUserDto } from '../dtos/basicUserData.dto';
-import { IBasicUserResponse, ITimeLeftResponse } from './response.interface';
+import {
+  IBasicUserResponse,
+  ILoginResponse,
+  ITimeLeftResponse,
+} from './response.interface';
 import { IGoogleUserAuthData, IPayload, ITokens } from './auth.interface';
 import { UserResponseDto } from '@modules/users/dtos/user-response.dto';
 import { IUserData } from '@modules/users/interfaces/user.interface';
@@ -109,7 +113,7 @@ export interface IAuthService {
    * @param {IUserData} userData - email and password
    * @returns {Promise<IAuthResponse>} - message and access token
    */
-  userLogin(res: Response, userData: IUserData): Promise<IBaseResponse>;
+  userLogin(res: Response, userData: IUserData): Promise<ILoginResponse>;
 
   /**
    * Method to refresh access token and refresh tokens

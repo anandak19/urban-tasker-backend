@@ -25,6 +25,6 @@ import { TokenModule } from '@modules/Token/token.module';
     { provide: USER_TOKENS.REPOSITORY, useClass: UserRepository },
     { provide: USER_TOKENS.ADMIN_USER_SERVICE, useClass: AdminUserService },
   ],
-  exports: [USER_TOKENS.SERVICE],
+  exports: [USER_TOKENS.SERVICE, USER_TOKENS.ADMIN_USER_SERVICE],
 })
 export class UsersModule {}

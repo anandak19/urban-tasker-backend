@@ -32,6 +32,10 @@ import { IFindAllQuery } from '@shared/interfaces/query.interface';
 import { IFindAllTaskerApplicationResponse } from '../interfaces/api-responses.interface';
 import { IFindAllOptions } from '@shared/interfaces/repository.interface';
 import { TaskerApplicationMapper } from '../mappers/tasker-application.mapper';
+import { TaskerApplicationStatus } from '@shared/constants/enums/status.enum';
+import { USER_TOKENS } from '@modules/users/user-tokens';
+import type { IAdminUserService } from '@modules/users/interfaces/user-services.interface';
+import { UserRoles } from '@shared/constants/enums/user.enum';
 
 @Injectable()
 export class TaskerApplicationsService implements ITaskerApplicationService {
@@ -42,6 +46,9 @@ export class TaskerApplicationsService implements ITaskerApplicationService {
 
     @Inject(CATEGORY_TOKEN.SUBCATEGORY_SERVICE)
     private _subcategoryService: ISubCategoryService,
+
+    @Inject(USER_TOKENS.ADMIN_USER_SERVICE)
+    private _adminUserService: IAdminUserService,
 
     @Inject(LOGGER_SERVICE) private _logger: ILoggerService,
   ) {}
@@ -201,7 +208,16 @@ export class TaskerApplicationsService implements ITaskerApplicationService {
         statusInfo,
       );
 
-      console.log(updated);
+      if (!updated) {
+        throw new InternalServerErrorException(GENERAL_ERRORS.ERROR);
+      }
+
+      if (statusInfo.applicationStatus === TaskerApplicationStatus.APPROVED) {
+        await this._adminUserService.changeUserRoleById(
+          updated.userId,
+          UserRoles.TASKER,
+        );
+      }
 
       return { message: 'Update success' };
     } catch (err) {
