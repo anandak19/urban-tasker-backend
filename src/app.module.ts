@@ -13,6 +13,8 @@ import { PassportModule } from '@nestjs/passport';
 import { LoggerMiddleware } from '@core/lib/logger/logger.middleware';
 import { CookieModule } from '@core/lib/cookie/cookie.module';
 import { TokenModule } from '@modules/Token/token.module';
+import { AvailabilityModule } from './modules/availability/availability.module';
+import { TaskerModule } from './modules/tasker/tasker.module';
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { TokenModule } from '@modules/Token/token.module';
     CategoriesModule,
     TaskerApplicationsModule,
     PassportModule.register({}),
+    AvailabilityModule,
+    TaskerModule,
   ],
   controllers: [AppController],
   providers: [],

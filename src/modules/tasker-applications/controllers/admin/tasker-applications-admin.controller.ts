@@ -41,4 +41,9 @@ export class TaskerApplicationsAdminController {
       statusInfo,
     );
   }
+
+  @Patch(':applicationId/approve')
+  approveApplication(@Param('applicationId') applicationId: string) {
+    return this._taskerApplicationService.approveApplication(applicationId);
+  }
 }
