@@ -3,6 +3,7 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
   Scope,
 } from '@nestjs/common';
 import {
@@ -18,7 +19,10 @@ import type {
 } from '@modules/auth/interfaces/services.interface';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { USER_TOKENS } from '@modules/users/user-tokens';
-import { type IUserService } from '@modules/users/interfaces/user-services.interface';
+import type {
+  IAdminUserService,
+  IUserService,
+} from '@modules/users/interfaces/user-services.interface';
 import {
   COOKIE_KEYS,
   COOKIE_TIME,
@@ -33,7 +37,10 @@ import {
   IUserData,
 } from '@modules/users/interfaces/user.interface';
 import { AuthProvider } from '@shared/constants/enums/auth-providers.enum';
-import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constants';
+import {
+  GENERAL_ERRORS,
+  USER_ERRORS,
+} from '@shared/constants/messages/error-messaes.constants';
 import { type IRefreshTokenService } from '@modules/Token/interfaces/services.interface';
 import { TOKEN_TOKENS } from '@modules/Token/token-tokens';
 import { ILoginResponse } from '@modules/auth/interfaces/response.interface';
@@ -44,6 +51,9 @@ export class AuthService implements IAuthService {
     @Inject(AUTH_TOKENS.TOKEN_SERVICE) private _tokenService: ITokenService,
 
     @Inject(USER_TOKENS.SERVICE) private _userService: IUserService,
+
+    @Inject(USER_TOKENS.ADMIN_USER_SERVICE)
+    private _adminUserService: IAdminUserService,
 
     @Inject(LOGGER_SERVICE) private _logger: ILoggerService,
 
@@ -149,8 +159,7 @@ export class AuthService implements IAuthService {
     res: Response,
     refreshToken: string,
   ): Promise<IBaseResponse> {
-    const payload: IPayload =
-      await this._tokenService.verifyToken(refreshToken);
+    const payload = await this._tokenService.verifyToken(refreshToken);
 
     // to check, expiration and revoked status and userId same or not
     await this._refreshTokenService.varifyRefreshTokenStatus(
@@ -158,10 +167,16 @@ export class AuthService implements IAuthService {
       payload.id,
     );
 
+    const user = await this._adminUserService.findOne(payload.id);
+
+    if (!user) {
+      throw new NotFoundException(USER_ERRORS.USER_NOT_FOUND);
+    }
+
     const newPayload: IPayload = {
-      id: payload.id,
-      email: payload.email,
-      userRole: payload.userRole,
+      id: user.id,
+      email: user.email,
+      userRole: user.userRole,
     };
 
     const accessToken = await this._tokenService.getNewAccessToken(newPayload);
