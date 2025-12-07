@@ -1,6 +1,7 @@
 import { IBaseRepository } from '@shared/interfaces/base-repository.interface';
 import { ICreateAvailability } from './availability.interface';
 import { AvailabilityDocument } from '../schemas/availability.schema';
+import { TObjectId } from '@shared/types/db-types';
 
 export interface IAvailabilityRepository
   extends IBaseRepository<ICreateAvailability, AvailabilityDocument> {
@@ -11,4 +12,8 @@ export interface IAvailabilityRepository
    * @returns {boolean} is modified count + newly inserted docs is equal to 7
    */
   createDefaultAvailabilty(taskerId: string): Promise<boolean>;
+
+  findAllTaskerAvailabilities(
+    taskerId: TObjectId | string,
+  ): Promise<AvailabilityDocument[]>;
 }

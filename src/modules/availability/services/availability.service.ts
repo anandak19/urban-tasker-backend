@@ -10,6 +10,8 @@ import type { IAvailabilityRepository } from '../interfaces/availability-reposit
 import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constants';
 import { AVAILABILITY_SUCCESS } from '@shared/constants/messages/availability-messages.constants';
 import { IPayload } from '@modules/auth/interfaces/auth.interface';
+import { AvailabilityMapper } from '../mappers/availability.mapper';
+import { IMappedAvailability } from '../interfaces/availability.interface';
 
 @Injectable()
 export class AvailabilityService implements IAvailabilityService {
@@ -31,6 +33,27 @@ export class AvailabilityService implements IAvailabilityService {
       }
 
       return { message: AVAILABILITY_SUCCESS.CREATE_DEFAULT_SUCCESS };
+    } catch {
+      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
+  }
+
+  async findAllTaskerAvailabilities(
+    userPaylod: IPayload,
+  ): Promise<IMappedAvailability> {
+    /**
+     * TODOS
+     * find all 7 availability docs of tasker by taskerId
+     * map the 7 docs to construct maped data
+     * return the data
+     */
+    try {
+      const availabilityDocs =
+        await this._availabilityRepo.findAllTaskerAvailabilities(userPaylod.id);
+
+      console.log(availabilityDocs);
+
+      return AvailabilityMapper.toListResponse(availabilityDocs);
     } catch {
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }

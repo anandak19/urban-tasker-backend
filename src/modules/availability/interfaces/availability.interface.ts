@@ -1,5 +1,5 @@
 import { TObjectId } from '@shared/types/db-types';
-import { WeekDays } from '../constants/week-days.constant';
+import { WeekDayKeys, WeekDays } from '../constants/week-days.constant';
 
 export interface ISlot {
   start: string;
@@ -17,3 +17,8 @@ export interface IAvailability extends ICreateAvailability {
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+// resonse shape
+export type IMappedAvailability = {
+  [day in WeekDayKeys]?: IAvailability;
+};

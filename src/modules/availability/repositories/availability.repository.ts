@@ -10,6 +10,8 @@ import { Model } from 'mongoose';
 import { WEEK_DAYS } from '../constants/week-days.constant';
 import { DEFAULT_SLOTS } from '../constants/default-slots.constant';
 import { Injectable } from '@nestjs/common';
+import { TObjectId } from '@shared/types/db-types';
+import { toObjectId } from '@shared/utility/db/to-objectid.util';
 
 @Injectable()
 export class AvailabilityRepository
@@ -24,10 +26,13 @@ export class AvailabilityRepository
   }
 
   async createDefaultAvailabilty(taskerId: string): Promise<boolean> {
+    const taskerObjectId = toObjectId(taskerId);
     const ops = WEEK_DAYS.map((day) => ({
       updateOne: {
-        filter: { taskerId, day },
-        update: { $set: { taskerId, day, slots: DEFAULT_SLOTS } },
+        filter: { taskerId: taskerObjectId, day },
+        update: {
+          $set: { taskerId: taskerObjectId, day, slots: DEFAULT_SLOTS },
+        },
         upsert: true,
       },
     }));
@@ -35,5 +40,13 @@ export class AvailabilityRepository
     const result = await this._availabilityModel.bulkWrite(ops);
 
     return result.modifiedCount + result.upsertedCount === 7;
+  }
+
+  async findAllTaskerAvailabilities(
+    taskerId: TObjectId | string,
+  ): Promise<AvailabilityDocument[]> {
+    const taskerObjectId = toObjectId(taskerId);
+
+    return await this._availabilityModel.find({ taskerId: taskerObjectId });
   }
 }

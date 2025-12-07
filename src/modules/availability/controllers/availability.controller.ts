@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Controller,
+  Get,
   Inject,
   Patch,
   Request,
@@ -33,7 +34,15 @@ export class AvailabilityController {
       req.user as IPayload,
     );
   }
+
   // route to delete one slot
+  @Get()
+  findAllTaskerAvailabilities(@Request() req: TRequest) {
+    // call method to get all availability of the tasker
+    return this._availabilityService.findAllTaskerAvailabilities(
+      req.user as IPayload,
+    );
+  }
   // route to update one slot
   // route to add new slot
 }

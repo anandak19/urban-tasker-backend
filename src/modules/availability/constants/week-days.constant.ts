@@ -17,3 +17,12 @@ export const enum WeekDays {
   FRIDAY = 'friday',
   SATURDAY = 'saturday',
 }
+
+export type WeekDayKeys =
+  | 'sunday'
+  | 'monday'
+  | 'tuesday'
+  | 'wednesday'
+  | 'thursday'
+  | 'friday'
+  | 'saturday';
