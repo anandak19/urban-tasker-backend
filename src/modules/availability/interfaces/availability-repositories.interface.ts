@@ -1,5 +1,5 @@
 import { IBaseRepository } from '@shared/interfaces/base-repository.interface';
-import { ICreateAvailability } from './availability.interface';
+import { ICreateAvailability, ISlot } from './availability.interface';
 import { AvailabilityDocument } from '../schemas/availability.schema';
 import { TObjectId } from '@shared/types/db-types';
 
@@ -16,4 +16,6 @@ export interface IAvailabilityRepository
   findAllTaskerAvailabilities(
     taskerId: TObjectId | string,
   ): Promise<AvailabilityDocument[]>;
+
+  deleteOneSlot(availabilityId: string, slot: ISlot): Promise<boolean>;
 }

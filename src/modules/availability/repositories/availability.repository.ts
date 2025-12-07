@@ -1,5 +1,8 @@
 import { BaseRepository } from '@shared/repository/base.repository';
-import { ICreateAvailability } from '../interfaces/availability.interface';
+import {
+  ICreateAvailability,
+  ISlot,
+} from '../interfaces/availability.interface';
 import {
   Availability,
   AvailabilityDocument,
@@ -48,5 +51,23 @@ export class AvailabilityRepository
     const taskerObjectId = toObjectId(taskerId);
 
     return await this._availabilityModel.find({ taskerId: taskerObjectId });
+  }
+
+  async deleteOneSlot(availabilityId: string, slot: ISlot): Promise<boolean> {
+    const id = toObjectId(availabilityId);
+
+    const result = await this._availabilityModel.updateOne(
+      { _id: id },
+      {
+        $pull: {
+          slots: {
+            start: slot.start,
+            end: slot.end,
+          },
+        },
+      },
+    );
+
+    return result.modifiedCount > 0;
   }
 }

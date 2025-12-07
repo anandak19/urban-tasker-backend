@@ -1,8 +1,10 @@
 import {
   BadRequestException,
+  Body,
   Controller,
   Get,
   Inject,
+  Param,
   Patch,
   Request,
   UseGuards,
@@ -13,6 +15,7 @@ import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constan
 import { IPayload } from '@modules/auth/interfaces/auth.interface';
 import { AuthGuard } from '@core/guards/auth/auth.guard';
 import { AVAILABILITY_TOKEN } from '../availability.token';
+import { DeleteSlotDto } from '../dtos/delete-slot.dto';
 
 @Controller('availability')
 @UseGuards(AuthGuard)
@@ -35,13 +38,21 @@ export class AvailabilityController {
     );
   }
 
-  // route to delete one slot
   @Get()
   findAllTaskerAvailabilities(@Request() req: TRequest) {
     // call method to get all availability of the tasker
     return this._availabilityService.findAllTaskerAvailabilities(
       req.user as IPayload,
     );
+  }
+
+  // route to delete one slot
+  @Patch(':availabilityId')
+  deleteOneTimeSlot(
+    @Param('availabilityId') availabilityId: string,
+    @Body() dto: DeleteSlotDto,
+  ) {
+    return this._availabilityService.deleteOneTimeSlot(availabilityId, dto);
   }
   // route to update one slot
   // route to add new slot

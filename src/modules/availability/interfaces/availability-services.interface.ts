@@ -1,6 +1,6 @@
 import { IPayload } from '@modules/auth/interfaces/auth.interface';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
-import { IMappedAvailability } from './availability.interface';
+import { IMappedAvailability, ISlot } from './availability.interface';
 
 export interface IAvailabilityService {
   /**
@@ -16,4 +16,9 @@ export interface IAvailabilityService {
   findAllTaskerAvailabilities(
     userPaylod: IPayload,
   ): Promise<IMappedAvailability>;
+
+  deleteOneTimeSlot(
+    availabilityId: string,
+    slot: ISlot,
+  ): Promise<IBaseResponse>;
 }

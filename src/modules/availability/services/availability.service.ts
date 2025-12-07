@@ -8,10 +8,16 @@ import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { AVAILABILITY_TOKEN } from '../availability.token';
 import type { IAvailabilityRepository } from '../interfaces/availability-repositories.interface';
 import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constants';
-import { AVAILABILITY_SUCCESS } from '@shared/constants/messages/availability-messages.constants';
+import {
+  AVAILABILITY_ERROR,
+  AVAILABILITY_SUCCESS,
+} from '@shared/constants/messages/availability-messages.constants';
 import { IPayload } from '@modules/auth/interfaces/auth.interface';
 import { AvailabilityMapper } from '../mappers/availability.mapper';
-import { IMappedAvailability } from '../interfaces/availability.interface';
+import {
+  IMappedAvailability,
+  ISlot,
+} from '../interfaces/availability.interface';
 
 @Injectable()
 export class AvailabilityService implements IAvailabilityService {
@@ -54,6 +60,28 @@ export class AvailabilityService implements IAvailabilityService {
       console.log(availabilityDocs);
 
       return AvailabilityMapper.toListResponse(availabilityDocs);
+    } catch {
+      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
+  }
+
+  async deleteOneTimeSlot(
+    availabilityId: string,
+    slot: ISlot,
+  ): Promise<IBaseResponse> {
+    try {
+      const isDeleted = await this._availabilityRepo.deleteOneSlot(
+        availabilityId,
+        slot,
+      );
+
+      if (!isDeleted) {
+        throw new InternalServerErrorException(
+          AVAILABILITY_ERROR.REMOVE_SLOT_FAILD,
+        );
+      }
+
+      return { message: AVAILABILITY_SUCCESS.REMOVE_SLOT_SUCCESS };
     } catch {
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }
