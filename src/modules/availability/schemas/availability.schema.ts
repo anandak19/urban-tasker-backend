@@ -1,5 +1,5 @@
-import { Prop, Schema } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 import { WeekDays } from '../constants/week-days.constant';
 import { Slot } from './slot.schema';
 
@@ -14,3 +14,6 @@ export class Availability {
   @Prop({ required: true })
   slots: Slot[];
 }
+
+export type AvailabilityDocument = HydratedDocument<Availability>;
+export const AvailabilitySchema = SchemaFactory.createForClass(Availability);

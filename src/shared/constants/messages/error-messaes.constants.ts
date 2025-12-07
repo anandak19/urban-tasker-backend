@@ -4,6 +4,7 @@ export const GENERAL_ERRORS = {
   ERROR: 'An error occured',
   INVALID_ID: 'Invalid id',
   PARAMS_ID_REQUIRED: 'Id is requered',
+  LOGIN_REQUIRED: 'Please login to continue',
 
   IMAGE_REQUIRED: 'Image is required',
   IMAGE_LARGE: 'Image should be less than or equal to 1MB',
