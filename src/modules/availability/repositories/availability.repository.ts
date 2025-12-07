@@ -10,7 +10,7 @@ import {
 import { IAvailabilityRepository } from '../interfaces/availability-repositories.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { WEEK_DAYS } from '../constants/week-days.constant';
+import { WEEK_DAYS, WeekDayKeys } from '../constants/week-days.constant';
 import { DEFAULT_SLOTS } from '../constants/default-slots.constant';
 import { Injectable } from '@nestjs/common';
 import { TObjectId } from '@shared/types/db-types';
@@ -69,5 +69,23 @@ export class AvailabilityRepository
     );
 
     return result.modifiedCount > 0;
+  }
+
+  async createSlot(
+    taskerId: TObjectId,
+    day: WeekDayKeys,
+    slot: ISlot,
+  ): Promise<AvailabilityDocument> {
+    return this._availabilityModel.findOneAndUpdate(
+      { taskerId, day },
+      {
+        $setOnInsert: { taskerId, day },
+        $push: { slots: slot },
+      },
+      {
+        new: true,
+        upsert: true,
+      },
+    );
   }
 }

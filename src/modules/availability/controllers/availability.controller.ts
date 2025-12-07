@@ -6,6 +6,7 @@ import {
   Inject,
   Param,
   Patch,
+  Post,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -16,6 +17,8 @@ import { IPayload } from '@modules/auth/interfaces/auth.interface';
 import { AuthGuard } from '@core/guards/auth/auth.guard';
 import { AVAILABILITY_TOKEN } from '../availability.token';
 import { DeleteSlotDto } from '../dtos/delete-slot.dto';
+import type { WeekDayKeys } from '../constants/week-days.constant';
+import { CreateSlotDto } from '../dtos/create-slot.dto';
 
 @Controller('availability')
 @UseGuards(AuthGuard)
@@ -56,4 +59,12 @@ export class AvailabilityController {
   }
   // route to update one slot
   // route to add new slot
+  @Post('day/:day')
+  createSlot(
+    @Request() req: TRequest,
+    @Param('day') day: WeekDayKeys,
+    @Body() dto: CreateSlotDto,
+  ) {
+    return this._availabilityService.createSlot(req.user as IPayload, day, dto);
+  }
 }

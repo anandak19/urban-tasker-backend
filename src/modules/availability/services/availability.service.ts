@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -18,6 +19,8 @@ import {
   IMappedAvailability,
   ISlot,
 } from '../interfaces/availability.interface';
+import { WeekDayKeys } from '../constants/week-days.constant';
+import { toObjectId } from '@shared/utility/db/to-objectid.util';
 
 @Injectable()
 export class AvailabilityService implements IAvailabilityService {
@@ -25,6 +28,8 @@ export class AvailabilityService implements IAvailabilityService {
     @Inject(AVAILABILITY_TOKEN.AVAILABILITY_REPOSITORY)
     private _availabilityRepo: IAvailabilityRepository,
   ) {}
+
+  private readonly MAX_SLOT = 3;
 
   async createDefaultAvailability(
     userPaylod: IPayload,
@@ -82,6 +87,41 @@ export class AvailabilityService implements IAvailabilityService {
       }
 
       return { message: AVAILABILITY_SUCCESS.REMOVE_SLOT_SUCCESS };
+    } catch {
+      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
+  }
+
+  async createSlot(
+    userPaylod: IPayload,
+    day: WeekDayKeys,
+    slot: ISlot,
+  ): Promise<IBaseResponse> {
+    try {
+      const taskerId = toObjectId(userPaylod.id);
+
+      const existingDoc = await this._availabilityRepo.findOne({
+        taskerId,
+        day,
+      });
+
+      if (existingDoc && existingDoc.slots.length >= this.MAX_SLOT) {
+        throw new BadRequestException(AVAILABILITY_ERROR.ADD_SLOT_FAILD);
+      }
+
+      const availabilityDoc = await this._availabilityRepo.createSlot(
+        taskerId,
+        day,
+        slot,
+      );
+
+      if (!availabilityDoc) {
+        throw new InternalServerErrorException(
+          AVAILABILITY_ERROR.ADD_SLOT_FAILD,
+        );
+      }
+
+      return { message: AVAILABILITY_SUCCESS.ADD_SLOT_SUCCESS };
     } catch {
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }

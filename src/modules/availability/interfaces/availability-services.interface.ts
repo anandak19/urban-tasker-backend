@@ -1,6 +1,7 @@
 import { IPayload } from '@modules/auth/interfaces/auth.interface';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { IMappedAvailability, ISlot } from './availability.interface';
+import { WeekDayKeys } from '../constants/week-days.constant';
 
 export interface IAvailabilityService {
   /**
@@ -19,6 +20,12 @@ export interface IAvailabilityService {
 
   deleteOneTimeSlot(
     availabilityId: string,
+    slot: ISlot,
+  ): Promise<IBaseResponse>;
+
+  createSlot(
+    userPaylod: IPayload,
+    day: WeekDayKeys,
     slot: ISlot,
   ): Promise<IBaseResponse>;
 }

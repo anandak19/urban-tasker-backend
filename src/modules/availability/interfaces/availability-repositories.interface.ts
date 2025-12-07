@@ -2,6 +2,7 @@ import { IBaseRepository } from '@shared/interfaces/base-repository.interface';
 import { ICreateAvailability, ISlot } from './availability.interface';
 import { AvailabilityDocument } from '../schemas/availability.schema';
 import { TObjectId } from '@shared/types/db-types';
+import { WeekDayKeys } from '../constants/week-days.constant';
 
 export interface IAvailabilityRepository
   extends IBaseRepository<ICreateAvailability, AvailabilityDocument> {
@@ -18,4 +19,10 @@ export interface IAvailabilityRepository
   ): Promise<AvailabilityDocument[]>;
 
   deleteOneSlot(availabilityId: string, slot: ISlot): Promise<boolean>;
+
+  createSlot(
+    taskerId: TObjectId,
+    day: WeekDayKeys,
+    slot: ISlot,
+  ): Promise<AvailabilityDocument>;
 }
