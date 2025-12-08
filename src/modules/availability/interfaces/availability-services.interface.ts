@@ -20,12 +20,18 @@ export interface IAvailabilityService {
 
   deleteOneTimeSlot(
     availabilityId: string,
-    slot: ISlot,
+    slotId: string,
   ): Promise<IBaseResponse>;
 
   createSlot(
     userPaylod: IPayload,
     day: WeekDayKeys,
     slot: ISlot,
+  ): Promise<IBaseResponse>;
+
+  updateSlot(
+    availabilityId: string,
+    slotId: string,
+    updatedSlot: ISlot,
   ): Promise<IBaseResponse>;
 }

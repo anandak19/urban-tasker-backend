@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Inject,
   Param,
@@ -16,7 +17,6 @@ import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constan
 import { IPayload } from '@modules/auth/interfaces/auth.interface';
 import { AuthGuard } from '@core/guards/auth/auth.guard';
 import { AVAILABILITY_TOKEN } from '../availability.token';
-import { DeleteSlotDto } from '../dtos/delete-slot.dto';
 import type { WeekDayKeys } from '../constants/week-days.constant';
 import { CreateSlotDto } from '../dtos/create-slot.dto';
 
@@ -50,14 +50,24 @@ export class AvailabilityController {
   }
 
   // route to delete one slot
-  @Patch(':availabilityId')
+  @Delete(':availabilityId/:slotId')
   deleteOneTimeSlot(
     @Param('availabilityId') availabilityId: string,
-    @Body() dto: DeleteSlotDto,
+    @Param('slotId') slotId: string,
   ) {
-    return this._availabilityService.deleteOneTimeSlot(availabilityId, dto);
+    return this._availabilityService.deleteOneTimeSlot(availabilityId, slotId);
   }
+
   // route to update one slot
+  @Patch(':availabilityId/:slotId')
+  updateSlot(
+    @Param('availabilityId') availabilityId: string,
+    @Param('slotId') slotId: string,
+    @Body() dto: CreateSlotDto, // --- use update slot dto later
+  ) {
+    return this._availabilityService.updateSlot(availabilityId, slotId, dto);
+  }
+
   // route to add new slot
   @Post('day/:day')
   createSlot(

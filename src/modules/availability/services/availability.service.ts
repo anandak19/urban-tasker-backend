@@ -21,6 +21,7 @@ import {
 } from '../interfaces/availability.interface';
 import { WeekDayKeys } from '../constants/week-days.constant';
 import { toObjectId } from '@shared/utility/db/to-objectid.util';
+import { isInvalidTimes } from '@shared/utility/time/convert-time.utitlity';
 
 @Injectable()
 export class AvailabilityService implements IAvailabilityService {
@@ -52,12 +53,6 @@ export class AvailabilityService implements IAvailabilityService {
   async findAllTaskerAvailabilities(
     userPaylod: IPayload,
   ): Promise<IMappedAvailability> {
-    /**
-     * TODOS
-     * find all 7 availability docs of tasker by taskerId
-     * map the 7 docs to construct maped data
-     * return the data
-     */
     try {
       const availabilityDocs =
         await this._availabilityRepo.findAllTaskerAvailabilities(userPaylod.id);
@@ -72,24 +67,20 @@ export class AvailabilityService implements IAvailabilityService {
 
   async deleteOneTimeSlot(
     availabilityId: string,
-    slot: ISlot,
+    slotId: string,
   ): Promise<IBaseResponse> {
-    try {
-      const isDeleted = await this._availabilityRepo.deleteOneSlot(
-        availabilityId,
-        slot,
+    const isDeleted = await this._availabilityRepo.deleteOneSlot(
+      availabilityId,
+      slotId,
+    );
+
+    if (!isDeleted) {
+      throw new InternalServerErrorException(
+        AVAILABILITY_ERROR.REMOVE_SLOT_FAILD,
       );
-
-      if (!isDeleted) {
-        throw new InternalServerErrorException(
-          AVAILABILITY_ERROR.REMOVE_SLOT_FAILD,
-        );
-      }
-
-      return { message: AVAILABILITY_SUCCESS.REMOVE_SLOT_SUCCESS };
-    } catch {
-      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }
+
+    return { message: AVAILABILITY_SUCCESS.REMOVE_SLOT_SUCCESS };
   }
 
   async createSlot(
@@ -97,33 +88,73 @@ export class AvailabilityService implements IAvailabilityService {
     day: WeekDayKeys,
     slot: ISlot,
   ): Promise<IBaseResponse> {
-    try {
-      const taskerId = toObjectId(userPaylod.id);
-
-      const existingDoc = await this._availabilityRepo.findOne({
-        taskerId,
-        day,
-      });
-
-      if (existingDoc && existingDoc.slots.length >= this.MAX_SLOT) {
-        throw new BadRequestException(AVAILABILITY_ERROR.ADD_SLOT_FAILD);
-      }
-
-      const availabilityDoc = await this._availabilityRepo.createSlot(
-        taskerId,
-        day,
-        slot,
-      );
-
-      if (!availabilityDoc) {
-        throw new InternalServerErrorException(
-          AVAILABILITY_ERROR.ADD_SLOT_FAILD,
-        );
-      }
-
-      return { message: AVAILABILITY_SUCCESS.ADD_SLOT_SUCCESS };
-    } catch {
-      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    // check if times are invalid
+    const isTimesValid = isInvalidTimes(slot.start, slot.end);
+    if (isTimesValid) {
+      throw new BadRequestException(AVAILABILITY_ERROR.TIME_INVALID);
     }
+
+    const taskerId = toObjectId(userPaylod.id);
+
+    // find existing doc? and check if time slot are at maximum
+    const existingDoc = await this._availabilityRepo.findOne({
+      taskerId,
+      day,
+    });
+    if (existingDoc && existingDoc.slots.length >= this.MAX_SLOT) {
+      throw new BadRequestException(AVAILABILITY_ERROR.SLOT_MAX_ERROR);
+    }
+
+    // find if doc contains existing overlaping time slots
+    const overlaps = await this._availabilityRepo.findOverlaps(
+      taskerId,
+      day,
+      slot,
+    );
+    if (overlaps) {
+      throw new BadRequestException(AVAILABILITY_ERROR.TIME_OVERLAP_ERROR);
+    }
+
+    // if availabiltiy doc is not present it just create with slot inside it, else just push the slot
+    const availabilityDoc = await this._availabilityRepo.createSlot(
+      taskerId,
+      day,
+      slot,
+    );
+
+    if (!availabilityDoc) {
+      throw new InternalServerErrorException(AVAILABILITY_ERROR.ADD_SLOT_FAILD);
+    }
+
+    return { message: AVAILABILITY_SUCCESS.ADD_SLOT_SUCCESS };
+  }
+
+  async updateSlot(
+    availabilityId: string,
+    slotId: string,
+    updatedSlot: ISlot,
+  ): Promise<IBaseResponse> {
+    // check if times are invalid
+    const isTimesValid = isInvalidTimes(updatedSlot.start, updatedSlot.end);
+    if (isTimesValid) {
+      throw new BadRequestException(AVAILABILITY_ERROR.TIME_INVALID);
+    }
+
+    // -- call a method to check if their is any doc that overlaping the given time slot and not the given one by id
+    //
+    //update slot
+    const isUpdated = await this._availabilityRepo.updateSlot(
+      availabilityId,
+      slotId,
+      updatedSlot,
+    );
+
+    if (!isUpdated) {
+      throw new InternalServerErrorException(
+        AVAILABILITY_ERROR.UPDATE_SLOT_FAILD,
+      );
+    }
+
+    return { message: AVAILABILITY_SUCCESS.UPDATE_SLOT_SUCCESS };
   }
 }

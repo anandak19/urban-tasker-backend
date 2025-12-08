@@ -6,16 +6,21 @@ export interface ISlot {
   end: string;
 }
 
+export interface ISlotDoc extends ISlot {
+  id: string;
+}
+
 export interface ICreateAvailability {
   taskerId: string | TObjectId;
   day: WeekDays;
   slots: ISlot[];
 }
 
-export interface IAvailability extends ICreateAvailability {
+export interface IAvailability extends Omit<ICreateAvailability, 'slots'> {
   id: string;
   createdAt?: Date;
   updatedAt?: Date;
+  slots: ISlotDoc[];
 }
 
 // resonse shape
