@@ -19,6 +19,7 @@ import { AuthGuard } from '@core/guards/auth/auth.guard';
 import { AVAILABILITY_TOKEN } from '../availability.token';
 import type { WeekDayKeys } from '../constants/week-days.constant';
 import { CreateSlotDto } from '../dtos/create-slot.dto';
+import { ChangeSlotStatusDto } from '../dtos/change-slot-status.dto';
 
 @Controller('availability')
 @UseGuards(AuthGuard)
@@ -46,6 +47,19 @@ export class AvailabilityController {
     // call method to get all availability of the tasker
     return this._availabilityService.findAllTaskerAvailabilities(
       req.user as IPayload,
+    );
+  }
+
+  @Patch(':availabilityId/:slotId/status')
+  changeStatus(
+    @Param('availabilityId') availabilityId: string,
+    @Param('slotId') slotId: string,
+    @Body() dto: ChangeSlotStatusDto,
+  ) {
+    return this._availabilityService.changeStatus(
+      availabilityId,
+      slotId,
+      dto.isDisabled,
     );
   }
 

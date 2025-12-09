@@ -37,4 +37,10 @@ export interface IAvailabilityRepository
     slotId: string,
     updatedSlot: ISlot,
   ): Promise<boolean>;
+
+  changeStatus(
+    availabilityId: string,
+    slotId: string,
+    isDisabled: boolean,
+  ): Promise<boolean>;
 }

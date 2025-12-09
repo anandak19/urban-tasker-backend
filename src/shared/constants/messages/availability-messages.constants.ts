@@ -4,6 +4,7 @@ export const AVAILABILITY_SUCCESS = {
   REMOVE_SLOT_SUCCESS: 'Successfully removed time slot',
   ADD_SLOT_SUCCESS: 'Successfully added new slot',
   UPDATE_SLOT_SUCCESS: 'Successfully updated the slot',
+  CHANGE_STATUS_SUCCESS: 'Successfully updated the visibility status',
 };
 
 export const AVAILABILITY_ERROR = {
@@ -20,4 +21,6 @@ export const AVAILABILITY_ERROR = {
 
   TIME_OVERLAP_ERROR: 'Start or end time is overlapping with other slots!',
   TIME_INVALID: 'End time should be greater than start',
+
+  CHANGE_STATUS_FAILD: 'Faild to change the visibility status',
 };

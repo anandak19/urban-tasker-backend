@@ -145,4 +145,26 @@ export class AvailabilityRepository
 
     return result.matchedCount > 0 && result.modifiedCount > 0;
   }
+
+  async changeStatus(
+    availabilityId: string,
+    slotId: string,
+    isDisabled: boolean,
+  ): Promise<boolean> {
+    const availabilityObjectId = toObjectId(availabilityId);
+    const slotObjectId = toObjectId(slotId);
+    const result = await this._availabilityModel.updateOne(
+      {
+        _id: availabilityObjectId,
+        'slots._id': slotObjectId,
+      },
+      {
+        $set: {
+          'slots.$.isDisabled': isDisabled,
+        },
+      },
+    );
+
+    return result.matchedCount > 0 && result.modifiedCount > 0;
+  }
 }

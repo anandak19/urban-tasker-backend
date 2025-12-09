@@ -34,4 +34,10 @@ export interface IAvailabilityService {
     slotId: string,
     updatedSlot: ISlot,
   ): Promise<IBaseResponse>;
+
+  changeStatus(
+    availabilityId: string,
+    slotId: string,
+    isDisabled: boolean,
+  ): Promise<IBaseResponse>;
 }

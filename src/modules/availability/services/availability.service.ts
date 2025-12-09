@@ -57,8 +57,6 @@ export class AvailabilityService implements IAvailabilityService {
       const availabilityDocs =
         await this._availabilityRepo.findAllTaskerAvailabilities(userPaylod.id);
 
-      console.log(availabilityDocs);
-
       return AvailabilityMapper.toListResponse(availabilityDocs);
     } catch {
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
@@ -156,5 +154,25 @@ export class AvailabilityService implements IAvailabilityService {
     }
 
     return { message: AVAILABILITY_SUCCESS.UPDATE_SLOT_SUCCESS };
+  }
+
+  async changeStatus(
+    availabilityId: string,
+    slotId: string,
+    isDisabled: boolean,
+  ): Promise<IBaseResponse> {
+    const updated = await this._availabilityRepo.changeStatus(
+      availabilityId,
+      slotId,
+      isDisabled,
+    );
+
+    if (!updated) {
+      throw new InternalServerErrorException(
+        AVAILABILITY_ERROR.CHANGE_STATUS_FAILD,
+      );
+    }
+
+    return { message: AVAILABILITY_SUCCESS.CHANGE_STATUS_SUCCESS };
   }
 }
