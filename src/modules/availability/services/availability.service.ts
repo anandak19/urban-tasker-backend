@@ -104,10 +104,10 @@ export class AvailabilityService implements IAvailabilityService {
     }
 
     // find if doc contains existing overlaping time slots
-    const overlaps = await this._availabilityRepo.findOverlaps(
+    const overlaps = await this._availabilityRepo.findCreateOverlap(
+      slot,
       taskerId,
       day,
-      slot,
     );
     if (overlaps) {
       throw new BadRequestException(AVAILABILITY_ERROR.TIME_OVERLAP_ERROR);
@@ -138,8 +138,16 @@ export class AvailabilityService implements IAvailabilityService {
       throw new BadRequestException(AVAILABILITY_ERROR.TIME_INVALID);
     }
 
-    // -- call a method to check if their is any doc that overlaping the given time slot and not the given one by id
-    //
+    const overlaps = await this._availabilityRepo.findUpdateOverlap(
+      updatedSlot,
+      availabilityId,
+      slotId,
+    );
+
+    if (overlaps) {
+      throw new BadRequestException(AVAILABILITY_ERROR.TIME_OVERLAP_ERROR);
+    }
+
     //update slot
     const isUpdated = await this._availabilityRepo.updateSlot(
       availabilityId,

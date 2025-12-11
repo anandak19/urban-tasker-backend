@@ -20,10 +20,16 @@ export interface IAvailabilityRepository
 
   deleteOneSlot(availabilityId: string, slotId: string): Promise<boolean>;
 
-  findOverlaps(
+  findCreateOverlap(
+    slot: ISlot,
     taskerId: TObjectId | string,
     day: WeekDayKeys,
-    slot: ISlot,
+  ): Promise<AvailabilityDocument | null>;
+
+  findUpdateOverlap(
+    updatedSlot: ISlot,
+    availabilityId: string,
+    slotId: string,
   ): Promise<AvailabilityDocument | null>;
 
   createSlot(

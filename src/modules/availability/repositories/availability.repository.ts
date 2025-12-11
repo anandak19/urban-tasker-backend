@@ -9,7 +9,7 @@ import {
 } from '../schemas/availability.schema';
 import { IAvailabilityRepository } from '../interfaces/availability-repositories.interface';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { WEEK_DAYS, WeekDayKeys } from '../constants/week-days.constant';
 import { DEFAULT_SLOTS } from '../constants/default-slots.constant';
 import { Injectable } from '@nestjs/common';
@@ -74,35 +74,36 @@ export class AvailabilityRepository
     return result.modifiedCount > 0;
   }
 
-  async findOverlaps(
+  async findUpdateOverlap(
+    updatedSlot: ISlot,
+    availabilityId: string,
+    slotId: string,
+  ): Promise<AvailabilityDocument | null> {
+    // find update overlap
+    const availabilityObjectId = toObjectId(availabilityId);
+    const slotObjectId = toObjectId(slotId);
+
+    const filter: FilterQuery<AvailabilityDocument> = {
+      _id: availabilityObjectId,
+    };
+
+    return await this.findOverlap(filter, updatedSlot, slotObjectId);
+  }
+
+  async findCreateOverlap(
+    slot: ISlot,
     taskerId: TObjectId | string,
     day: WeekDayKeys,
-    slot: ISlot,
   ): Promise<AvailabilityDocument | null> {
+    // find crete overlap
     const taskerObjectId = toObjectId(taskerId);
 
-    return this._availabilityModel.findOne({
+    const filter: FilterQuery<AvailabilityDocument> = {
       taskerId: taskerObjectId,
       day,
-      slots: {
-        $elemMatch: {
-          $or: [
-            {
-              start: { $lte: slot.start },
-              end: { $gt: slot.start },
-            },
-            {
-              start: { $lt: slot.end },
-              end: { $gte: slot.end },
-            },
-            {
-              start: { $gte: slot.start },
-              end: { $lte: slot.end },
-            },
-          ],
-        },
-      },
-    });
+    };
+
+    return await this.findOverlap(filter, slot);
   }
 
   async createSlot(
@@ -166,5 +167,39 @@ export class AvailabilityRepository
     );
 
     return result.matchedCount > 0 && result.modifiedCount > 0;
+  }
+
+  private findOverlap(
+    filter: FilterQuery<AvailabilityDocument>,
+    slot: ISlot,
+    slotId?: TObjectId,
+  ): Promise<AvailabilityDocument | null> {
+    const matchSlot: FilterQuery<AvailabilityDocument> = {
+      $or: [
+        {
+          start: { $lte: slot.start },
+          end: { $gt: slot.start },
+        },
+        {
+          start: { $lt: slot.end },
+          end: { $gte: slot.end },
+        },
+        {
+          start: { $gte: slot.start },
+          end: { $lte: slot.end },
+        },
+      ],
+    };
+
+    if (slotId) {
+      matchSlot._id = { $ne: slotId };
+    }
+
+    return this._availabilityModel.findOne({
+      ...filter,
+      slots: {
+        $elemMatch: matchSlot,
+      },
+    });
   }
 }
