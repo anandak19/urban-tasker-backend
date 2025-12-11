@@ -14,6 +14,7 @@ import { AuthModule } from '@modules/auth/auth.module';
 import { CategoriesModule } from '@modules/categories/categories.module';
 import { TaskerApplicationsAdminController } from './controllers/admin/tasker-applications-admin.controller';
 import { UsersModule } from '@modules/users/users.module';
+import { TaskerModule } from '@modules/tasker/tasker.module';
 // import { TokenModule } from '@modules/Token/token.module';
 
 @Module({
@@ -26,6 +27,7 @@ import { UsersModule } from '@modules/users/users.module';
     AuthModule,
     UsersModule,
     CategoriesModule,
+    TaskerModule,
   ],
   controllers: [
     TaskerApplicationsController,

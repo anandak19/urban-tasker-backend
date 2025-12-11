@@ -36,6 +36,9 @@ import { TaskerApplicationStatus } from '@shared/constants/enums/status.enum';
 import { USER_TOKENS } from '@modules/users/user-tokens';
 import type { IAdminUserService } from '@modules/users/interfaces/user-services.interface';
 import { UserRoles } from '@shared/constants/enums/user.enum';
+import { TASKER_TOKEN } from '@modules/tasker/tasker.token';
+import { type ITaskerService } from '@modules/tasker/interfaces/tasker-services.interface';
+import { ICreateTasker } from '@modules/tasker/interfaces/tasker.interface';
 
 @Injectable()
 export class TaskerApplicationsService implements ITaskerApplicationService {
@@ -49,6 +52,8 @@ export class TaskerApplicationsService implements ITaskerApplicationService {
 
     @Inject(USER_TOKENS.ADMIN_USER_SERVICE)
     private _adminUserService: IAdminUserService,
+
+    @Inject(TASKER_TOKEN.SERVICE) private _taskerService: ITaskerService,
 
     @Inject(LOGGER_SERVICE) private _logger: ILoggerService,
   ) {}
@@ -201,8 +206,22 @@ export class TaskerApplicationsService implements ITaskerApplicationService {
     statusInfo: IApplicationStatusInfo,
   ): Promise<IBaseResponse> {
     try {
-      console.log(statusInfo);
+      // if the status is aprove in request, throw error
+      if (statusInfo.applicationStatus === TaskerApplicationStatus.APPROVED) {
+        throw new BadRequestException(
+          TASKER_APPLICATION_ERROR_MESSAGES.INVALID_REQUEST,
+        );
+      }
 
+      // checks if the status is already approved
+      const isApproved = await this.isApplicationApproved(applicationId);
+      if (isApproved) {
+        throw new BadRequestException(
+          TASKER_APPLICATION_ERROR_MESSAGES.ALREADY_APPROVED,
+        );
+      }
+
+      // update status
       const updated = await this._taskerApplicationRepo.updateById(
         applicationId,
         statusInfo,
@@ -212,18 +231,77 @@ export class TaskerApplicationsService implements ITaskerApplicationService {
         throw new InternalServerErrorException(GENERAL_ERRORS.ERROR);
       }
 
-      if (statusInfo.applicationStatus === TaskerApplicationStatus.APPROVED) {
-        await this._adminUserService.changeUserRoleById(
-          updated.userId,
-          UserRoles.TASKER,
-        );
-      }
-
       return { message: 'Update success' };
     } catch (err) {
       this._logger.error('Error in update');
       console.log(err);
 
+      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
+  }
+
+  async approveApplication(applicationId: string): Promise<IBaseResponse> {
+    try {
+      // checks if already approved, so stop repeating further process
+      const isApproved = await this.isApplicationApproved(applicationId);
+      if (isApproved) {
+        throw new BadRequestException(
+          TASKER_APPLICATION_ERROR_MESSAGES.ALREADY_APPROVED,
+        );
+      }
+
+      // approve application
+      const approvedApplication = await this._taskerApplicationRepo.updateById(
+        applicationId,
+        {
+          applicationStatus: TaskerApplicationStatus.APPROVED,
+          adminFeedback: '',
+        },
+      );
+
+      if (!approvedApplication) {
+        throw new InternalServerErrorException(
+          TASKER_APPLICATION_ERROR_MESSAGES.APPROVE_FAILD,
+        );
+      }
+
+      // change role to tasker
+      await this._adminUserService.changeUserRoleById(
+        approvedApplication.userId,
+        UserRoles.TASKER,
+      );
+
+      // create tasker doc in db
+      const newTaker: ICreateTasker = {
+        userId: approvedApplication.userId,
+        city: approvedApplication.city,
+        hourlyRate: approvedApplication.hourlyRate,
+        workCategories: approvedApplication.workCategories,
+      };
+      await this._taskerService.create(newTaker);
+
+      return { message: TASKER_APPLICATION_SUCCESS_MESSAGES.APPROVE_SUCCESS };
+    } catch (error) {
+      this._logger.error('Error in aproving');
+      console.log(error);
+      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
+    }
+  }
+
+  private async isApplicationApproved(applicationId: string): Promise<boolean> {
+    try {
+      const application =
+        await this._taskerApplicationRepo.findById(applicationId);
+
+      if (!application) {
+        throw new NotFoundException(
+          TASKER_APPLICATION_ERROR_MESSAGES.NOT_FOUND,
+        );
+      }
+
+      return application.applicationStatus === TaskerApplicationStatus.APPROVED;
+    } catch {
+      this._logger.error('Error in checking application is approved');
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }
   }

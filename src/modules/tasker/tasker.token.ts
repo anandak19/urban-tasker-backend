@@ -1,0 +1,4 @@
+export const TASKER_TOKEN = {
+  SERVICE: Symbol('TASKER_SERVICE'),
+  REPOSITORY: Symbol('TASKER_REPOSITORY'),
+};

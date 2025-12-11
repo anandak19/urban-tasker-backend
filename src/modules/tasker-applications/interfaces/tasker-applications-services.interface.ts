@@ -29,4 +29,6 @@ export interface ITaskerApplicationService {
     applicationId: string,
     statusInfo: IApplicationStatusInfo,
   ): Promise<IBaseResponse>;
+
+  approveApplication(applicationId: string): Promise<IBaseResponse>;
 }

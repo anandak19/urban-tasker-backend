@@ -1,5 +1,10 @@
+import { TObjectId } from '@shared/types/db-types';
 import { Types } from 'mongoose';
 
-export const toObjectId = (id: string) => {
-  return Types.ObjectId.isValid(id) ? new Types.ObjectId(id) : null;
+export const toObjectId = (id: string | TObjectId) => {
+  if (id instanceof Types.ObjectId) {
+    return id;
+  }
+
+  return new Types.ObjectId(id);
 };
