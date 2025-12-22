@@ -9,6 +9,7 @@ export class CategoryMapper {
       image: category.image,
       isActive: category.isActive,
       slug: category.slug,
+      isDeleted: category.isDeleted,
     };
   }
 }

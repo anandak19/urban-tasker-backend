@@ -8,6 +8,7 @@ import {
   PaginatedResult,
 } from '@shared/interfaces/query.interface';
 import { TObjectId } from '@shared/types/db-types';
+import { IOptionData } from '@shared/interfaces/response-data.interface';
 
 export interface ICategoryRepository
   extends IBaseRepository<CategoryDocument, ICreateCategory> {
@@ -17,6 +18,8 @@ export interface ICategoryRepository
     id: string,
     isActive: boolean,
   ): Promise<CategoryDocument | null>;
+
+  getActiveCategoriesOptions(): Promise<IOptionData[]>;
 }
 
 export interface ISubCategoryRepository
@@ -40,4 +43,6 @@ export interface ISubCategoryRepository
   findActiveCategoriesById(
     ids: TObjectId[],
   ): Promise<SubCategoryDocument[] | null>;
+
+  getActiveSubCategoriesOptions(categoryId: string): Promise<IOptionData[]>;
 }

@@ -30,6 +30,7 @@ import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constan
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { IFindAllOptions } from '@shared/interfaces/repository.interface';
+import { IOptionData } from '@shared/interfaces/response-data.interface';
 import { type Express } from 'express';
 
 @Injectable()
@@ -42,6 +43,10 @@ export class CategoryService implements ICategoryService {
 
     @Inject(S3_SERVICE) private _s3: IS3Service,
   ) {}
+
+  async getActiveCategoriesOptions(): Promise<IOptionData[]> {
+    return await this._categoryRepo.getActiveCategoriesOptions();
+  }
 
   /**
    * To create new category

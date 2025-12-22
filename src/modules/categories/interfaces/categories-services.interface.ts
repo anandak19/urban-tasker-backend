@@ -14,6 +14,7 @@ import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { ICreateSubCategory, ISubCategory } from './subcategory.interface';
 import { TObjectId } from '@shared/types/db-types';
+import { IOptionData } from '@shared/interfaces/response-data.interface';
 
 export interface ICategoryService {
   /**
@@ -67,6 +68,8 @@ export interface ICategoryService {
     update: IUpdateCategory,
     imagFile: Express.Multer.File | null,
   ): Promise<ICategoryResponse>;
+
+  getActiveCategoriesOptions(): Promise<IOptionData[]>;
 }
 
 /**
@@ -100,4 +103,6 @@ export interface ISubCategoryService {
   getAllActiveSubCategories(): Promise<ISubCategory[]>;
 
   isActiveCategoryIds(ids: TObjectId[]): Promise<void>;
+
+  getActiveSubCategoriesOptions(categoryId: string): Promise<IOptionData[]>;
 }

@@ -14,6 +14,7 @@ import { SubCategoryRepository } from './repositories/subcategory-repositrory';
 import { SubcategoryService } from './services/subcategory/subcategory.service';
 import { SubCategoryAdminController } from './controllers/admin/sub-category-admin/sub-category-admin.controller';
 import { CategoryController } from './controllers/user/category.controller';
+import { SubCategoryController } from './controllers/user/sub-category/sub-category.controller';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { CategoryController } from './controllers/user/category.controller';
     CategoryAdminController,
     SubCategoryAdminController,
     CategoryController,
+    SubCategoryController,
   ],
 
   providers: [
@@ -52,6 +54,9 @@ import { CategoryController } from './controllers/user/category.controller';
 
     CategoryExistsGuard,
   ],
-  exports: [CATEGORY_TOKEN.SUBCATEGORY_SERVICE],
+  exports: [
+    CATEGORY_TOKEN.CATEGORY_SERVICE,
+    CATEGORY_TOKEN.SUBCATEGORY_SERVICE,
+  ],
 })
 export class CategoriesModule {}

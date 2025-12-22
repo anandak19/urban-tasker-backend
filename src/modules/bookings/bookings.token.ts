@@ -1,0 +1,5 @@
+export const BOOKING_TOKEN = {
+  BOOKING_REPOSITORY: Symbol('BOOKING-REPOSITORY'),
+  //services
+  BOOKING_SERVICE: Symbol('BOOKING_SERVICE'),
+};

@@ -1,4 +1,6 @@
-import { ICreateTasker, ITasker } from './tasker.interface';
+import { PaginatedResult } from '@shared/interfaces/query.interface';
+import { GetAvailableTaskersQueryDto } from '../dtos/get-available-taskers.dto';
+import { ICreateTasker, IListTaskers, ITasker } from './tasker.interface';
 
 export interface ITaskerService {
   /**
@@ -7,4 +9,8 @@ export interface ITaskerService {
    * @returns {Promise<ITasker>} newTaskerData
    */
   create(taskerData: ICreateTasker): Promise<ITasker>;
+
+  getAvailbleTaskers(
+    availQuery: GetAvailableTaskersQueryDto,
+  ): Promise<PaginatedResult<IListTaskers>>;
 }
