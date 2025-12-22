@@ -6,11 +6,13 @@ import { BOOKING_TOKEN } from './bookings.token';
 import { BookingRepository } from './repositories/booking.repository';
 import { CategoriesModule } from '@modules/categories/categories.module';
 import { BookingService } from './services/booking.service';
+import { S3Module } from '@core/lib/s3/s3.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Booking.name, schema: BookingSchema }]),
     CategoriesModule,
+    S3Module,
   ],
   controllers: [BookingsController],
   providers: [
