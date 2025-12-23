@@ -1,0 +1,42 @@
+import { AuthGuard } from '@core/guards/auth/auth.guard';
+import { BOOKING_TOKEN } from '@modules/bookings/bookings.token';
+import { GetBookingsDto } from '@modules/bookings/dtos/booking-listing-query.dto';
+import { CreateBookingDto } from '@modules/bookings/dtos/create-booking-dto';
+import type { IBookingService } from '@modules/bookings/interfaces/bookings-services.interface';
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Post,
+  Query,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { type IAuthenticatedReqeust } from '@shared/interfaces/request.interface';
+
+@Controller('bookings')
+@UseGuards(AuthGuard)
+export class BookingsController {
+  constructor(
+    @Inject(BOOKING_TOKEN.BOOKING_SERVICE)
+    private _bookingService: IBookingService,
+  ) {}
+
+  @Get()
+  getAllbookings(
+    @Req() req: IAuthenticatedReqeust,
+    @Query() dto: GetBookingsDto,
+  ) {
+    return this._bookingService.getAllBookings(req.user.id, dto);
+  }
+
+  @Post()
+  bookTasker(@Req() req: IAuthenticatedReqeust, @Body() dto: CreateBookingDto) {
+    //logic
+    console.log('booking', dto);
+    console.log('userid', req.user.id);
+
+    return this._bookingService.createBooking(req.user.id, dto);
+  }
+}

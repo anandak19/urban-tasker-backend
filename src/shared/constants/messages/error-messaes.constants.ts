@@ -17,4 +17,5 @@ export const USER_ERRORS = {
   USER_NOT_FOUND: 'User not found',
   SUSPEND_FAIL: 'Faild to suspend user',
   UNSUSPEND_FAIL: 'Faild to unsuspend user',
+  USER_FETCH_ERROR: 'Faild to fetch users',
 };

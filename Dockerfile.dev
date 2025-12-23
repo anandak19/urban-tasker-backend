@@ -4,6 +4,8 @@ FROM node:20-alpine AS base
 # Set working directory inside container
 WORKDIR /usr/src/app
 
+RUN mkdir -p /app/logs
+
 # Copy package files first
 COPY package*.json ./
 

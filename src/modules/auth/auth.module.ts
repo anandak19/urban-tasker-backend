@@ -1,5 +1,6 @@
 import { UsersModule } from '@modules/users/users.module';
 import {
+  Global,
   MiddlewareConsumer,
   Module,
   NestModule,
@@ -28,6 +29,7 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { TokenModule } from '@modules/Token/token.module';
 console.log('Loaded AuthModule');
 
+@Global()
 @Module({
   imports: [
     TokenModule,

@@ -1,5 +1,6 @@
 export const TASKER_APPLICATION_SUCCESS_MESSAGES = {
   CREATE_SUCCESS: 'Tasker Application send successfully',
+  UPDATE_SUCCESS: 'Tasker Application UPDATE successfully',
   APPROVE_SUCCESS: 'Application approved successfully',
 };
 

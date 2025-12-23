@@ -15,12 +15,13 @@ import { CookieModule } from '@core/lib/cookie/cookie.module';
 import { TokenModule } from '@modules/Token/token.module';
 import { AvailabilityModule } from './modules/availability/availability.module';
 import { TaskerModule } from './modules/tasker/tasker.module';
+import { BookingsModule } from './modules/bookings/bookings.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(configOptions),
     CacheModule,
-    AuthModule,
+    AuthModule, // use default scope for providers
     CookieModule,
     TokenModule,
     MongooseModule.forRootAsync(mongooseOption),
@@ -30,6 +31,7 @@ import { TaskerModule } from './modules/tasker/tasker.module';
     PassportModule.register({}),
     AvailabilityModule,
     TaskerModule,
+    BookingsModule,
   ],
   controllers: [AppController],
   providers: [],

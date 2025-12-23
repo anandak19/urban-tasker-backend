@@ -159,7 +159,6 @@ export class TaskerApplicationsService implements ITaskerApplicationService {
 
       return await this.populateImages(application);
     } catch {
-      this._logger.error('Error in finding tasker application by id');
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }
   }
@@ -192,7 +191,6 @@ export class TaskerApplicationsService implements ITaskerApplicationService {
         meta: result.meta,
       };
     } catch {
-      this._logger.error('Faild to fetch applications');
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }
   }

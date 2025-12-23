@@ -13,6 +13,8 @@ import {
 } from '@shared/interfaces/query.interface';
 import { IFindAllOptions } from '@shared/interfaces/repository.interface';
 import { TObjectId } from '@shared/types/db-types';
+import { IOptionData } from '@shared/interfaces/response-data.interface';
+import { toObjectId } from '@shared/utility/db/to-objectid.util';
 
 export class SubCategoryRepository
   extends BaseRepository<SubCategoryDocument, ICreateSubCategory>
@@ -23,6 +25,28 @@ export class SubCategoryRepository
     private _subCategoryModel: Model<SubCategoryDocument>,
   ) {
     super(_subCategoryModel);
+  }
+
+  async getActiveSubCategoriesOptions(
+    categoryId: string,
+  ): Promise<IOptionData[]> {
+    const categoryObjectId = toObjectId(categoryId);
+    return await this._subCategoryModel.aggregate([
+      {
+        $match: {
+          categoryId: categoryObjectId,
+          isDeleted: false,
+          isActive: true,
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          id: '$_id',
+          label: '$name',
+        },
+      },
+    ]);
   }
 
   async findAllSubCategories(

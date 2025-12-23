@@ -34,6 +34,7 @@ import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { IFindAllQuery } from '@shared/interfaces/query.interface';
 import { IFindAllOptions } from '@shared/interfaces/repository.interface';
+import { IOptionData } from '@shared/interfaces/response-data.interface';
 import { TObjectId } from '@shared/types/db-types';
 import { Types } from 'mongoose';
 
@@ -47,6 +48,14 @@ export class SubcategoryService implements ISubCategoryService {
 
     @Inject(LOGGER_SERVICE) private _logger: ILoggerService,
   ) {}
+
+  async getActiveSubCategoriesOptions(
+    categoryId: string,
+  ): Promise<IOptionData[]> {
+    return await this._subCategoryRepo.getActiveSubCategoriesOptions(
+      categoryId,
+    );
+  }
 
   async create(
     file: Express.Multer.File,

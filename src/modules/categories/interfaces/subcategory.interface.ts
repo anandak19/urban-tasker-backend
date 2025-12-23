@@ -15,4 +15,5 @@ export interface ISubCategory {
   image: string;
   isActive: boolean;
   slug: string;
+  isDeleted: boolean;
 }

@@ -10,6 +10,7 @@ export class SubCategoryMapper {
       image: categoryDoc.image,
       isActive: categoryDoc.isActive,
       slug: categoryDoc.slug,
+      isDeleted: categoryDoc.isDeleted,
     };
   }
 }

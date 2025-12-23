@@ -21,4 +21,9 @@ export class CategoryController {
   getActiveCategories() {
     return this._subcategoryService.getAllActiveSubCategories();
   }
+
+  @Get('options')
+  getActiveCategoriesOptions() {
+    return this._categoryService.getActiveCategoriesOptions();
+  }
 }

@@ -10,6 +10,12 @@ export interface ICreateTasker {
 }
 
 export interface ITasker extends ICreateTasker {
-  about: string;
+  about?: string;
   rating: number;
+}
+
+export interface IListTaskers extends Omit<ITasker, 'workCategories'> {
+  firstName: string;
+  lastName: string;
+  profileImageUrl: string;
 }

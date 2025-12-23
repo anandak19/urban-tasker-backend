@@ -27,7 +27,7 @@ export class User {
   @Prop({ required: false, default: UserRoles.USER })
   userRole: UserRoles;
 
-  @Prop({ required: false })
+  @Prop({ required: false, default: '' })
   profileImageUrl: string;
 
   @Prop({ required: false, type: Boolean, default: false })

@@ -15,4 +15,6 @@ export interface ICategory {
   isActive: boolean;
 
   slug: string;
+
+  isDeleted: boolean;
 }
