@@ -1,5 +1,6 @@
 import { type IRefreshTokenService } from '@modules/Token/interfaces/services.interface';
 import { TOKEN_TOKENS } from '@modules/Token/token-tokens';
+import { GetUsersDto } from '@modules/users/dtos/get-user.dto';
 // import { type IRefreshTokenService } from '@modules/auth/interfaces/services.interface';
 import { SuspendUserDto } from '@modules/users/dtos/suspend-user.dto';
 import { UserResponseDto } from '@modules/users/dtos/user-response.dto';
@@ -20,7 +21,6 @@ import {
   GENERAL_ERRORS,
   USER_ERRORS,
 } from '@shared/constants/messages/error-messaes.constants';
-import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 import { IFindAllQuery } from '@shared/interfaces/query.interface';
 import { TObjectId } from '@shared/types/db-types';
 
@@ -32,7 +32,7 @@ export class AdminUserService implements IAdminUserService {
     private _refreshTokenService: IRefreshTokenService,
   ) {}
 
-  async findAllUsers(userQuery: GetDocsDto) {
+  async findAllUsers(userQuery: GetUsersDto) {
     console.log(userQuery);
     const pagination: IFindAllQuery = {
       page: userQuery?.page,
@@ -41,6 +41,7 @@ export class AdminUserService implements IAdminUserService {
 
     const filter: IUserFilter = {
       search: userQuery.search,
+      role: userQuery.role ?? userQuery.role,
     };
 
     try {
@@ -49,7 +50,7 @@ export class AdminUserService implements IAdminUserService {
       const users = await this._userRepo.findAllUsers(pagination, filter);
 
       if (!users) {
-        throw new InternalServerErrorException('Faild to fetch users');
+        throw new InternalServerErrorException(USER_ERRORS.USER_FETCH_ERROR);
       }
 
       console.log(users.documents);
@@ -63,7 +64,7 @@ export class AdminUserService implements IAdminUserService {
       };
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Somthing went wrong');
+      throw new InternalServerErrorException(GENERAL_ERRORS.ERROR);
     }
   }
 
@@ -76,7 +77,6 @@ export class AdminUserService implements IAdminUserService {
 
       return UserMapper.toResponse(user);
     } catch {
-      console.log('errror in finding oneuser');
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }
   }

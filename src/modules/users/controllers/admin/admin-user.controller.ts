@@ -1,3 +1,4 @@
+import { GetUsersDto } from '@modules/users/dtos/get-user.dto';
 import { SuspendUserDto } from '@modules/users/dtos/suspend-user.dto';
 import type { IAdminUserService } from '@modules/users/interfaces/user-services.interface';
 import { USER_TOKENS } from '@modules/users/user-tokens';
@@ -11,7 +12,6 @@ import {
   Patch,
   Query,
 } from '@nestjs/common';
-import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 
 @Controller('admin/user')
 export class AdminUserController {
@@ -22,10 +22,10 @@ export class AdminUserController {
   ) {}
 
   @Get()
-  findAll(@Query() getDocsDto: GetDocsDto) {
+  findAll(@Query() dto: GetUsersDto) {
     //call service to get all users
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return this._adminUserService.findAllUsers(getDocsDto);
+    return this._adminUserService.findAllUsers(dto);
   }
 
   @Get(':id')
