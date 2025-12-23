@@ -21,7 +21,7 @@ import { BookingsModule } from './modules/bookings/bookings.module';
   imports: [
     ConfigModule.forRoot(configOptions),
     CacheModule,
-    AuthModule,
+    AuthModule, // use default scope for providers
     CookieModule,
     TokenModule,
     MongooseModule.forRootAsync(mongooseOption),
