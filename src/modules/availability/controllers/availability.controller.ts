@@ -8,17 +8,17 @@ import {
   Param,
   Patch,
   Post,
+  Req,
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { type Request as TRequest } from 'express';
 import type { IAvailabilityService } from '../interfaces/availability-services.interface';
 import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constants';
-import { IPayload } from '@modules/auth/interfaces/auth.interface';
 import { AuthGuard } from '@core/guards/auth/auth.guard';
 import { AVAILABILITY_TOKEN } from '../availability.token';
-import type { WeekDayKeys } from '../constants/week-days.constant';
-import { CreateSlotDto } from '../dtos/create-slot.dto';
+import type { IAuthenticatedReqeust } from '@shared/interfaces/request.interface';
+import { IMappedAvailability } from '../interfaces/availability.interface';
+import { SlotDataDto } from '../dtos/slot-data.dto';
 import { ChangeSlotStatusDto } from '../dtos/change-slot-status.dto';
 
 @Controller('availability')
@@ -29,66 +29,58 @@ export class AvailabilityController {
     private _availabilityService: IAvailabilityService,
   ) {}
 
-  // rote to create default availability slots
   @Patch('default')
-  createDefault(@Request() req: TRequest) {
-    console.log('Chek');
+  createDefault(@Request() req: IAuthenticatedReqeust) {
     if (!req.user) {
       throw new BadRequestException(GENERAL_ERRORS.LOGIN_REQUIRED);
     }
 
-    return this._availabilityService.createDefaultAvailability(
-      req.user as IPayload,
-    );
+    return this._availabilityService.createDefaultAvailability(req.user.id);
+  }
+
+  @Delete('default')
+  deleteAllSlots(@Request() req: IAuthenticatedReqeust) {
+    return this._availabilityService.deleteAllTaskerSlots(req.user.id);
   }
 
   @Get()
-  findAllTaskerAvailabilities(@Request() req: TRequest) {
-    // call method to get all availability of the tasker
-    return this._availabilityService.findAllTaskerAvailabilities(
-      req.user as IPayload,
-    );
+  findAllTaskerAvailabilities(
+    @Request() req: IAuthenticatedReqeust,
+  ): Promise<IMappedAvailability> {
+    return this._availabilityService.findAllTaskerAvailabilities(req.user.id);
   }
 
-  @Patch(':availabilityId/:slotId/status')
+  @Patch(':availabilityId/status')
   changeStatus(
     @Param('availabilityId') availabilityId: string,
-    @Param('slotId') slotId: string,
     @Body() dto: ChangeSlotStatusDto,
   ) {
-    return this._availabilityService.changeStatus(
-      availabilityId,
-      slotId,
-      dto.isDisabled,
-    );
+    return this._availabilityService.changeStatus(availabilityId, dto.isActive);
   }
 
   // route to delete one slot
-  @Delete(':availabilityId/:slotId')
-  deleteOneTimeSlot(
-    @Param('availabilityId') availabilityId: string,
-    @Param('slotId') slotId: string,
-  ) {
-    return this._availabilityService.deleteOneTimeSlot(availabilityId, slotId);
+  @Delete(':availabilityId')
+  deleteOneTimeSlot(@Param('availabilityId') availabilityId: string) {
+    return this._availabilityService.deleteOneTimeSlot(availabilityId);
   }
 
   // route to update one slot
-  @Patch(':availabilityId/:slotId')
+  @Patch(':availabilityId')
   updateSlot(
+    @Req() req: IAuthenticatedReqeust,
     @Param('availabilityId') availabilityId: string,
-    @Param('slotId') slotId: string,
-    @Body() dto: CreateSlotDto, // --- use update slot dto later
+    @Body() dto: SlotDataDto,
   ) {
-    return this._availabilityService.updateSlot(availabilityId, slotId, dto);
+    return this._availabilityService.updateSlot(
+      availabilityId,
+      dto,
+      req.user.id,
+    );
   }
 
   // route to add new slot
-  @Post('day/:day')
-  createSlot(
-    @Request() req: TRequest,
-    @Param('day') day: WeekDayKeys,
-    @Body() dto: CreateSlotDto,
-  ) {
-    return this._availabilityService.createSlot(req.user as IPayload, day, dto);
+  @Post()
+  createSlot(@Request() req: IAuthenticatedReqeust, @Body() dto: SlotDataDto) {
+    return this._availabilityService.createSlot(req.user.id, dto);
   }
 }

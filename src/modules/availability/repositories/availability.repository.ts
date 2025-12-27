@@ -1,6 +1,7 @@
 import { BaseRepository } from '@shared/repository/base.repository';
 import {
-  ICreateAvailability,
+  ICreateAvailabilitySlot,
+  IGroupedSlots,
   ISlot,
 } from '../interfaces/availability.interface';
 import {
@@ -9,8 +10,12 @@ import {
 } from '../schemas/availability.schema';
 import { IAvailabilityRepository } from '../interfaces/availability-repositories.interface';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
-import { WEEK_DAYS, WeekDayKeys } from '../constants/week-days.constant';
+import {
+  AnyBulkWriteOperation,
+  FilterQuery,
+  Model,
+  PipelineStage,
+} from 'mongoose';
 import { DEFAULT_SLOTS } from '../constants/default-slots.constant';
 import { Injectable } from '@nestjs/common';
 import { TObjectId } from '@shared/types/db-types';
@@ -18,7 +23,7 @@ import { toObjectId } from '@shared/utility/db/to-objectid.util';
 
 @Injectable()
 export class AvailabilityRepository
-  extends BaseRepository<AvailabilityDocument, ICreateAvailability>
+  extends BaseRepository<AvailabilityDocument, ICreateAvailabilitySlot>
   implements IAvailabilityRepository
 {
   constructor(
@@ -28,118 +33,123 @@ export class AvailabilityRepository
     super(_availabilityModel);
   }
 
-  async createDefaultAvailabilty(taskerId: string): Promise<boolean> {
-    const taskerObjectId = toObjectId(taskerId);
-    const ops = WEEK_DAYS.map((day) => ({
-      updateOne: {
-        filter: { taskerId: taskerObjectId, day },
-        update: {
-          $set: { taskerId: taskerObjectId, day, slots: DEFAULT_SLOTS },
-        },
-        upsert: true,
-      },
-    }));
-
-    const result = await this._availabilityModel.bulkWrite(ops);
-
-    return result.modifiedCount + result.upsertedCount === 7;
-  }
-
-  async findAllTaskerAvailabilities(
-    taskerId: TObjectId | string,
-  ): Promise<AvailabilityDocument[]> {
+  async deleteAllTaskerSlots(taskerId: string): Promise<boolean> {
     const taskerObjectId = toObjectId(taskerId);
 
-    return await this._availabilityModel.find({ taskerId: taskerObjectId });
-  }
-
-  async deleteOneSlot(
-    availabilityId: string,
-    slotId: string,
-  ): Promise<boolean> {
-    const availabilityObjectId = toObjectId(availabilityId);
-    const slotObjectId = toObjectId(slotId);
-
-    const result = await this._availabilityModel.updateOne(
-      { _id: availabilityObjectId },
-      {
-        $pull: {
-          slots: {
-            _id: slotObjectId,
-          },
-        },
-      },
+    const result = await this._availabilityModel.updateMany(
+      { taskerId: taskerObjectId, isDeleted: false },
+      { $set: { isDeleted: true } },
     );
 
     return result.modifiedCount > 0;
   }
 
+  async createDefaultAvailabilty(taskerId: string): Promise<boolean> {
+    const taskerObjectId = toObjectId(taskerId);
+
+    const bulkOps: AnyBulkWriteOperation<Availability>[] = DEFAULT_SLOTS.map(
+      (slot) => ({
+        insertOne: {
+          document: {
+            taskerId: taskerObjectId,
+            day: slot.day,
+            start: slot.start,
+            end: slot.end,
+            isActive: true,
+            isDeleted: false,
+          },
+        },
+      }),
+    );
+
+    const result = await this._availabilityModel.bulkWrite(bulkOps);
+
+    return result.insertedCount === DEFAULT_SLOTS.length;
+  }
+
+  async findAllTaskerAvailabilities(
+    taskerId: TObjectId | string,
+  ): Promise<IGroupedSlots[]> {
+    const taskerObjectId = toObjectId(taskerId);
+
+    const pipeline: PipelineStage[] = [
+      {
+        $match: {
+          taskerId: taskerObjectId,
+          isDeleted: false,
+        },
+      },
+      {
+        $sort: {
+          day: 1,
+          start: 1,
+        },
+      },
+      {
+        $group: {
+          _id: '$day',
+          slots: {
+            $push: '$$ROOT',
+          },
+        },
+      },
+      {
+        $sort: {
+          _id: 1,
+        },
+      },
+    ];
+
+    return await this._availabilityModel.aggregate(pipeline);
+  }
+
   async findUpdateOverlap(
     updatedSlot: ISlot,
     availabilityId: string,
-    slotId: string,
+    taskerId: TObjectId | string,
   ): Promise<AvailabilityDocument | null> {
     // find update overlap
     const availabilityObjectId = toObjectId(availabilityId);
-    const slotObjectId = toObjectId(slotId);
+    const taskerObjectId = toObjectId(taskerId);
 
     const filter: FilterQuery<AvailabilityDocument> = {
-      _id: availabilityObjectId,
+      taskerId: taskerObjectId,
+      isDeleted: false,
+      day: updatedSlot.day,
     };
 
-    return await this.findOverlap(filter, updatedSlot, slotObjectId);
+    return await this.findOverlap(filter, updatedSlot, availabilityObjectId);
   }
 
   async findCreateOverlap(
     slot: ISlot,
     taskerId: TObjectId | string,
-    day: WeekDayKeys,
   ): Promise<AvailabilityDocument | null> {
     // find crete overlap
     const taskerObjectId = toObjectId(taskerId);
 
     const filter: FilterQuery<AvailabilityDocument> = {
       taskerId: taskerObjectId,
-      day,
+      isDeleted: false,
+      day: slot.day,
     };
 
     return await this.findOverlap(filter, slot);
   }
 
-  async createSlot(
-    taskerId: TObjectId,
-    day: WeekDayKeys,
-    slot: ISlot,
-  ): Promise<AvailabilityDocument> {
-    return this._availabilityModel.findOneAndUpdate(
-      { taskerId, day },
-      {
-        $setOnInsert: { taskerId, day },
-        $push: { slots: slot },
-      },
-      {
-        new: true,
-        upsert: true,
-      },
-    );
-  }
-
   async updateSlot(
     availabilityId: string,
-    slotId: string,
     updatedSlot: ISlot,
   ): Promise<boolean> {
     const availabilityObjectId = toObjectId(availabilityId);
-    const slotObjectId = toObjectId(slotId);
     const result = await this._availabilityModel.updateOne(
       {
         _id: availabilityObjectId,
-        'slots._id': slotObjectId,
       },
       {
         $set: {
-          'slots.$.start': updatedSlot.start,
-          'slots.$.end': updatedSlot.end,
+          start: updatedSlot.start,
+          end: updatedSlot.end,
         },
       },
     );
@@ -149,19 +159,16 @@ export class AvailabilityRepository
 
   async changeStatus(
     availabilityId: string,
-    slotId: string,
-    isDisabled: boolean,
+    isActive: boolean,
   ): Promise<boolean> {
     const availabilityObjectId = toObjectId(availabilityId);
-    const slotObjectId = toObjectId(slotId);
     const result = await this._availabilityModel.updateOne(
       {
         _id: availabilityObjectId,
-        'slots._id': slotObjectId,
       },
       {
         $set: {
-          'slots.$.isDisabled': isDisabled,
+          isActive: isActive,
         },
       },
     );
@@ -169,37 +176,44 @@ export class AvailabilityRepository
     return result.matchedCount > 0 && result.modifiedCount > 0;
   }
 
+  async countTaskerExistingSlots(
+    taskerId: string | TObjectId,
+    day?: number,
+  ): Promise<number> {
+    const taskerObjectId = toObjectId(taskerId);
+
+    const query: FilterQuery<AvailabilityDocument> = {
+      taskerId: taskerObjectId,
+      isDeleted: false,
+    };
+
+    if (day) {
+      query.day = day;
+    }
+
+    return await this._availabilityModel.countDocuments(query);
+  }
+
+  // private methods
   private findOverlap(
     filter: FilterQuery<AvailabilityDocument>,
     slot: ISlot,
-    slotId?: TObjectId,
+    availabilityId?: TObjectId,
   ): Promise<AvailabilityDocument | null> {
-    const matchSlot: FilterQuery<AvailabilityDocument> = {
-      $or: [
-        {
-          start: { $lte: slot.start },
-          end: { $gt: slot.start },
-        },
-        {
-          start: { $lt: slot.end },
-          end: { $gte: slot.end },
-        },
-        {
-          start: { $gte: slot.start },
-          end: { $lte: slot.end },
-        },
-      ],
+    const query: FilterQuery<AvailabilityDocument> = {
+      ...filter,
+
+      start: { $lt: slot.end },
+      end: { $gt: slot.start },
     };
 
-    if (slotId) {
-      matchSlot._id = { $ne: slotId };
+    if (availabilityId) {
+      query._id = { $ne: availabilityId };
     }
 
-    return this._availabilityModel.findOne({
-      ...filter,
-      slots: {
-        $elemMatch: matchSlot,
-      },
-    });
+    console.log('Query to check overlap');
+    console.log(query);
+
+    return this._availabilityModel.findOne(query);
   }
 }

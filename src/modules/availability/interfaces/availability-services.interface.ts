@@ -1,43 +1,33 @@
-import { IPayload } from '@modules/auth/interfaces/auth.interface';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { IMappedAvailability, ISlot } from './availability.interface';
-import { WeekDayKeys } from '../constants/week-days.constant';
 
 export interface IAvailabilityService {
   /**
    * Create Default availability for tasker
-   * @param userPaylod
+   * @param userId
    */
-  createDefaultAvailability(userPaylod: IPayload): Promise<IBaseResponse>;
+  createDefaultAvailability(userId: string): Promise<IBaseResponse>;
 
   /**
    * Find all availabilities of the tasker
    * @param userPaylod
    */
-  findAllTaskerAvailabilities(
-    userPaylod: IPayload,
-  ): Promise<IMappedAvailability>;
+  findAllTaskerAvailabilities(userId: string): Promise<IMappedAvailability>;
 
-  deleteOneTimeSlot(
-    availabilityId: string,
-    slotId: string,
-  ): Promise<IBaseResponse>;
+  deleteOneTimeSlot(availabilityId: string): Promise<IBaseResponse>;
 
-  createSlot(
-    userPaylod: IPayload,
-    day: WeekDayKeys,
-    slot: ISlot,
-  ): Promise<IBaseResponse>;
+  deleteAllTaskerSlots(taskerId: string): Promise<IBaseResponse>;
+
+  createSlot(userId: string, slot: ISlot): Promise<IBaseResponse>;
 
   updateSlot(
     availabilityId: string,
-    slotId: string,
     updatedSlot: ISlot,
+    taskerId: string,
   ): Promise<IBaseResponse>;
 
   changeStatus(
     availabilityId: string,
-    slotId: string,
-    isDisabled: boolean,
+    isActive: boolean,
   ): Promise<IBaseResponse>;
 }
