@@ -23,4 +23,6 @@ export const AVAILABILITY_ERROR = {
   TIME_INVALID: 'End time should be greater than start',
 
   CHANGE_STATUS_FAILD: 'Faild to change the visibility status',
+  REMOVE_CURRENT_SLOTS_FOR_DEFAULT:
+    'Please remove current slots to add new default slots',
 };

@@ -1,30 +1,45 @@
 import { TObjectId } from '@shared/types/db-types';
-import { WeekDayKeys, WeekDays } from '../constants/week-days.constant';
+import { WeekDayKeys } from '../constants/week-days.constant';
+import { AvailabilityDocument } from '../schemas/availability.schema';
 
+//valid
 export interface ISlot {
+  day: number;
+  start: number;
+  end: number;
+}
+
+// valid
+export interface ICreateAvailabilitySlot extends ISlot {
+  taskerId: TObjectId;
+}
+
+export interface IGroupedSlots {
+  _id: number;
+  slots: AvailabilityDocument[];
+}
+
+/**
+ * taskerId
+ * day
+ * slots: {  start, end, day, isActive, id  }
+ */
+
+// valid
+export interface IAvailabilitySlotData extends Omit<ISlot, 'start' | 'end'> {
   start: string;
   end: string;
-}
-
-export interface ISlotDoc extends ISlot {
-  isDisabled: boolean;
+  isActive: boolean;
   id: string;
 }
 
-export interface ICreateAvailability {
-  taskerId: string | TObjectId;
-  day: WeekDays;
-  slots: ISlot[];
+// valid
+export interface IAvailabilityMap extends Pick<ISlot, 'day'> {
+  slots: IAvailabilitySlotData[];
 }
 
-export interface IAvailability extends Omit<ICreateAvailability, 'slots'> {
-  id: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-  slots: ISlotDoc[];
-}
-
+// valid
 // resonse shape
 export type IMappedAvailability = {
-  [day in WeekDayKeys]?: IAvailability;
+  [day in WeekDayKeys]?: IAvailabilityMap;
 };

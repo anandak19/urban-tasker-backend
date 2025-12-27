@@ -1,23 +1,29 @@
-import { IMappedAvailability } from '../interfaces/availability.interface';
-import { AvailabilityDocument } from '../schemas/availability.schema';
+import { getDay } from '@shared/utility/time/convert-day.utitlity';
+import {
+  IGroupedSlots,
+  IMappedAvailability,
+} from '../interfaces/availability.interface';
+import { toTimeString } from '@shared/utility/time/convert-time.utitlity';
 
 export class AvailabilityMapper {
-  static toListResponse(
-    availabilityDocs: AvailabilityDocument[],
+  static toMappedResponse(
+    availabilityDocs: IGroupedSlots[],
   ): IMappedAvailability {
     const mapped: IMappedAvailability = {};
 
     availabilityDocs.forEach((item) => {
-      mapped[item.day] = {
-        taskerId: item.taskerId.toString(),
-        day: item.day,
-        slots: item.slots.map((slot) => ({
-          start: slot.start,
-          end: slot.end,
-          id: slot._id.toString(),
-          isDisabled: slot.isDisabled,
-        })),
-        id: item._id.toString(),
+      mapped[getDay(item._id)] = {
+        day: item._id,
+
+        slots: item.slots.map((slot) => {
+          return {
+            day: slot.day,
+            start: toTimeString(slot.start),
+            end: toTimeString(slot.end),
+            id: slot._id.toString(),
+            isActive: slot.isActive,
+          };
+        }),
       };
     });
 
