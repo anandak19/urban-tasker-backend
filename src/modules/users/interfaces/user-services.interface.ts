@@ -12,6 +12,7 @@ import { UserRoles } from '@shared/constants/enums/user.enum';
 import { UserDocument } from '../schemas/user.schema';
 import { BasicUserResponseDto } from '../dtos/basic-user-response.dto';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
+import { HomeAddressDto } from '../dtos/home-address.dto';
 
 export interface IUserService {
   findByEmail(email: string): Promise<UserResponseDto | null>;
@@ -62,6 +63,11 @@ export interface IUserProfileService {
   changePassword(
     userId: string,
     payload: IChangePassoword,
+  ): Promise<IBaseResponse>;
+
+  updateHomeLocation(
+    userId: string,
+    payload: HomeAddressDto,
   ): Promise<IBaseResponse>;
 }
 

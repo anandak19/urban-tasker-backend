@@ -1,6 +1,7 @@
 import { HashService } from '@core/lib/hash/hash.service';
 import type { IRefreshTokenService } from '@modules/Token/interfaces/services.interface';
 import { TOKEN_TOKENS } from '@modules/Token/token-tokens';
+import { HomeAddressDto } from '@modules/users/dtos/home-address.dto';
 import type { IUserRepository } from '@modules/users/interfaces/user-repositories.interface';
 import type {
   IUserProfileService,
@@ -9,6 +10,7 @@ import type {
 import {
   IPersonalDetails,
   IChangePassoword,
+  IHomeAddress,
 } from '@modules/users/interfaces/user.interface';
 import { USER_TOKENS } from '@modules/users/user-tokens';
 import {
@@ -100,9 +102,35 @@ export class UserProfileService implements IUserProfileService {
     return { message: USER_SUCCESS_MESSAGES.PASSWORD_UPDATE_SUCCESS };
   }
 
+  // To add home address with location
+  async updateHomeLocation(
+    userId: string,
+    payload: HomeAddressDto,
+  ): Promise<IBaseResponse> {
+    const homeAddressData: IHomeAddress = {
+      address: payload.address,
+      city: payload.city,
+      location: {
+        type: 'Point',
+        coordinates: [payload.longitude, payload.latitude],
+      },
+    };
+
+    const updatedUser = await this._userRepo.updateById(userId, {
+      homeAddress: homeAddressData,
+    });
+
+    if (!updatedUser) {
+      throw new InternalServerErrorException(
+        USER_ERROR_MESSAGES.HOME_ADDRESS_UPDATE_ERROR,
+      );
+    }
+
+    return { message: USER_SUCCESS_MESSAGES.HOME_ADDRESS_UPDATE_SUCCESS };
+  }
+
   /**
    * TODOS
    * 4. To add/change the user profile picture
-   * 5. To add home address with location
    */
 }

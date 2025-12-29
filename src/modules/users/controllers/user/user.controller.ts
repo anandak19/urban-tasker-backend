@@ -1,5 +1,6 @@
 import { AuthGuard } from '@core/guards/auth/auth.guard';
 import { ChangePasswordDto } from '@modules/users/dtos/change-password.dto';
+import { HomeAddressDto } from '@modules/users/dtos/home-address.dto';
 import { UpdatePersonalDetailsDto } from '@modules/users/dtos/update-personal-details.dto';
 import type {
   IUserProfileService,
@@ -55,5 +56,14 @@ export class UserController {
   ) {
     console.log(dto);
     return this._userProfileService.changePassword(req.user.id, dto);
+  }
+
+  //To add home address with location
+  @Patch('profile/location')
+  updateHomeLocation(
+    @Req() req: IAuthenticatedReqeust,
+    @Body() dto: HomeAddressDto,
+  ) {
+    return this._userProfileService.updateHomeLocation(req.user.id, dto);
   }
 }
