@@ -1,0 +1,108 @@
+import { HashService } from '@core/lib/hash/hash.service';
+import type { IRefreshTokenService } from '@modules/Token/interfaces/services.interface';
+import { TOKEN_TOKENS } from '@modules/Token/token-tokens';
+import type { IUserRepository } from '@modules/users/interfaces/user-repositories.interface';
+import type {
+  IUserProfileService,
+  IUserService,
+} from '@modules/users/interfaces/user-services.interface';
+import {
+  IPersonalDetails,
+  IChangePassoword,
+} from '@modules/users/interfaces/user.interface';
+import { USER_TOKENS } from '@modules/users/user-tokens';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
+import {
+  GENERAL_ERRORS,
+  USER_ERRORS,
+} from '@shared/constants/messages/error-messaes.constants';
+import {
+  USER_ERROR_MESSAGES,
+  USER_SUCCESS_MESSAGES,
+} from '@shared/constants/messages/user-messages.constant';
+import { IBaseResponse } from '@shared/interfaces/base-response.interface';
+import { toObjectId } from '@shared/utility/db/to-objectid.util';
+
+@Injectable()
+export class UserProfileService implements IUserProfileService {
+  constructor(
+    @Inject(USER_TOKENS.SERVICE) private _userService: IUserService,
+
+    @Inject(USER_TOKENS.REPOSITORY) private _userRepo: IUserRepository,
+
+    @Inject(TOKEN_TOKENS.REFERESH_TOKEN_SERVICE)
+    private _refreshTokenService: IRefreshTokenService,
+
+    private _hashService: HashService,
+  ) {}
+
+  // To edit/save updated user profile data
+  async updatePersonalData(
+    userId: string,
+    payload: IPersonalDetails,
+  ): Promise<IBaseResponse> {
+    const updated = await this._userRepo.updateById(userId, payload);
+    if (!updated) {
+      throw new InternalServerErrorException(
+        USER_ERROR_MESSAGES.PERSONAL_DATA_UPDATE_ERROR,
+      );
+    }
+
+    return { message: USER_SUCCESS_MESSAGES.PERSONAL_DATA_UPDATE_SUCCESS };
+  }
+
+  // To change the password
+  async changePassword(
+    userId: string,
+    payload: IChangePassoword,
+  ): Promise<IBaseResponse> {
+    const user = await this._userRepo.findById(userId);
+
+    if (!user) {
+      throw new NotFoundException(USER_ERRORS.USER_NOT_FOUND);
+    }
+
+    const isPasswordMatch = await this._hashService.comparePassword(
+      payload.oldPassword,
+      user.password,
+    );
+
+    if (!isPasswordMatch) {
+      throw new BadRequestException();
+    }
+
+    const updatedUser = await this._userService.updateUserPassword(
+      userId,
+      payload.newPassword,
+    );
+
+    if (!updatedUser) {
+      throw new InternalServerErrorException(
+        USER_ERROR_MESSAGES.PASSWORD_UPDATE_ERROR,
+      );
+    }
+
+    const isBlackListed =
+      await this._refreshTokenService.blackListAllUserTokens(
+        toObjectId(updatedUser.id),
+      );
+
+    if (!isBlackListed) {
+      throw new InternalServerErrorException(GENERAL_ERRORS.ERROR);
+    }
+
+    return { message: USER_SUCCESS_MESSAGES.PASSWORD_UPDATE_SUCCESS };
+  }
+
+  /**
+   * TODOS
+   * 4. To add/change the user profile picture
+   * 5. To add home address with location
+   */
+}

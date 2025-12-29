@@ -6,15 +6,16 @@ import { SuspendUserDto } from '@modules/users/dtos/suspend-user.dto';
 import { UserResponseDto } from '@modules/users/dtos/user-response.dto';
 import { IUserFilter } from '@modules/users/interfaces/user-query.interface';
 import type { IUserRepository } from '@modules/users/interfaces/user-repositories.interface';
-import { IAdminUserService } from '@modules/users/interfaces/user-services.interface';
+import type {
+  IAdminUserService,
+  IUserService,
+} from '@modules/users/interfaces/user-services.interface';
 import { IUserData } from '@modules/users/interfaces/user.interface';
-import { UserMapper } from '@modules/users/mappers/user.mapper';
 import { USER_TOKENS } from '@modules/users/user-tokens';
 import {
   Inject,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
 } from '@nestjs/common';
 import { UserRoles } from '@shared/constants/enums/user.enum';
 import {
@@ -30,6 +31,8 @@ export class AdminUserService implements IAdminUserService {
     @Inject(USER_TOKENS.REPOSITORY) private _userRepo: IUserRepository,
     @Inject(TOKEN_TOKENS.REFERESH_TOKEN_SERVICE)
     private _refreshTokenService: IRefreshTokenService,
+
+    @Inject(USER_TOKENS.SERVICE) private _userService: IUserService,
   ) {}
 
   async findAllUsers(userQuery: GetUsersDto) {
@@ -55,7 +58,7 @@ export class AdminUserService implements IAdminUserService {
 
       console.log(users.documents);
       const allUsers = users.documents.map((user) =>
-        UserMapper.toResponse(user),
+        this._userService.getUserResponse(user),
       );
       return {
         allUsers,
@@ -65,19 +68,6 @@ export class AdminUserService implements IAdminUserService {
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException(GENERAL_ERRORS.ERROR);
-    }
-  }
-
-  async findOne(id: string): Promise<IUserData> {
-    try {
-      const user = await this._userRepo.findById(id);
-      if (!user) {
-        throw new NotFoundException(USER_ERRORS.USER_NOT_FOUND);
-      }
-
-      return UserMapper.toResponse(user);
-    } catch {
-      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }
   }
 
@@ -102,7 +92,7 @@ export class AdminUserService implements IAdminUserService {
         throw new InternalServerErrorException(GENERAL_ERRORS.ERROR);
       }
 
-      return UserMapper.toResponse(updated);
+      return this._userService.getUserResponse(updated);
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
@@ -120,7 +110,7 @@ export class AdminUserService implements IAdminUserService {
         throw new InternalServerErrorException(USER_ERRORS.UNSUSPEND_FAIL);
       }
 
-      return UserMapper.toResponse(updated);
+      return this._userService.getUserResponse(updated);
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
@@ -136,7 +126,8 @@ export class AdminUserService implements IAdminUserService {
       if (!updated) {
         throw new InternalServerErrorException(GENERAL_ERRORS.ERROR);
       }
-      return UserMapper.toResponse(updated);
+
+      return this._userService.getUserResponse(updated);
     } catch {
       throw new InternalServerErrorException(GENERAL_ERRORS.ERROR);
     }

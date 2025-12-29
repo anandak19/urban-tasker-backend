@@ -1,6 +1,5 @@
 import {
   BadRequestException,
-  ForbiddenException,
   HttpException,
   Inject,
   Injectable,
@@ -8,7 +7,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { ICreateUser } from '../../interfaces/user.interface';
+import { ICreateUser, IProfileImage } from '../../interfaces/user.interface';
 import { UserMapper } from '../../mappers/user.mapper';
 import type { IUserRepository } from '../../interfaces/user-repositories.interface';
 import { HashService } from '@core/lib/hash/hash.service';
@@ -16,9 +15,13 @@ import { UserResponseDto } from '../../dtos/user-response.dto';
 import { IUserService } from '../../interfaces/user-services.interface';
 import { USER_TOKENS } from '../../user-tokens';
 import { AUTH_MESSAGES } from '@shared/constants/messages/auth-messages.constant';
-import { UserRoles } from '@shared/constants/enums/user.enum';
 import { USER_ERRORS } from '@shared/constants/messages/error-messaes.constants';
 import { AuthProvider } from '@shared/constants/enums/auth-providers.enum';
+import { ImageSource } from '@shared/constants/enums/image-source.enum';
+import { UserDocument } from '@modules/users/schemas/user.schema';
+import { BasicUserResponseDto } from '@modules/users/dtos/basic-user-response.dto';
+import { LOGGER_SERVICE } from '@core/lib/logger/logger.service';
+import type { ILoggerService } from '@core/lib/logger/logger.interface';
 
 @Injectable()
 export class UsersService implements IUserService {
@@ -28,14 +31,40 @@ export class UsersService implements IUserService {
     @Inject(USER_TOKENS.REPOSITORY)
     private readonly _userRepo: IUserRepository,
     private _hashService: HashService,
+
+    @Inject(LOGGER_SERVICE) private _loggerServce: ILoggerService,
   ) {}
 
+  /**
+   * Convert the user document to response type
+   * @param user
+   */
+  getUserResponse(user: UserDocument): UserResponseDto {
+    if (user.profileImage) {
+      user.profileImage = this._getUserImage(user.profileImage);
+    }
+    return UserMapper.toResponse(user);
+  }
+
+  /**
+   * Convert the user document to base response type
+   * @param user
+   */
+  getBasicUserResponse(user: UserDocument): BasicUserResponseDto {
+    if (user.profileImage) {
+      user.profileImage = this._getUserImage(user.profileImage);
+    }
+    return UserMapper.toBasicResponse(user);
+  }
+
+  // do not use in controllers
   async findByEmail(email: string): Promise<UserResponseDto | null> {
     const user = await this._userRepo.findByEmail(email);
     if (!user) {
       return null;
     }
-    return UserMapper.toResponse(user);
+
+    return this.getUserResponse(user);
   }
 
   // update this
@@ -50,40 +79,27 @@ export class UsersService implements IUserService {
     return await this._authenticate(email, password);
   }
 
-  // remove this later
-  async authenticateAdmin(
-    email: string,
-    password: string,
-  ): Promise<UserResponseDto> {
-    const userData = await this._authenticate(email, password);
-    if (userData.userRole !== UserRoles.ADMIN) {
-      throw new ForbiddenException(AUTH_MESSAGES.ADMIN_ONLY);
-    }
-    return userData;
-  }
-
   async create(userData: ICreateUser): Promise<UserResponseDto> {
-    try {
-      // local create
-      if (userData.provider === AuthProvider.LOCAL && userData.password) {
-        const hashedPassword = await this._hashService.hashPassword(
-          userData.password,
-        );
-        userData.password = hashedPassword;
-      }
+    // local create
 
-      const savedUser = await this._userRepo.create(userData);
+    this._loggerServce.verbose('Creating the user');
+    if (userData.provider === AuthProvider.LOCAL && userData.password) {
+      const hashedPassword = await this._hashService.hashPassword(
+        userData.password,
+      );
+      userData.password = hashedPassword;
+    }
 
-      if (!savedUser) {
-        throw new InternalServerErrorException(AUTH_MESSAGES.SIGNUP_FAILD);
-      }
+    const savedUser = await this._userRepo.create(userData);
+    this._loggerServce.verbose('Saved the user');
+    console.log('savedUser');
+    console.log(savedUser);
 
-      return UserMapper.toResponse(savedUser);
-    } catch (error) {
-      if (error instanceof HttpException) throw error;
-
+    if (!savedUser) {
       throw new InternalServerErrorException(AUTH_MESSAGES.SIGNUP_FAILD);
     }
+
+    return this.getUserResponse(savedUser);
   }
 
   // update user password by id
@@ -106,12 +122,32 @@ export class UsersService implements IUserService {
         );
       }
 
-      return UserMapper.toResponse(savedUser);
+      return this.getUserResponse(savedUser);
     } catch (error) {
       this._logger.error(USER_ERRORS.UPDATE_PASSWORD_FAIL);
       this._logger.log(error);
       throw new InternalServerErrorException(USER_ERRORS.UPDATE_PASSWORD_FAIL);
     }
+  }
+
+  async findOne(id: string): Promise<UserResponseDto> {
+    const user = await this._userRepo.findById(id);
+    if (!user) {
+      throw new NotFoundException(USER_ERRORS.USER_NOT_FOUND);
+    }
+
+    return this.getUserResponse(user);
+  }
+
+  async getBasicUserData(id: string): Promise<BasicUserResponseDto> {
+    const user = await this._userRepo.findById(id);
+    if (!user) {
+      throw new NotFoundException(USER_ERRORS.USER_NOT_FOUND);
+    }
+
+    const result = this.getBasicUserResponse(user);
+    console.log(result);
+    return result;
   }
 
   // private methods
@@ -138,11 +174,18 @@ export class UsersService implements IUserService {
         throw new BadRequestException(AUTH_MESSAGES.PASSWORD_INCORRECT);
       }
 
-      return UserMapper.toResponse(user);
+      return this.getUserResponse(user);
     } catch (error) {
       if (error instanceof HttpException) throw error;
 
       throw new InternalServerErrorException(AUTH_MESSAGES.LOGIN_FAILD);
     }
+  }
+
+  private _getUserImage(userImage: IProfileImage): IProfileImage {
+    if (userImage.source === ImageSource.S3) {
+      // call the s3 method here and assing the url to userImage.value
+    }
+    return userImage;
   }
 }

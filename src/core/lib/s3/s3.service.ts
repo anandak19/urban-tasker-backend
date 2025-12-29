@@ -100,9 +100,8 @@ export class S3Service implements IS3Service {
       }
 
       return key;
-    } catch (error) {
+    } catch {
       this._logger.error('Faild to upload image in s3');
-      this._logger.error(error as object);
 
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }
