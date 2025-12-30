@@ -74,6 +74,10 @@ export class S3Service implements IS3Service {
     return await this._uploadFile(file, 'idproofs');
   }
 
+  async uploadUserProfilePic(file: Express.Multer.File): Promise<string> {
+    return await this._uploadFile(file, 'profileimages');
+  }
+
   private async _uploadFile(
     file: Express.Multer.File,
     folder: string,

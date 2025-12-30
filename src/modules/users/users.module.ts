@@ -12,6 +12,7 @@ import { LoggerModule } from '@core/lib/logger/logger.module';
 import { TokenModule } from '@modules/Token/token.module';
 import { UserController } from './controllers/user/user.controller';
 import { UserProfileService } from './services/user/user-profile.service';
+import { S3Module } from '@core/lib/s3/s3.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { UserProfileService } from './services/user/user-profile.service';
     HashModule,
     LoggerModule,
     TokenModule,
+    S3Module,
   ],
   controllers: [AdminUserController, UserController],
   providers: [

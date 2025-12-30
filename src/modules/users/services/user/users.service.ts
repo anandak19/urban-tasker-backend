@@ -22,6 +22,8 @@ import { UserDocument } from '@modules/users/schemas/user.schema';
 import { BasicUserResponseDto } from '@modules/users/dtos/basic-user-response.dto';
 import { LOGGER_SERVICE } from '@core/lib/logger/logger.service';
 import type { ILoggerService } from '@core/lib/logger/logger.interface';
+import { S3_SERVICE } from '@core/lib/s3/s3.module';
+import type { IS3Service } from '@core/lib/s3/s3.interface';
 
 @Injectable()
 export class UsersService implements IUserService {
@@ -33,15 +35,17 @@ export class UsersService implements IUserService {
     private _hashService: HashService,
 
     @Inject(LOGGER_SERVICE) private _loggerServce: ILoggerService,
+
+    @Inject(S3_SERVICE) private _s3Service: IS3Service,
   ) {}
 
   /**
    * Convert the user document to response type
    * @param user
    */
-  getUserResponse(user: UserDocument): UserResponseDto {
+  async getUserResponse(user: UserDocument): Promise<UserResponseDto> {
     if (user.profileImage) {
-      user.profileImage = this._getUserImage(user.profileImage);
+      user.profileImage = await this._getUserImage(user.profileImage);
     }
     return UserMapper.toResponse(user);
   }
@@ -50,9 +54,11 @@ export class UsersService implements IUserService {
    * Convert the user document to base response type
    * @param user
    */
-  getBasicUserResponse(user: UserDocument): BasicUserResponseDto {
+  async getBasicUserResponse(
+    user: UserDocument,
+  ): Promise<BasicUserResponseDto> {
     if (user.profileImage) {
-      user.profileImage = this._getUserImage(user.profileImage);
+      user.profileImage = await this._getUserImage(user.profileImage);
     }
     return UserMapper.toBasicResponse(user);
   }
@@ -64,7 +70,7 @@ export class UsersService implements IUserService {
       return null;
     }
 
-    return this.getUserResponse(user);
+    return await this.getUserResponse(user);
   }
 
   // update this
@@ -99,7 +105,7 @@ export class UsersService implements IUserService {
       throw new InternalServerErrorException(AUTH_MESSAGES.SIGNUP_FAILD);
     }
 
-    return this.getUserResponse(savedUser);
+    return await this.getUserResponse(savedUser);
   }
 
   // update user password by id
@@ -122,7 +128,7 @@ export class UsersService implements IUserService {
         );
       }
 
-      return this.getUserResponse(savedUser);
+      return await this.getUserResponse(savedUser);
     } catch (error) {
       this._logger.error(USER_ERRORS.UPDATE_PASSWORD_FAIL);
       this._logger.log(error);
@@ -136,7 +142,7 @@ export class UsersService implements IUserService {
       throw new NotFoundException(USER_ERRORS.USER_NOT_FOUND);
     }
 
-    return this.getUserResponse(user);
+    return await this.getUserResponse(user);
   }
 
   async getBasicUserData(id: string): Promise<BasicUserResponseDto> {
@@ -145,7 +151,7 @@ export class UsersService implements IUserService {
       throw new NotFoundException(USER_ERRORS.USER_NOT_FOUND);
     }
 
-    const result = this.getBasicUserResponse(user);
+    const result = await this.getBasicUserResponse(user);
     console.log(result);
     return result;
   }
@@ -174,7 +180,7 @@ export class UsersService implements IUserService {
         throw new BadRequestException(AUTH_MESSAGES.PASSWORD_INCORRECT);
       }
 
-      return this.getUserResponse(user);
+      return await this.getUserResponse(user);
     } catch (error) {
       if (error instanceof HttpException) throw error;
 
@@ -182,9 +188,11 @@ export class UsersService implements IUserService {
     }
   }
 
-  private _getUserImage(userImage: IProfileImage): IProfileImage {
+  private async _getUserImage(
+    userImage: IProfileImage,
+  ): Promise<IProfileImage> {
     if (userImage.source === ImageSource.S3) {
-      // call the s3 method here and assing the url to userImage.value
+      userImage.value = await this._s3Service.getImageUrl(userImage.value);
     }
     return userImage;
   }

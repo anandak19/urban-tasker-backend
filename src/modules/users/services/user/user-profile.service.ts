@@ -1,4 +1,6 @@
 import { HashService } from '@core/lib/hash/hash.service';
+import type { IS3Service } from '@core/lib/s3/s3.interface';
+import { S3_SERVICE } from '@core/lib/s3/s3.module';
 import type { IRefreshTokenService } from '@modules/Token/interfaces/services.interface';
 import { TOKEN_TOKENS } from '@modules/Token/token-tokens';
 import { HomeAddressDto } from '@modules/users/dtos/home-address.dto';
@@ -11,6 +13,7 @@ import {
   IPersonalDetails,
   IChangePassoword,
   IHomeAddress,
+  IProfileImage,
 } from '@modules/users/interfaces/user.interface';
 import { USER_TOKENS } from '@modules/users/user-tokens';
 import {
@@ -20,6 +23,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { ImageSource } from '@shared/constants/enums/image-source.enum';
 import {
   GENERAL_ERRORS,
   USER_ERRORS,
@@ -41,8 +45,36 @@ export class UserProfileService implements IUserProfileService {
     @Inject(TOKEN_TOKENS.REFERESH_TOKEN_SERVICE)
     private _refreshTokenService: IRefreshTokenService,
 
+    @Inject(S3_SERVICE) private _s3: IS3Service,
+
     private _hashService: HashService,
   ) {}
+
+  async updateProfilePicture(
+    userId: string,
+    file: Express.Multer.File,
+  ): Promise<IBaseResponse> {
+    const imageKey = await this._s3.uploadUserProfilePic(file);
+
+    if (!imageKey) {
+      throw new InternalServerErrorException('Faild  to save profile picture');
+    }
+
+    const payload: IProfileImage = {
+      source: ImageSource.S3,
+      value: imageKey,
+    };
+
+    const updatedUser = await this._userRepo.updateById(userId, {
+      profileImage: payload,
+    });
+
+    if (!updatedUser) {
+      throw new InternalServerErrorException('Faild to update profile picture');
+    }
+
+    return { message: 'Successfully updated profile pic' };
+  }
 
   // To edit/save updated user profile data
   async updatePersonalData(

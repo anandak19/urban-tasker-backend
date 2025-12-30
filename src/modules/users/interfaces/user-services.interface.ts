@@ -34,7 +34,7 @@ export interface IUserService {
    * Populate with image url and convert the type
    * @param user
    */
-  getUserResponse(user: UserDocument): UserResponseDto; // convert to promise return type
+  getUserResponse(user: UserDocument): Promise<UserResponseDto>;
 
   /**
    * Returns basic user data
@@ -68,6 +68,11 @@ export interface IUserProfileService {
   updateHomeLocation(
     userId: string,
     payload: HomeAddressDto,
+  ): Promise<IBaseResponse>;
+
+  updateProfilePicture(
+    userId: string,
+    file: Express.Multer.File,
   ): Promise<IBaseResponse>;
 }
 

@@ -1,4 +1,5 @@
 import { AuthGuard } from '@core/guards/auth/auth.guard';
+import { ImageValidationPipe } from '@core/pipes/image-validation.pipe';
 import { ChangePasswordDto } from '@modules/users/dtos/change-password.dto';
 import { HomeAddressDto } from '@modules/users/dtos/home-address.dto';
 import { UpdatePersonalDetailsDto } from '@modules/users/dtos/update-personal-details.dto';
@@ -14,8 +15,11 @@ import {
   Inject,
   Patch,
   Req,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import type { IAuthenticatedReqeust } from '@shared/interfaces/request.interface';
 
 @Controller('user')
@@ -65,5 +69,15 @@ export class UserController {
     @Body() dto: HomeAddressDto,
   ) {
     return this._userProfileService.updateHomeLocation(req.user.id, dto);
+  }
+
+  @Patch('profile/picture')
+  @UseInterceptors(FileInterceptor('image'))
+  updateProfilePicture(
+    @Req() req: IAuthenticatedReqeust,
+    @UploadedFile(ImageValidationPipe)
+    image: Express.Multer.File,
+  ) {
+    return this._userProfileService.updateProfilePicture(req.user.id, image);
   }
 }
