@@ -1,6 +1,9 @@
 import { GetUsersDto } from '@modules/users/dtos/get-user.dto';
 import { SuspendUserDto } from '@modules/users/dtos/suspend-user.dto';
-import type { IAdminUserService } from '@modules/users/interfaces/user-services.interface';
+import type {
+  IAdminUserService,
+  IUserService,
+} from '@modules/users/interfaces/user-services.interface';
 import { USER_TOKENS } from '@modules/users/user-tokens';
 import {
   Body,
@@ -19,6 +22,8 @@ export class AdminUserController {
   constructor(
     @Inject(USER_TOKENS.ADMIN_USER_SERVICE)
     private _adminUserService: IAdminUserService,
+
+    @Inject(USER_TOKENS.SERVICE) private _userService: IUserService,
   ) {}
 
   @Get()
@@ -30,7 +35,7 @@ export class AdminUserController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this._adminUserService.findOne(id);
+    return this._userService.findOne(id);
   }
 
   @Patch(':id/suspend')

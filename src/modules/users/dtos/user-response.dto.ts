@@ -1,6 +1,7 @@
 import { OmitType } from '@nestjs/mapped-types';
 import { CreateUserDto } from './create-user.dto';
-import { UserRoles } from '@shared/constants/enums/user.enum';
+import { Gender, UserRoles } from '@shared/constants/enums/user.enum';
+import { IHomeAddress } from '../interfaces/user.interface';
 
 export class UserResponseDto extends OmitType(CreateUserDto, ['password']) {
   id: string;
@@ -8,4 +9,7 @@ export class UserResponseDto extends OmitType(CreateUserDto, ['password']) {
   isTaskerApplied: boolean;
   isSuspended: boolean;
   suspendedReason: string;
+  profileImageUrl: string;
+  gender?: Gender;
+  homeAddress?: IHomeAddress;
 }

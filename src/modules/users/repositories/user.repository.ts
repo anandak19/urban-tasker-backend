@@ -57,6 +57,7 @@ export class UserRepository
     try {
       return await this._userModel.create(data);
     } catch (error) {
+      console.log(error);
       if (isDuplicateKeyError(error)) {
         throw new ConflictException(AUTH_MESSAGES.EMAIL_TAKEN); // create one for phone number taken
       }

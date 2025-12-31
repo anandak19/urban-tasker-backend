@@ -74,6 +74,10 @@ export class S3Service implements IS3Service {
     return await this._uploadFile(file, 'idproofs');
   }
 
+  async uploadUserProfilePic(file: Express.Multer.File): Promise<string> {
+    return await this._uploadFile(file, 'profileimages');
+  }
+
   private async _uploadFile(
     file: Express.Multer.File,
     folder: string,
@@ -100,9 +104,8 @@ export class S3Service implements IS3Service {
       }
 
       return key;
-    } catch (error) {
+    } catch {
       this._logger.error('Faild to upload image in s3');
-      this._logger.error(error as object);
 
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }

@@ -44,6 +44,7 @@ import {
 import { type IRefreshTokenService } from '@modules/Token/interfaces/services.interface';
 import { TOKEN_TOKENS } from '@modules/Token/token-tokens';
 import { ILoginResponse } from '@modules/auth/interfaces/response.interface';
+import { ImageSource } from '@shared/constants/enums/image-source.enum';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AuthService implements IAuthService {
@@ -99,8 +100,6 @@ export class AuthService implements IAuthService {
   async validateGoogleAuthUser(
     userDetails: IGoogleUserAuthData,
   ): Promise<UserResponseDto> {
-    console.log('google user details', userDetails);
-
     const existingUser = await this._userService.findByEmail(userDetails.email);
 
     // NOTE: Fix this. Find way to show error message for login with google
@@ -116,6 +115,10 @@ export class AuthService implements IAuthService {
       firstName: userDetails.firstName,
       lastName: userDetails.lastName,
       provider: AuthProvider.GOOGLE,
+      profileImage: {
+        source: ImageSource.EXTERNAL,
+        value: userDetails.googleProfilePic,
+      },
     };
 
     const savedUser = await this._userService.create(newUserData);
@@ -123,6 +126,7 @@ export class AuthService implements IAuthService {
       this._logger.error('AuthServce: Faild to save google user to db');
       throw new InternalServerErrorException(AUTH_MESSAGES.LOGIN_FAILD);
     }
+    console.log('Save success');
 
     return savedUser;
   }
@@ -167,7 +171,7 @@ export class AuthService implements IAuthService {
       payload.id,
     );
 
-    const user = await this._adminUserService.findOne(payload.id);
+    const user = await this._userService.findOne(payload.id);
 
     if (!user) {
       throw new NotFoundException(USER_ERRORS.USER_NOT_FOUND);

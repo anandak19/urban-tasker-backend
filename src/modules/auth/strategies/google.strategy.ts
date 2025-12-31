@@ -42,11 +42,15 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       return null;
     }
 
+    console.log(profile);
+
     // create user object
     const userDetails: IGoogleUserAuthData = {
       email: profile._json.email,
       firstName: profile._json.given_name,
       lastName: profile._json.family_name,
+      googleProfilePic:
+        profile.photos?.[0]?.value ?? profile._json.picture ?? '',
     };
 
     // validate user / create user

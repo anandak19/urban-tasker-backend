@@ -15,7 +15,7 @@ import { AUTH_MESSAGES } from '@shared/constants/messages/auth-messages.constant
 import type { Request, Response } from 'express';
 
 @Injectable()
-export class TokenRevocationGuardGuard implements CanActivate {
+export class TokenRevocationGuard implements CanActivate {
   constructor(
     @Inject(TOKEN_TOKENS.REFERESH_TOKEN_SERVICE)
     private _refreshTokenService: IRefreshTokenService,

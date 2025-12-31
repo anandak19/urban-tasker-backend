@@ -2,6 +2,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { AuthProvider } from '@shared/constants/enums/auth-providers.enum';
 import { Gender, UserRoles } from '@shared/constants/enums/user.enum';
 import { HydratedDocument } from 'mongoose';
+import { HomeAddress } from './home-address.schema';
+import { ProfileImage } from './profile-image.schema';
 
 @Schema({ timestamps: true })
 export class User {
@@ -27,8 +29,8 @@ export class User {
   @Prop({ required: false, default: UserRoles.USER })
   userRole: UserRoles;
 
-  @Prop({ required: false, default: '' })
-  profileImageUrl: string;
+  @Prop({ required: false })
+  profileImage: ProfileImage; // value & source
 
   @Prop({ required: false, type: Boolean, default: false })
   isTaskerApplied: boolean;
@@ -44,9 +46,14 @@ export class User {
 
   @Prop({ type: String, default: '' })
   suspendedReason: string;
+
+  // to store the home address
+  @Prop({ type: HomeAddress, required: false })
+  homeAddress?: HomeAddress; // address, city, location(type, coordinates)
 }
 
 export type UserDocument = HydratedDocument<User>;
 export const UserSchema = SchemaFactory.createForClass(User);
 
 UserSchema.index({ firstName: 'text', lastName: 'text' });
+UserSchema.index({ 'homeAddress.location': '2dsphere' });

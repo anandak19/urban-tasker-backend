@@ -24,4 +24,10 @@ export interface IS3Service {
    * @param file
    */
   uploadIdProofImage(file: Express.Multer.File): Promise<string>;
+
+  /**
+   * Upload user profile pic
+   * @param file
+   */
+  uploadUserProfilePic(file: Express.Multer.File): Promise<string>;
 }

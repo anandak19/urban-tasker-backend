@@ -4,12 +4,11 @@ import { ILoggerService } from './logger.interface';
 @Injectable()
 export class LoggerService implements ILoggerService {
   private readonly logger = new Logger('Logger');
-
   // methods
   log(message: string | object): void {
     this.logger.log(message);
   }
-  error(message: string | object): void {
+  error(message: string): void {
     this.logger.error(message);
   }
   warn(message: string): void {

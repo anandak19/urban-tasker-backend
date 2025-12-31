@@ -6,21 +6,23 @@ import { SuspendUserDto } from '@modules/users/dtos/suspend-user.dto';
 import { UserResponseDto } from '@modules/users/dtos/user-response.dto';
 import { IUserFilter } from '@modules/users/interfaces/user-query.interface';
 import type { IUserRepository } from '@modules/users/interfaces/user-repositories.interface';
-import { IAdminUserService } from '@modules/users/interfaces/user-services.interface';
+import type {
+  IAdminUserService,
+  IUserService,
+} from '@modules/users/interfaces/user-services.interface';
 import { IUserData } from '@modules/users/interfaces/user.interface';
-import { UserMapper } from '@modules/users/mappers/user.mapper';
 import { USER_TOKENS } from '@modules/users/user-tokens';
 import {
   Inject,
   Injectable,
   InternalServerErrorException,
-  NotFoundException,
 } from '@nestjs/common';
 import { UserRoles } from '@shared/constants/enums/user.enum';
 import {
   GENERAL_ERRORS,
   USER_ERRORS,
 } from '@shared/constants/messages/error-messaes.constants';
+import { USER_SUCCESS_MESSAGES } from '@shared/constants/messages/user-messages.constant';
 import { IFindAllQuery } from '@shared/interfaces/query.interface';
 import { TObjectId } from '@shared/types/db-types';
 
@@ -30,6 +32,8 @@ export class AdminUserService implements IAdminUserService {
     @Inject(USER_TOKENS.REPOSITORY) private _userRepo: IUserRepository,
     @Inject(TOKEN_TOKENS.REFERESH_TOKEN_SERVICE)
     private _refreshTokenService: IRefreshTokenService,
+
+    @Inject(USER_TOKENS.SERVICE) private _userService: IUserService,
   ) {}
 
   async findAllUsers(userQuery: GetUsersDto) {
@@ -45,8 +49,6 @@ export class AdminUserService implements IAdminUserService {
     };
 
     try {
-      console.log('The user query has changed to');
-
       const users = await this._userRepo.findAllUsers(pagination, filter);
 
       if (!users) {
@@ -54,30 +56,19 @@ export class AdminUserService implements IAdminUserService {
       }
 
       console.log(users.documents);
-      const allUsers = users.documents.map((user) =>
-        UserMapper.toResponse(user),
+      const allUsers = await Promise.all(
+        users.documents.map((user) => this._userService.getUserResponse(user)),
       );
+      console.log(allUsers);
+
       return {
         allUsers,
         metaData: users.meta,
-        message: 'All users fetched',
+        message: USER_SUCCESS_MESSAGES.GET_ALL_SUCCESS,
       };
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException(GENERAL_ERRORS.ERROR);
-    }
-  }
-
-  async findOne(id: string): Promise<IUserData> {
-    try {
-      const user = await this._userRepo.findById(id);
-      if (!user) {
-        throw new NotFoundException(USER_ERRORS.USER_NOT_FOUND);
-      }
-
-      return UserMapper.toResponse(user);
-    } catch {
-      throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }
   }
 
@@ -102,7 +93,7 @@ export class AdminUserService implements IAdminUserService {
         throw new InternalServerErrorException(GENERAL_ERRORS.ERROR);
       }
 
-      return UserMapper.toResponse(updated);
+      return this._userService.getUserResponse(updated);
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
@@ -120,7 +111,7 @@ export class AdminUserService implements IAdminUserService {
         throw new InternalServerErrorException(USER_ERRORS.UNSUSPEND_FAIL);
       }
 
-      return UserMapper.toResponse(updated);
+      return this._userService.getUserResponse(updated);
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
@@ -136,7 +127,8 @@ export class AdminUserService implements IAdminUserService {
       if (!updated) {
         throw new InternalServerErrorException(GENERAL_ERRORS.ERROR);
       }
-      return UserMapper.toResponse(updated);
+
+      return this._userService.getUserResponse(updated);
     } catch {
       throw new InternalServerErrorException(GENERAL_ERRORS.ERROR);
     }
