@@ -10,8 +10,8 @@ export const fileLogger = WinstonModule.createLogger({
       filename: '/app/logs/app-%DATE%.log',
       datePattern: 'YYYY-MM-DD',
       level: 'info',
-      maxSize: '20m',
-      maxFiles: '7d',
+      maxSize: '20m', //
+      maxFiles: '7d', //
       zippedArchive: true,
     }),
 
@@ -21,8 +21,8 @@ export const fileLogger = WinstonModule.createLogger({
       filename: '/app/logs/error-%DATE%.log',
       datePattern: 'YYYY-MM-DD',
       level: 'error',
-      maxSize: '10m',
-      maxFiles: '14d',
+      maxSize: '10m', //
+      maxFiles: '14d', //
     }),
 
     //cosole

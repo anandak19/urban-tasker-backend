@@ -50,6 +50,7 @@ export class UserProfileService implements IUserProfileService {
     private _hashService: HashService,
   ) {}
 
+  // To add/change the user profile picture
   async updateProfilePicture(
     userId: string,
     file: Express.Multer.File,
@@ -160,9 +161,4 @@ export class UserProfileService implements IUserProfileService {
 
     return { message: USER_SUCCESS_MESSAGES.HOME_ADDRESS_UPDATE_SUCCESS };
   }
-
-  /**
-   * TODOS
-   * 4. To add/change the user profile picture
-   */
 }

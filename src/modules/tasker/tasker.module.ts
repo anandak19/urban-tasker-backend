@@ -5,12 +5,15 @@ import { TASKER_TOKEN } from './tasker.token';
 import { TaskerService } from './services/tasker.service';
 import { TaskerRepository } from './repositories/tasker.repository';
 import { TaskerController } from './controllers/user/tasker.controller';
+import { TaskerProfileController } from './controllers/tasker/tasker-profile.controller';
+import { UsersModule } from '@modules/users/users.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Tasker.name, schema: TaskerSchema }]),
+    UsersModule,
   ],
-  controllers: [TaskerController],
+  controllers: [TaskerController, TaskerProfileController],
   providers: [
     {
       provide: TASKER_TOKEN.REPOSITORY,
@@ -21,6 +24,6 @@ import { TaskerController } from './controllers/user/tasker.controller';
       useClass: TaskerService,
     },
   ],
-  exports: [TASKER_TOKEN.SERVICE],
+  exports: [TASKER_TOKEN.SERVICE, TASKER_TOKEN.REPOSITORY],
 })
 export class TaskerModule {}

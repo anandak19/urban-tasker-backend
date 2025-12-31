@@ -5,6 +5,7 @@ export const USER_ERROR_MESSAGES = {
 };
 
 export const USER_SUCCESS_MESSAGES = {
+  GET_ALL_SUCCESS: 'Successfully fetched all users',
   PERSONAL_DATA_UPDATE_SUCCESS: 'Successfully updated personal data',
   PASSWORD_UPDATE_SUCCESS: 'Successfully updated password',
   HOME_ADDRESS_UPDATE_SUCCESS: 'Successfully updated home address',

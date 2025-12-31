@@ -1,3 +1,4 @@
+import { IOptionData } from '@shared/interfaces/response-data.interface';
 import { TObjectId } from '@shared/types/db-types';
 
 export type IworkCategories = string[] | TObjectId[];
@@ -18,4 +19,17 @@ export interface IListTaskers extends Omit<ITasker, 'workCategories'> {
   firstName: string;
   lastName: string;
   profileImageUrl: string;
+}
+
+export interface ITaskerCardData
+  extends Pick<IListTaskers, 'firstName' | 'lastName' | 'profileImageUrl'> {
+  city: string;
+}
+
+export interface ITaskerAbout {
+  about: string;
+}
+
+export interface IWorkCategories {
+  workCategories: IOptionData[];
 }

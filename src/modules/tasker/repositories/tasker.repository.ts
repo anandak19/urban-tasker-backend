@@ -3,7 +3,11 @@ import { Model, PipelineStage } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Tasker, TaskerDocument } from '../schemas/tasker.schema';
 import { ITaskerRepository } from '../interfaces/tasker-repositories.interface';
-import { ICreateTasker, IListTaskers } from '../interfaces/tasker.interface';
+import {
+  ICreateTasker,
+  IListTaskers,
+  IWorkCategories,
+} from '../interfaces/tasker.interface';
 import { toObjectId } from '@shared/utility/db/to-objectid.util';
 import { IAvailTaskerQuery } from '../interfaces/tasker-requests.interface';
 import {
@@ -21,6 +25,11 @@ export class TaskerRepository
     private _taskerModel: Model<TaskerDocument>,
   ) {
     super(_taskerModel);
+  }
+
+  getTaskerWorkCategories(taskerId: string): Promise<IWorkCategories> {
+    console.log(taskerId);
+    throw new Error('Method not implemented.');
   }
 
   private _defaultTaskersPage = 1;

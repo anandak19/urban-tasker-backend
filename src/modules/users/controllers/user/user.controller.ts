@@ -30,11 +30,6 @@ export class UserController {
     @Inject(USER_TOKENS.PROFILE_SERVICE)
     private _userProfileService: IUserProfileService,
   ) {}
-  /**
-   * TODOS
-   * 4. To add/change the user profile picture
-   * 5. To add home address with location
-   */
 
   // To fetch the logged in users profile data
   @Get()
@@ -71,6 +66,7 @@ export class UserController {
     return this._userProfileService.updateHomeLocation(req.user.id, dto);
   }
 
+  // chane profile picture
   @Patch('profile/picture')
   @UseInterceptors(FileInterceptor('image'))
   updateProfilePicture(

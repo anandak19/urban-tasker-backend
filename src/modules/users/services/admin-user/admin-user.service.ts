@@ -22,6 +22,7 @@ import {
   GENERAL_ERRORS,
   USER_ERRORS,
 } from '@shared/constants/messages/error-messaes.constants';
+import { USER_SUCCESS_MESSAGES } from '@shared/constants/messages/user-messages.constant';
 import { IFindAllQuery } from '@shared/interfaces/query.interface';
 import { TObjectId } from '@shared/types/db-types';
 
@@ -48,8 +49,6 @@ export class AdminUserService implements IAdminUserService {
     };
 
     try {
-      console.log('The user query has changed to');
-
       const users = await this._userRepo.findAllUsers(pagination, filter);
 
       if (!users) {
@@ -57,13 +56,15 @@ export class AdminUserService implements IAdminUserService {
       }
 
       console.log(users.documents);
-      const allUsers = users.documents.map((user) =>
-        this._userService.getUserResponse(user),
+      const allUsers = await Promise.all(
+        users.documents.map((user) => this._userService.getUserResponse(user)),
       );
+      console.log(allUsers);
+
       return {
         allUsers,
         metaData: users.meta,
-        message: 'All users fetched',
+        message: USER_SUCCESS_MESSAGES.GET_ALL_SUCCESS,
       };
     } catch (error) {
       console.log(error);

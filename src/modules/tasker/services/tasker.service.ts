@@ -4,6 +4,8 @@ import {
   ICreateTasker,
   IListTaskers,
   ITasker,
+  ITaskerAbout,
+  ITaskerCardData,
 } from '../interfaces/tasker.interface';
 import { TASKER_TOKEN } from '../tasker.token';
 import type { ITaskerRepository } from '../interfaces/tasker-repositories.interface';
@@ -14,11 +16,45 @@ import { IAvailTaskerQuery } from '../interfaces/tasker-requests.interface';
 import { getDayFromDate } from '@shared/utility/time/convert-time.utitlity';
 import { IFindAllOptions } from '@shared/interfaces/repository.interface';
 import { PaginatedResult } from '@shared/interfaces/query.interface';
+import { ITaskerWorkCategoriesResponse } from '../interfaces/tasker-responses.interface';
+import { toObjectId } from '@shared/utility/db/to-objectid.util';
+import { USER_TOKENS } from '@modules/users/user-tokens';
+import type { IUserService } from '@modules/users/interfaces/user-services.interface';
 
 export class TaskerService implements ITaskerService {
   constructor(
     @Inject(TASKER_TOKEN.REPOSITORY) private _taskerRepo: ITaskerRepository,
+
+    @Inject(USER_TOKENS.SERVICE) private _userService: IUserService,
   ) {}
+
+  async getTaskerCardData(taskerId: string): Promise<ITaskerCardData> {
+    const tasker = await this._userService.findOne(taskerId);
+
+    const cardData: ITaskerCardData = {
+      city: tasker.homeAddress?.city || '',
+      firstName: tasker.firstName,
+      lastName: tasker.lastName,
+      profileImageUrl: tasker.profileImageUrl,
+    };
+
+    return cardData;
+  }
+
+  async getTaskerAbout(taskerId: string): Promise<ITaskerAbout> {
+    const tasker = await this._taskerRepo.findOne({
+      _id: toObjectId(taskerId),
+    });
+
+    return { about: tasker?.about || '' };
+  }
+
+  getTaskerWorkCategories(
+    taskerId: string,
+  ): Promise<ITaskerWorkCategoriesResponse> {
+    console.log(taskerId);
+    throw new Error('Method not implemented.');
+  }
 
   async getAvailbleTaskers(
     availQuery: GetAvailableTaskersQueryDto,
