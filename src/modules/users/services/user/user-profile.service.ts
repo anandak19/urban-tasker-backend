@@ -135,13 +135,12 @@ export class UserProfileService implements IUserProfileService {
     return { message: USER_SUCCESS_MESSAGES.PASSWORD_UPDATE_SUCCESS };
   }
 
-  // To add home address with location
+  // To add home location
   async updateHomeLocation(
     userId: string,
     payload: HomeAddressDto,
   ): Promise<IBaseResponse> {
     const homeAddressData: IHomeAddress = {
-      address: payload.address,
       city: payload.city,
       location: {
         type: 'Point',

@@ -3,10 +3,6 @@ import { IsNotEmpty, IsNumber, IsString, Min, Max } from 'class-validator';
 export class HomeAddressDto {
   @IsString()
   @IsNotEmpty()
-  address: string;
-
-  @IsString()
-  @IsNotEmpty()
   city: string;
 
   @IsNumber()

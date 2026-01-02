@@ -3,8 +3,8 @@ import { GeoLocation } from './location.schema';
 
 @Schema({ _id: false })
 export class HomeAddress {
-  @Prop({ required: true })
-  address: string;
+  // @Prop({ required: true })
+  // address: string;
 
   @Prop({ required: true })
   city: string;

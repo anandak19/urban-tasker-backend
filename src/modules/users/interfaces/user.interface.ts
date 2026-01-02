@@ -8,7 +8,7 @@ export interface IGeoLocation {
   coordinates: [number, number]; // [longitude, latitude]
 }
 export interface IHomeAddress {
-  address: string;
+  // address: string;
   city: string;
   location: IGeoLocation;
 }
