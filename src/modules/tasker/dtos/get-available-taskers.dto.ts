@@ -1,7 +1,15 @@
-import { IsString, IsDateString, IsNumber } from 'class-validator';
-import { Type } from 'class-transformer';
+import {
+  IsString,
+  IsDateString,
+  IsNumber,
+  IsInt,
+  Min,
+  Max,
+} from 'class-validator';
+import { Transform, Type } from 'class-transformer';
 import { PickType } from '@nestjs/mapped-types';
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
+import { timeStringToMinutes } from '@core/transformers/trim-string.transformer';
 
 export class GetAvailableTaskersQueryDto extends PickType(GetDocsDto, [
   'page',
@@ -13,8 +21,11 @@ export class GetAvailableTaskersQueryDto extends PickType(GetDocsDto, [
   @IsDateString()
   date: string;
 
-  @IsString()
-  time: string;
+  @Transform(timeStringToMinutes)
+  @IsInt()
+  @Min(0)
+  @Max(1410)
+  time: number;
 
   @IsString()
   subcategoryId: string;

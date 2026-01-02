@@ -9,7 +9,7 @@ export interface ICreateBooking {
   date: string;
   time: string;
   city: string;
-  address: string;
+  // address: string;
   location: {
     latitude: number;
     longitude: number;

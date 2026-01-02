@@ -1,13 +1,11 @@
-import { WeekDayKeys } from '@modules/availability/constants/week-days.constant';
-
 export interface IAvailTaskerQuery {
   city: string;
 
   date: string;
 
-  day: WeekDayKeys;
+  day: number;
 
-  time: string;
+  time: number;
 
   subcategoryId: string;
 
