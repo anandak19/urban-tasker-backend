@@ -1,4 +1,7 @@
-import { WeekDayKeys } from '@modules/availability/constants/week-days.constant';
+import {
+  WEEK_DAYS,
+  WeekDayKeys,
+} from '@modules/availability/constants/week-days.constant';
 
 export const timeToMinutes = (time: string) => {
   const [h, m] = time.split(':').map(Number);
@@ -23,4 +26,14 @@ export const getDayFromDate = (date: Date | string): WeekDayKeys => {
   return d
     .toLocaleDateString('en-US', { weekday: 'long' })
     .toLowerCase() as WeekDayKeys;
+};
+
+export const getWeekDayNumberFromDate = (date: Date | string): number => {
+  const stringDay = getDayFromDate(date);
+  return WEEK_DAYS.indexOf(stringDay) + 1;
+};
+
+export const getMinutesFromMidnight = (time: string): number => {
+  const [hours, minutes] = time.split(':').map(Number);
+  return hours * 60 + minutes;
 };

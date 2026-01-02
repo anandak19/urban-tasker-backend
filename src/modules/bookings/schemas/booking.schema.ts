@@ -27,8 +27,8 @@ export class Booking {
   @Prop({ required: true, lowercase: true, trim: true })
   city: string;
 
-  @Prop({ required: true })
-  address: string;
+  // @Prop({ required: true })
+  // address: string;
 
   @Prop({
     type: {

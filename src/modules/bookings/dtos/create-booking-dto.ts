@@ -32,9 +32,6 @@ export class CreateBookingDto {
   @IsString()
   city: string;
 
-  @IsString()
-  address: string;
-
   // Location (nested)
   @ValidateNested()
   @Type(() => LocationDto)

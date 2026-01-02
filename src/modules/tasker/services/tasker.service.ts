@@ -13,7 +13,7 @@ import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constan
 import { TaskerMapper } from '../mappers/tasker.mapper';
 import { GetAvailableTaskersQueryDto } from '../dtos/get-available-taskers.dto';
 import { IAvailTaskerQuery } from '../interfaces/tasker-requests.interface';
-import { getDayFromDate } from '@shared/utility/time/convert-time.utitlity';
+import { getWeekDayNumberFromDate } from '@shared/utility/time/convert-time.utitlity';
 import { IFindAllOptions } from '@shared/interfaces/repository.interface';
 import { PaginatedResult } from '@shared/interfaces/query.interface';
 import { ITaskerWorkCategoriesResponse } from '../interfaces/tasker-responses.interface';
@@ -67,7 +67,7 @@ export class TaskerService implements ITaskerService {
       longitude: availQuery.longitude,
       subcategoryId: availQuery.subcategoryId,
       time: availQuery.time,
-      day: getDayFromDate(availQuery.date),
+      day: getWeekDayNumberFromDate(availQuery.date),
     };
 
     const paginationQuery: IFindAllOptions = {

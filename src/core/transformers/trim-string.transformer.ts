@@ -4,7 +4,7 @@ export const TrimStringTransform = ({ value }): string => {
 
 export const timeStringToMinutes = ({ value }: { value: string }): number => {
   if (typeof value !== 'string') {
-    throw new Error('Time must be a string');
+    throw new Error('Time must be of string type');
   }
 
   const match = value.match(/^([01]?\d|2[0-3]):([0-5]\d)$/);

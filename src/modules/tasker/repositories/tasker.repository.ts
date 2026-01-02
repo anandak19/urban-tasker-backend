@@ -67,21 +67,13 @@ export class TaskerRepository
       },
       //
       { $unwind: '$availability' },
-      // filter by day
+
+      //filter by day , check slot
       {
         $match: {
           'availability.day': availQuery.day,
-        },
-      },
-      // check slot
-      {
-        $match: {
-          'availability.slots': {
-            $elemMatch: {
-              start: { $lte: availQuery.time },
-              end: { $gte: availQuery.time },
-            },
-          },
+          'availability.start': { $lte: availQuery.time },
+          'availability.end': { $gte: availQuery.time },
         },
       },
       // join users
