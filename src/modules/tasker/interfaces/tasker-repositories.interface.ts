@@ -6,6 +6,8 @@ import { IFindAllOptions } from '@shared/interfaces/repository.interface';
 import { PaginatedResult } from '@shared/interfaces/query.interface';
 import { InferRawDocType, UpdateQuery } from 'mongoose';
 import { IOptionData } from '@shared/interfaces/response-data.interface';
+import { PortfolioImageDocument } from '../schemas/portfolio-image.schema';
+import { ICreatePortfolioImage } from './portfolio-image.interface';
 
 export interface ITaskerRepository
   extends IBaseRepository<TaskerDocument, ICreateTasker> {
@@ -30,4 +32,9 @@ export interface ITaskerRepository
     taskerId: string,
     categoryId: string,
   ): Promise<boolean>;
+}
+
+export interface IProfileImageRepository
+  extends IBaseRepository<PortfolioImageDocument, ICreatePortfolioImage> {
+  findAllImage();
 }

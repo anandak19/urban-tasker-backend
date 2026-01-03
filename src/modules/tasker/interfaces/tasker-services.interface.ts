@@ -10,6 +10,7 @@ import {
 import { UpdateAboutDto } from '../dtos/update-about.dto';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { IOptionData } from '@shared/interfaces/response-data.interface';
+import { CreatePortfolioImageDto } from '../dtos/create-portfolio-image.dto';
 
 export interface ITaskerService {
   /**
@@ -44,5 +45,15 @@ export interface ITaskerService {
   removeTaskerWorkCategory(
     taskerId: string,
     categoryId: string,
+  ): Promise<IBaseResponse>;
+}
+
+export interface IPortfolioImageService {
+  findByTaskerId(taskerId: string);
+
+  create(
+    file: Express.Multer.File,
+    dto: CreatePortfolioImageDto,
+    userId: string,
   ): Promise<IBaseResponse>;
 }
