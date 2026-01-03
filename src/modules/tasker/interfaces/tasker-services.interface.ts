@@ -40,4 +40,9 @@ export interface ITaskerService {
     taskerId: string,
     categoryId: string,
   ): Promise<IBaseResponse>;
+
+  removeTaskerWorkCategory(
+    taskerId: string,
+    categoryId: string,
+  ): Promise<IBaseResponse>;
 }

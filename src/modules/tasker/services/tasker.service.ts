@@ -144,4 +144,20 @@ export class TaskerService implements ITaskerService {
 
     return { message: 'Added Category' };
   }
+
+  async removeTaskerWorkCategory(
+    taskerId: string,
+    categoryId: string,
+  ): Promise<IBaseResponse> {
+    const isUpdated = await this._taskerRepo.removeTaskerWorkCategoryByTaskerId(
+      taskerId,
+      categoryId,
+    );
+
+    if (!isUpdated) {
+      throw new InternalServerErrorException(GENERAL_ERRORS.ERROR);
+    }
+
+    return { message: 'Successfully removed category' };
+  }
 }

@@ -6,8 +6,10 @@ import { TASKER_TOKEN } from '@modules/tasker/tasker.token';
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Inject,
+  Param,
   Patch,
   Req,
   UseGuards,
@@ -19,7 +21,7 @@ import type { IAuthenticatedReqeust } from '@shared/interfaces/request.interface
 export class TaskerProfileController {
   /**
    * TODOS
-   * 3. To get get work categories
+   * 3. To Remove work category
    */
   constructor(
     @Inject(TASKER_TOKEN.SERVICE) private _taskerService: ITaskerService,
@@ -55,13 +57,27 @@ export class TaskerProfileController {
 
   // To add work categories
   @Patch('work-categories')
-  addTaskerWorkCateories(
+  addTaskerWorkCategory(
     @Req() req: IAuthenticatedReqeust,
     @Body() dto: AddWorkCategoryDto,
   ) {
     return this._taskerService.addTaskerWorkCategory(
       req.user.id,
       dto.categoryId,
+    );
+  }
+
+  // To Remove work category
+  @Delete('work-categories/:categoryId')
+  removeTaskerWorkCategory(
+    @Req() req: IAuthenticatedReqeust,
+    @Param('categoryId') categoryId: string,
+  ) {
+    console.log(categoryId);
+    console.log(req.user.id);
+    return this._taskerService.removeTaskerWorkCategory(
+      req.user.id,
+      categoryId,
     );
   }
 }

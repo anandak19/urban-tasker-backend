@@ -25,4 +25,9 @@ export interface ITaskerRepository
     taskerId: string,
     categoryId: string,
   ): Promise<boolean>;
+
+  removeTaskerWorkCategoryByTaskerId(
+    taskerId: string,
+    categoryId: string,
+  ): Promise<boolean>;
 }

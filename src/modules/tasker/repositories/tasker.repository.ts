@@ -197,4 +197,19 @@ export class TaskerRepository
 
     return result.acknowledged && result.matchedCount > 0;
   }
+
+  async removeTaskerWorkCategoryByTaskerId(
+    taskerId: string,
+    categoryId: string,
+  ): Promise<boolean> {
+    const taskerObjectId = toObjectId(taskerId);
+    const categoryObjectId = toObjectId(categoryId);
+
+    const result = await this._taskerModel.updateOne(
+      { userId: taskerObjectId },
+      { $pull: { workCategories: categoryObjectId } },
+    );
+
+    return result.acknowledged && result.matchedCount > 0;
+  }
 }
