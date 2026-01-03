@@ -11,8 +11,8 @@ export class Tasker {
   about: string;
 
   @Prop({
-    required: true,
     type: [{ type: Types.ObjectId, ref: SubCategory.name }],
+    default: [],
   })
   workCategories: Types.ObjectId[];
 

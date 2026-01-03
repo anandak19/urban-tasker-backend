@@ -7,7 +7,10 @@ import {
   ITaskerAbout,
   ITaskerCardData,
 } from './tasker.interface';
-import { ITaskerWorkCategoriesResponse } from './tasker-responses.interface';
+import { UpdateAboutDto } from '../dtos/update-about.dto';
+import { IBaseResponse } from '@shared/interfaces/base-response.interface';
+import { IOptionData } from '@shared/interfaces/response-data.interface';
+import { CreatePortfolioImageDto } from '../dtos/create-portfolio-image.dto';
 
 export interface ITaskerService {
   /**
@@ -27,7 +30,30 @@ export interface ITaskerService {
   // To get about
   getTaskerAbout(taskerId: string): Promise<ITaskerAbout>;
 
-  getTaskerWorkCategories(
+  getTaskerWorkCategories(taskerId: string): Promise<IOptionData[]>;
+
+  updateTaskerAbout(
     taskerId: string,
-  ): Promise<ITaskerWorkCategoriesResponse>;
+    aboutData: UpdateAboutDto,
+  ): Promise<IBaseResponse>;
+
+  addTaskerWorkCategory(
+    taskerId: string,
+    categoryId: string,
+  ): Promise<IBaseResponse>;
+
+  removeTaskerWorkCategory(
+    taskerId: string,
+    categoryId: string,
+  ): Promise<IBaseResponse>;
+}
+
+export interface IPortfolioImageService {
+  findByTaskerId(taskerId: string);
+
+  create(
+    file: Express.Multer.File,
+    dto: CreatePortfolioImageDto,
+    userId: string,
+  ): Promise<IBaseResponse>;
 }

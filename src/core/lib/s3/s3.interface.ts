@@ -30,4 +30,10 @@ export interface IS3Service {
    * @param file
    */
   uploadUserProfilePic(file: Express.Multer.File): Promise<string>;
+
+  /**
+   * Upload portfolio image
+   * @param file
+   */
+  uploadPortfolioImage(file: Express.Multer.File): Promise<string>;
 }

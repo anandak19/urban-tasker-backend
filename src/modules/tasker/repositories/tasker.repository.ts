@@ -1,13 +1,9 @@
 import { BaseRepository } from '@shared/repository/base.repository';
-import { Model, PipelineStage } from 'mongoose';
+import { InferRawDocType, Model, PipelineStage, UpdateQuery } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { Tasker, TaskerDocument } from '../schemas/tasker.schema';
 import { ITaskerRepository } from '../interfaces/tasker-repositories.interface';
-import {
-  ICreateTasker,
-  IListTaskers,
-  IWorkCategories,
-} from '../interfaces/tasker.interface';
+import { ICreateTasker, IListTaskers } from '../interfaces/tasker.interface';
 import { toObjectId } from '@shared/utility/db/to-objectid.util';
 import { IAvailTaskerQuery } from '../interfaces/tasker-requests.interface';
 import {
@@ -15,11 +11,15 @@ import {
   IFindAllOptions,
 } from '@shared/interfaces/repository.interface';
 import { PaginatedResult } from '@shared/interfaces/query.interface';
+import { IOptionData } from '@shared/interfaces/response-data.interface';
 
 export class TaskerRepository
   extends BaseRepository<TaskerDocument, ICreateTasker>
   implements ITaskerRepository
 {
+  private _defaultTaskersPage = 1;
+  private _defaultTaskersLimit = 10;
+
   constructor(
     @InjectModel(Tasker.name)
     private _taskerModel: Model<TaskerDocument>,
@@ -27,13 +27,37 @@ export class TaskerRepository
     super(_taskerModel);
   }
 
-  getTaskerWorkCategories(taskerId: string): Promise<IWorkCategories> {
-    console.log(taskerId);
-    throw new Error('Method not implemented.');
+  async getTaskerWorkCategories(taskerId: string): Promise<IOptionData[]> {
+    const taskerObjectId = toObjectId(taskerId);
+    return await this._taskerModel.aggregate([
+      {
+        $match: {
+          userId: taskerObjectId,
+        },
+      },
+      {
+        $unwind: '$workCategories',
+      },
+      {
+        $lookup: {
+          from: 'subcategories',
+          localField: 'workCategories',
+          foreignField: '_id',
+          as: 'categories',
+        },
+      },
+      {
+        $unwind: '$categories',
+      },
+      {
+        $project: {
+          _id: 0,
+          label: '$categories.name',
+          id: '$categories._id',
+        },
+      },
+    ]);
   }
-
-  private _defaultTaskersPage = 1;
-  private _defaultTaskersLimit = 10;
 
   async getAvailbleTaskers(
     availQuery: IAvailTaskerQuery,
@@ -131,8 +155,61 @@ export class TaskerRepository
     };
   }
 
-  // sample method
-  updateRating(): void {
-    throw new Error('Method not implemented.');
+  async updateByTaskerId(
+    taskerId: string,
+    update: UpdateQuery<InferRawDocType<TaskerDocument>>,
+  ): Promise<boolean> {
+    const userObjectId = toObjectId(taskerId);
+    console.log('Reached repo', update);
+
+    const result = await this._taskerModel.updateOne(
+      {
+        userId: userObjectId,
+      },
+      { $set: update },
+    );
+    console.log(result);
+
+    return result.acknowledged && result.matchedCount > 0;
+  }
+
+  async addWorkCategoryByTaskerId(
+    taskerId: string,
+    categoryId: string,
+  ): Promise<boolean> {
+    const taskerObjectId = toObjectId(taskerId);
+    const categoryObjectId = toObjectId(categoryId);
+    console.log(taskerObjectId);
+    console.log(categoryObjectId);
+
+    const result = await this._taskerModel.updateOne(
+      {
+        userId: taskerObjectId,
+      },
+      {
+        $addToSet: {
+          workCategories: categoryObjectId,
+        },
+      },
+    );
+
+    console.log(result);
+
+    return result.acknowledged && result.matchedCount > 0;
+  }
+
+  async removeTaskerWorkCategoryByTaskerId(
+    taskerId: string,
+    categoryId: string,
+  ): Promise<boolean> {
+    const taskerObjectId = toObjectId(taskerId);
+    const categoryObjectId = toObjectId(categoryId);
+
+    const result = await this._taskerModel.updateOne(
+      { userId: taskerObjectId },
+      { $pull: { workCategories: categoryObjectId } },
+    );
+
+    return result.acknowledged && result.matchedCount > 0;
   }
 }
