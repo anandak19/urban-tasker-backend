@@ -15,7 +15,11 @@ import type {
 } from '@modules/categories/interfaces/categories-services.interface';
 import { BOOKING_TOKEN } from '../bookings.token';
 import type { IBookingRepository } from '../interfaces/bookings-repositories.interface';
-import { ICreateBooking, IListBooking } from '../interfaces/bookings.interface';
+import {
+  ICreateBooking,
+  IListBookingBasic,
+  IListUsersBooking,
+} from '../interfaces/bookings.interface';
 import { IListTaskersQuery } from '@modules/tasker/interfaces/request.interface';
 import { S3_SERVICE } from '@core/lib/s3/s3.module';
 import type { IS3Service } from '@core/lib/s3/s3.interface';
@@ -43,8 +47,10 @@ export class BookingService implements IBookingService {
     const result = await this._bookingRepo.getAllBookings(userId, filter);
     console.log(result);
 
-    const docs: IListBooking[] = await Promise.all(
-      result.documents.map((item) => this.decorateWithImageUrl(item)),
+    const docs: IListUsersBooking[] = await Promise.all(
+      result.documents.map((item) =>
+        this.decorateWithImageUrl<IListUsersBooking>(item),
+      ),
     );
     console.log(docs);
 
@@ -67,6 +73,13 @@ export class BookingService implements IBookingService {
     }
 
     return { message: 'Booking successfull' };
+  }
+
+  async decorateWithImageUrl<T extends IListBookingBasic>(item: T): Promise<T> {
+    if (item.image) {
+      item.image = await this._s3.getImageUrl(item.image);
+    }
+    return item;
   }
 
   private async validateBookingData(payload: CreateBookingDto): Promise<void> {
@@ -131,14 +144,5 @@ export class BookingService implements IBookingService {
         throw new BadRequestException('Booking time cannot be in the past');
       }
     }
-  }
-
-  private async decorateWithImageUrl(
-    item: IListBooking,
-  ): Promise<IListBooking> {
-    if (item.image) {
-      item.image = await this._s3.getImageUrl(item.image);
-    }
-    return item;
   }
 }

@@ -1,4 +1,6 @@
 import { PaginatedResult } from '@shared/interfaces/query.interface';
-import { IListBooking } from './bookings.interface';
+import { IListTaskersBooking, IListUsersBooking } from './bookings.interface';
 
-export type IFindAllBookingsResponse = PaginatedResult<IListBooking>;
+export type IFindAllBookingsResponse = PaginatedResult<
+  IListTaskersBooking | IListUsersBooking
+>;
