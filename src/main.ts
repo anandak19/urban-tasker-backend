@@ -28,13 +28,10 @@ async function bootstrap() {
   });
 
   app.enableCors({
-    origin: [
-      'https://1tks06cq-4200.inc1.devtunnels.ms',
-      'http://localhost:4200',
-    ],
+    origin: 'http://localhost:4200',
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: 'Content-Type,Authorization',
+    allowedHeaders: 'Content-Type,Authorization,Cookie',
   });
   app.use(json());
   app.use(cookieParser());
