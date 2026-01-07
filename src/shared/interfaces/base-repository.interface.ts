@@ -62,6 +62,11 @@ export interface IBaseRepository<TDocument, TCreate> {
     session?: ClientSession,
   ): Promise<TDocument | null>;
 
+  updateMany(
+    filter: FilterQuery<TDocument>,
+    update: UpdateQuery<TDocument>,
+  ): Promise<boolean>;
+
   /**
    * Delete one document by id
    * @param {string} id - id of document to update
