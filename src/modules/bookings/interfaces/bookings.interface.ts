@@ -18,13 +18,22 @@ export interface ICreateBooking {
   taskerId: string | TObjectId;
 }
 
-export interface IListBooking {
+export interface IListBookingBasic {
   subcategoryId: string;
   categoryName: string;
   image: string;
   date: string;
   time: string;
+}
+
+export interface IListUsersBooking extends IListBookingBasic {
   taskerId: string | TObjectId;
   taskerFirstName: string;
   taskerLastName: string;
+}
+
+export interface IListTaskersBooking extends IListBookingBasic {
+  userId: string | TObjectId;
+  userFirstName: string;
+  userLastName: string;
 }

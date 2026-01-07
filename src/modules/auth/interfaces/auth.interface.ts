@@ -4,6 +4,7 @@ export interface IPayload {
   id: string;
   email: string;
   userRole: UserRoles;
+  exp?: number;
 }
 
 export interface ITokens {

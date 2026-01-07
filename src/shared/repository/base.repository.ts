@@ -19,6 +19,7 @@ export abstract class BaseRepository<TDocument, TCreate>
   implements IBaseRepository<TDocument, TCreate>
 {
   constructor(protected readonly _model: Model<TDocument>) {}
+
   private _logger = new Logger(BaseRepository.name);
   private _defaultPage = 1;
   private _defaultLimit = 10;
@@ -117,6 +118,18 @@ export abstract class BaseRepository<TDocument, TCreate>
     return await this._model
       .findByIdAndUpdate(id, update, { new: true, session })
       .exec();
+  }
+
+  async updateMany(
+    filter: FilterQuery<TDocument>,
+    update: UpdateQuery<TDocument>,
+  ): Promise<boolean> {
+    console.log(update);
+
+    const result = await this._model.updateMany(filter, update);
+    console.log(result);
+
+    return result.acknowledged && result.matchedCount > 0;
   }
 
   // DELETE ONE DOC BY ID

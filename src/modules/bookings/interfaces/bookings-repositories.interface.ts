@@ -3,7 +3,11 @@ import {
   PaginatedResult,
 } from '@shared/interfaces/query.interface';
 import { BookingDocument } from '../schemas/booking.schema';
-import { ICreateBooking, IListBooking } from './bookings.interface';
+import {
+  ICreateBooking,
+  IListTaskersBooking,
+  IListUsersBooking,
+} from './bookings.interface';
 
 export interface IBookingRepository {
   /**
@@ -17,5 +21,10 @@ export interface IBookingRepository {
   getAllBookings(
     userId: string,
     filter: IFindAllQuery,
-  ): Promise<PaginatedResult<IListBooking>>;
+  ): Promise<PaginatedResult<IListUsersBooking>>;
+
+  getAllTaskerBookings(
+    taskerId: string,
+    filter: IFindAllQuery,
+  ): Promise<PaginatedResult<IListTaskersBooking>>;
 }
