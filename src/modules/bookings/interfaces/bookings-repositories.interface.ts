@@ -4,6 +4,7 @@ import {
 } from '@shared/interfaces/query.interface';
 import { BookingDocument } from '../schemas/booking.schema';
 import {
+  IBookingDetailsRepoResult,
   ICreateBooking,
   IListTaskersBooking,
   IListUsersBooking,
@@ -27,4 +28,8 @@ export interface IBookingRepository {
     taskerId: string,
     filter: IFindAllQuery,
   ): Promise<PaginatedResult<IListTaskersBooking>>;
+
+  getBookingDetailsById(
+    bookingId: string,
+  ): Promise<IBookingDetailsRepoResult | null>;
 }

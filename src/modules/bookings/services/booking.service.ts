@@ -24,6 +24,8 @@ import { IListTaskersQuery } from '@modules/tasker/interfaces/request.interface'
 import { S3_SERVICE } from '@core/lib/s3/s3.module';
 import type { IS3Service } from '@core/lib/s3/s3.interface';
 import { IFindAllBookingsResponse } from '../interfaces/api-responses.interface';
+import { BookingDetailsResponseDto } from '../dtos/booking-details-response.dto';
+import { BookingsMapper } from '../mappers/bookings.mapper';
 
 @Injectable()
 export class BookingService implements IBookingService {
@@ -80,6 +82,16 @@ export class BookingService implements IBookingService {
       item.image = await this._s3.getImageUrl(item.image);
     }
     return item;
+  }
+
+  async getBookingDetails(
+    bookingId: string,
+  ): Promise<BookingDetailsResponseDto> {
+    const result = await this._bookingRepo.getBookingDetailsById(bookingId);
+    if (!result) {
+      throw new NotFoundException('Booking details not found');
+    }
+    return BookingsMapper.toUserResonseDetail(result);
   }
 
   private async validateBookingData(payload: CreateBookingDto): Promise<void> {

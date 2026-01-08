@@ -1,4 +1,4 @@
-import { TaskSize } from '@shared/constants/enums/task.enum';
+import { TaskSize, TaskStatus } from '@shared/constants/enums/task.enum';
 import { TObjectId } from '@shared/types/db-types';
 
 export interface ICreateBooking {
@@ -24,6 +24,7 @@ export interface IListBookingBasic {
   image: string;
   date: string;
   time: string;
+  id: string;
 }
 
 export interface IListUsersBooking extends IListBookingBasic {
@@ -34,6 +35,31 @@ export interface IListUsersBooking extends IListBookingBasic {
 
 export interface IListTaskersBooking extends IListBookingBasic {
   userId: string | TObjectId;
+  userFirstName: string;
+  userLastName: string;
+}
+
+//vibee
+export interface IBookingDetailsRepoResult {
+  id: string;
+
+  categoryName: string;
+  subcategoryId: string;
+  image?: string;
+
+  city: string;
+  date: string;
+  time: string;
+  description: string;
+
+  taskSize: TaskSize;
+  taskStatus: TaskStatus;
+
+  taskerId: string;
+  taskerFirstName: string;
+  taskerLastName: string;
+
+  userId: string;
   userFirstName: string;
   userLastName: string;
 }

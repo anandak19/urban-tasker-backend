@@ -5,6 +5,7 @@ import {
   IChangePassoword,
   ICreateUser,
   IPersonalDetails,
+  IProfileImage,
   IUserData,
 } from './user.interface';
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
@@ -43,6 +44,8 @@ export interface IUserService {
   getBasicUserData(id: string): Promise<BasicUserResponseDto>;
 
   findOne(id: string): Promise<UserResponseDto>;
+
+  getUserImage(userImage: IProfileImage): Promise<IProfileImage>;
 }
 
 export interface IUserProfileService {

@@ -1,6 +1,7 @@
 import { BaseRepository } from '@shared/repository/base.repository';
 import { Booking, BookingDocument } from '../schemas/booking.schema';
 import {
+  IBookingDetailsRepoResult,
   ICreateBooking,
   IListTaskersBooking,
   IListUsersBooking,
@@ -94,6 +95,9 @@ export class BookingRepository
             {
               $project: {
                 _id: 0,
+                id: {
+                  $toString: '$_id',
+                },
                 subcategoryId: {
                   $toString: '$subcategory._id',
                 },
@@ -199,6 +203,9 @@ export class BookingRepository
             {
               $project: {
                 _id: 0,
+                id: {
+                  $toString: '$_id',
+                },
                 subcategoryId: {
                   $toString: '$subcategory._id',
                 },
@@ -244,5 +251,83 @@ export class BookingRepository
     payload.taskerId = toObjectId(payload.taskerId);
     payload.userId = toObjectId(payload.userId);
     return this.create(payload);
+  }
+
+  async getBookingDetailsById(
+    bookingId: string,
+  ): Promise<IBookingDetailsRepoResult | null> {
+    const [result] =
+      await this._bookingModel.aggregate<IBookingDetailsRepoResult>([
+        {
+          $match: {
+            _id: toObjectId(bookingId),
+          },
+        },
+
+        /* -------- Join Subcategory -------- */
+        {
+          $lookup: {
+            from: 'subcategories',
+            localField: 'subcategoryId',
+            foreignField: '_id',
+            as: 'subcategory',
+          },
+        },
+        { $unwind: '$subcategory' },
+
+        /* -------- Join Tasker -------- */
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'taskerId',
+            foreignField: '_id',
+            as: 'tasker',
+          },
+        },
+        { $unwind: '$tasker' },
+
+        /* -------- Join User -------- */
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'userId',
+            foreignField: '_id',
+            as: 'user',
+          },
+        },
+        { $unwind: '$user' },
+
+        /* -------- Final Projection -------- */
+        {
+          $project: {
+            _id: 0,
+            id: { $toString: '$_id' },
+
+            subcategoryId: {
+              $toString: '$subcategory._id',
+            },
+            categoryName: '$subcategory.name',
+            image: '$subcategory.image',
+
+            city: 1,
+            date: 1,
+            time: 1,
+            description: 1,
+
+            taskSize: 1,
+            taskStatus: 1,
+
+            taskerId: { $toString: '$tasker._id' },
+            taskerFirstName: '$tasker.firstName',
+            taskerLastName: '$tasker.lastName',
+
+            userId: { $toString: '$user._id' },
+            userFirstName: '$user.firstName',
+            userLastName: '$user.lastName',
+          },
+        },
+      ]);
+
+    return result ?? null;
   }
 }

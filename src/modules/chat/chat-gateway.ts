@@ -75,33 +75,23 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('joinChat')
   async handleJoinChat(
     @ConnectedSocket() client: Socket<any, any, any, ISocketData>,
-    @MessageBody() data: { targetUserId: string },
-    @CurrentUser() user: IPayload,
+    @MessageBody() data: { roomId: string },
   ) {
-    console.log('Target ', data.targetUserId);
-
-    // create room / get room id
-    const roomId = await this._chatService.getChatRoomId(
-      user.id,
-      data.targetUserId,
-    );
-
     // join the socket of requested clint to that room
-    if (!client.rooms.has(roomId)) {
-      await client.join(roomId);
+    if (!client.rooms.has(data.roomId)) {
+      await client.join(data.roomId);
     }
 
     /**
-     * TODOS
      * Fetch last 30 messages of the room using find all (last 30 docs if any)
      * Emit "messages" event with received messages array as data
      */
-    const messages = await this._messageService.findAllByRoomId(roomId);
-    this.server.to(roomId).emit('messages', messages);
+    const messages = await this._messageService.findAllByRoomId(data.roomId);
+    this.server.to(data.roomId).emit('messages', messages);
 
-    console.log(`User joined room ${roomId}`);
+    console.log(`User joined room ${data.roomId}`);
 
-    return { roomId };
+    return { success: true };
   }
 
   handleDisconnect(client: Socket<any, any, any, ISocketData>) {

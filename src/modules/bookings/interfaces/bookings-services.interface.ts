@@ -3,6 +3,7 @@ import { CreateBookingDto } from '../dtos/create-booking-dto';
 import { IFindAllBookingsResponse } from './api-responses.interface';
 import { IListBookingBasic } from './bookings.interface';
 import { IListBookingsQuery } from './request.interface';
+import { BookingDetailsResponseDto } from '../dtos/booking-details-response.dto';
 
 export interface IBookingService {
   /**
@@ -20,6 +21,11 @@ export interface IBookingService {
     userId: string,
     payload: CreateBookingDto,
   ): Promise<IBaseResponse>;
+
+  /**
+   * Get single booking details
+   */
+  getBookingDetails(bookingId: string): Promise<BookingDetailsResponseDto>;
 
   decorateWithImageUrl<T extends IListBookingBasic>(item: T): Promise<T>;
 }

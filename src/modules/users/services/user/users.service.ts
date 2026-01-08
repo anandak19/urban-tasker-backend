@@ -45,7 +45,7 @@ export class UsersService implements IUserService {
    */
   async getUserResponse(user: UserDocument): Promise<UserResponseDto> {
     if (user.profileImage) {
-      user.profileImage = await this._getUserImage(user.profileImage);
+      user.profileImage = await this.getUserImage(user.profileImage);
     }
     return UserMapper.toResponse(user);
   }
@@ -58,7 +58,7 @@ export class UsersService implements IUserService {
     user: UserDocument,
   ): Promise<BasicUserResponseDto> {
     if (user.profileImage) {
-      user.profileImage = await this._getUserImage(user.profileImage);
+      user.profileImage = await this.getUserImage(user.profileImage);
     }
     return UserMapper.toBasicResponse(user);
   }
@@ -156,6 +156,13 @@ export class UsersService implements IUserService {
     return result;
   }
 
+  async getUserImage(userImage: IProfileImage): Promise<IProfileImage> {
+    if (userImage.source === ImageSource.S3) {
+      userImage.value = await this._s3Service.getImageUrl(userImage.value);
+    }
+    return userImage;
+  }
+
   // private methods
   private async _authenticate(email: string, password: string) {
     const user = await this._userRepo.findByEmail(email);
@@ -186,14 +193,5 @@ export class UsersService implements IUserService {
 
       throw new InternalServerErrorException(AUTH_MESSAGES.LOGIN_FAILD);
     }
-  }
-
-  private async _getUserImage(
-    userImage: IProfileImage,
-  ): Promise<IProfileImage> {
-    if (userImage.source === ImageSource.S3) {
-      userImage.value = await this._s3Service.getImageUrl(userImage.value);
-    }
-    return userImage;
   }
 }
