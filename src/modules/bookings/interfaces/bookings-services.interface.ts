@@ -33,8 +33,8 @@ export interface IBookingService {
 /**
  * TODOS
  * 2. View one task/booking details by its id: :id
- * 3. Accept one task/booking by its id: :id/accept
- * 4. Reject one task/booking by its id: :id/reject
+ * 3.
+ * 4.
  */
 export interface ITaskerBookingService {
   /**
@@ -44,4 +44,19 @@ export interface ITaskerBookingService {
     taskerId: string,
     filter: IListBookingsQuery,
   ): Promise<IFindAllBookingsResponse>;
+
+  /**
+   * Fetch One task details
+   */
+  getOneTaskDetails(taskId: string); // --give a response type
+
+  /**
+   * Accept one task/booking by its id: :id/accept
+   */
+  acceptTask(taskId: string): Promise<IBaseResponse>;
+
+  /**
+   * Reject one task/booking by its id: :id/reject
+   */
+  rejectTask(taskId: string): Promise<IBaseResponse>;
 }

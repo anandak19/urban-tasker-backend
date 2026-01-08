@@ -1,19 +1,11 @@
-import { TaskSize, TaskStatus } from '@shared/constants/enums/task.enum';
+import { TaskSize } from '@shared/constants/enums/task.enum';
+import { BookingDetailsBasic } from './bookings-basic.dto';
 
-export class BookingDetailsResponseDto {
-  id: string;
-
-  categoryName: string;
-  subcategoryId: string;
-  image: string;
-
+export class BookingDetailsResponseDto extends BookingDetailsBasic {
   city: string;
-  date: string;
-  time: string;
   description: string;
 
   taskSize: TaskSize;
-  taskStatus: TaskStatus;
 
   taskerId: string;
   taskerFirstName: string;

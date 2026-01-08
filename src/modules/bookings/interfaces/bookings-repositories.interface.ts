@@ -9,8 +9,10 @@ import {
   IListTaskersBooking,
   IListUsersBooking,
 } from './bookings.interface';
+import { IBaseRepository } from '@shared/interfaces/base-repository.interface';
 
-export interface IBookingRepository {
+export interface IBookingRepository
+  extends IBaseRepository<BookingDocument, ICreateBooking> {
   /**
    * Create a new booking
    */

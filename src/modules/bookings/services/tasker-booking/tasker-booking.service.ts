@@ -8,7 +8,13 @@ import type {
 import { IListTaskersBooking } from '@modules/bookings/interfaces/bookings.interface';
 import { IListBookingsQuery } from '@modules/bookings/interfaces/request.interface';
 
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
+import { TaskStatus } from '@shared/constants/enums/task.enum';
+import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 
 @Injectable()
 export class TaskerBookingService implements ITaskerBookingService {
@@ -19,6 +25,35 @@ export class TaskerBookingService implements ITaskerBookingService {
     @Inject(BOOKING_TOKEN.BOOKING_REPOSITORY)
     private _bookingRepo: IBookingRepository,
   ) {}
+
+  getOneTaskDetails(taskId: string) {
+    console.log(taskId);
+    throw new Error('not implemented');
+  }
+
+  async acceptTask(taskId: string): Promise<IBaseResponse> {
+    const result = await this._bookingRepo.updateById(taskId, {
+      $set: { isAccepted: true },
+    });
+
+    if (!result) {
+      throw new InternalServerErrorException('Faild to accept task');
+    }
+
+    return { message: 'Accepted task' };
+  }
+
+  async rejectTask(taskId: string): Promise<IBaseResponse> {
+    const result = await this._bookingRepo.updateById(taskId, {
+      $set: { taskStatus: TaskStatus.REJECTED },
+    });
+
+    if (!result) {
+      throw new InternalServerErrorException('Faild to reject task');
+    }
+
+    return { message: 'Rejected task' };
+  }
 
   async getAllTaskersBookings(
     taskerId: string,

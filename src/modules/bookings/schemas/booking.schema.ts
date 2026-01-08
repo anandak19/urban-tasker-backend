@@ -50,6 +50,12 @@ export class Booking {
 
   @Prop({ enum: TaskStatus, default: TaskStatus.PENDING })
   taskStatus: TaskStatus;
+
+  @Prop({ type: Boolean, default: false })
+  isAccepted: boolean;
+
+  @Prop({ type: Boolean, default: false })
+  isDeleted: boolean;
 }
 
 export type BookingDocument = HydratedDocument<Booking>;
