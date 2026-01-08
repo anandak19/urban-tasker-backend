@@ -1,6 +1,7 @@
 import { TaskSize } from '@shared/constants/enums/task.enum';
 import { BookingDetailsBasic } from './bookings-basic.dto';
 
+// used for user/taskr/admin
 export class BookingDetailsResponseDto extends BookingDetailsBasic {
   city: string;
   description: string;
@@ -8,6 +9,8 @@ export class BookingDetailsResponseDto extends BookingDetailsBasic {
   taskSize: TaskSize;
 
   taskerId: string;
-  taskerFirstName: string;
-  taskerLastName: string;
+  taskerName: string;
+
+  userId: string;
+  userName: string;
 }

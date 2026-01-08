@@ -2,6 +2,7 @@ import { BaseRepository } from '@shared/repository/base.repository';
 import { Booking, BookingDocument } from '../schemas/booking.schema';
 import {
   IBookingDetailsRepoResult,
+  IBookingMatchArgs,
   ICreateBooking,
   IListTaskersBooking,
   IListUsersBooking,
@@ -107,6 +108,7 @@ export class BookingRepository
                 time: 1,
                 taskStatus: 1,
                 userId: '$userId',
+                isAccepted: 1,
                 clientFirstName: '$client.firstName',
                 clientLastName: '$client.lastName',
               },
@@ -136,7 +138,7 @@ export class BookingRepository
   }
 
   // get all bookings of user (for user)
-  async getAllBookings(
+  async getAllBookings1(
     userId: string,
     filter: IListBookingsQuery,
   ): Promise<PaginatedResult<IListUsersBooking>> {
@@ -230,6 +232,144 @@ export class BookingRepository
 
     console.log(result.data);
     console.log(result.total);
+
+    const data = result?.data ?? [];
+    const total = result?.total?.[0]?.count ?? 0;
+
+    return {
+      documents: data,
+      meta: {
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit) || 1,
+      },
+    };
+  }
+
+  //ut
+  async getAllBookings(
+    matchArgs: IBookingMatchArgs,
+    filter: IListBookingsQuery,
+  ): Promise<PaginatedResult<IBookingDetailsRepoResult>> {
+    const {
+      page = this._defaultBookingsPage,
+      limit = this._defaultBookingsLimit,
+    } = filter;
+
+    const skip = (page - 1) * limit;
+
+    /* -------- Dynamic Match Stage -------- */
+    const matchStage: FilterQuery<InferRawDocType<BookingDocument>> = {};
+
+    if (matchArgs.userId) {
+      matchStage.userId = toObjectId(matchArgs.userId);
+    }
+
+    if (matchArgs.taskerId) {
+      matchStage.taskerId = toObjectId(matchArgs.taskerId);
+    }
+
+    if (matchArgs.taskStatus) {
+      matchStage.taskStatus = matchArgs.taskStatus;
+    }
+
+    if (matchArgs.subcategoryId) {
+      matchStage.subcategoryId = toObjectId(matchArgs.subcategoryId);
+    }
+
+    const pipeline: PipelineStage[] = [
+      { $match: matchStage },
+
+      {
+        $facet: {
+          data: [
+            { $sort: { createdAt: -1 } },
+            { $skip: skip },
+            { $limit: limit },
+
+            /* -------- Join Subcategory -------- */
+            {
+              $lookup: {
+                from: 'subcategories',
+                localField: 'subcategoryId',
+                foreignField: '_id',
+                as: 'subcategory',
+              },
+            },
+            {
+              $unwind: {
+                path: '$subcategory',
+                preserveNullAndEmptyArrays: true,
+              },
+            },
+
+            /* -------- Join Tasker -------- */
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'taskerId',
+                foreignField: '_id',
+                as: 'tasker',
+              },
+            },
+            {
+              $unwind: {
+                path: '$tasker',
+                preserveNullAndEmptyArrays: true,
+              },
+            },
+
+            /* -------- Join User -------- */
+            {
+              $lookup: {
+                from: 'users',
+                localField: 'userId',
+                foreignField: '_id',
+                as: 'user',
+              },
+            },
+            {
+              $unwind: {
+                path: '$user',
+                preserveNullAndEmptyArrays: true,
+              },
+            },
+
+            /* -------- Final Projection -------- */
+            {
+              $project: {
+                _id: 0,
+                id: { $toString: '$_id' },
+
+                subcategoryId: { $toString: '$subcategory._id' },
+                categoryName: '$subcategory.name',
+                image: '$subcategory.image',
+
+                date: 1,
+                time: 1,
+                taskStatus: 1,
+                taskSize: 1,
+
+                taskerId: { $toString: '$tasker._id' },
+                taskerFirstName: '$tasker.firstName',
+                taskerLastName: '$tasker.lastName',
+
+                userId: { $toString: '$user._id' },
+                userFirstName: '$user.firstName',
+                userLastName: '$user.lastName',
+              },
+            },
+          ],
+
+          total: [{ $count: 'count' }],
+        },
+      },
+    ];
+
+    const [result] = await this._bookingModel
+      .aggregate<IFindAllAggregationResult<IBookingDetailsRepoResult>>(pipeline)
+      .exec();
 
     const data = result?.data ?? [];
     const total = result?.total?.[0]?.count ?? 0;

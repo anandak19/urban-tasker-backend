@@ -1,5 +1,6 @@
 import { TaskStatus } from '@shared/constants/enums/task.enum';
 
+//using
 export class BookingDetailsBasic {
   id: string;
 
@@ -11,4 +12,5 @@ export class BookingDetailsBasic {
   time: string;
 
   taskStatus: TaskStatus;
+  isAccepted: boolean;
 }

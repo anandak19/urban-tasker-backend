@@ -21,6 +21,7 @@ export interface ICreateBooking {
 export interface IListBookingBasic {
   subcategoryId: string;
   categoryName: string;
+  isAccepted: boolean;
   image: string;
   date: string;
   time: string;
@@ -39,27 +40,40 @@ export interface IListTaskersBooking extends IListBookingBasic {
   userLastName: string;
 }
 
-//vibee
+//vibee/using
 export interface IBookingDetailsRepoResult {
   id: string;
 
+  //about category
   categoryName: string;
   subcategoryId: string;
   image?: string;
 
+  //time place discription
   city: string;
   date: string;
   time: string;
   description: string;
 
+  // status
   taskSize: TaskSize;
   taskStatus: TaskStatus;
+  isAccepted: boolean;
 
+  //tasker
   taskerId: string;
   taskerFirstName: string;
   taskerLastName: string;
 
+  //user
   userId: string;
   userFirstName: string;
   userLastName: string;
+}
+
+export interface IBookingMatchArgs {
+  userId?: string;
+  taskerId?: string;
+  taskStatus?: TaskStatus;
+  subcategoryId?: string;
 }

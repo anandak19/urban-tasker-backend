@@ -1,7 +1,10 @@
 import { AuthGuard } from '@core/guards/auth/auth.guard';
 import { BOOKING_TOKEN } from '@modules/bookings/bookings.token';
 import { GetBookingsDto } from '@modules/bookings/dtos/booking-listing-query.dto';
-import type { ITaskerBookingService } from '@modules/bookings/interfaces/bookings-services.interface';
+import type {
+  IBookingService,
+  ITaskerBookingService,
+} from '@modules/bookings/interfaces/bookings-services.interface';
 import {
   Controller,
   Get,
@@ -20,6 +23,9 @@ export class TaskerBookingsController {
   constructor(
     @Inject(BOOKING_TOKEN.TASKERS_BOOKING_SERVICE)
     private _taskerBookingService: ITaskerBookingService,
+
+    @Inject(BOOKING_TOKEN.BOOKING_SERVICE)
+    private _bookingService: IBookingService,
   ) {}
 
   // List all tasks of tasker they gets booked for (filter by: pagination, status)
@@ -28,12 +34,10 @@ export class TaskerBookingsController {
     return this._taskerBookingService.getAllTaskersBookings(req.user.id, dto);
   }
 
-  // ~ not implemnteed
   // View one task/booking details by its id: :id
   @Get(':taskId')
   getOneTaskDetails(@Param() taskId: string) {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return this._taskerBookingService.getOneTaskDetails(taskId);
+    return this._bookingService.getBookingDetails(taskId);
   }
 
   // Accept one task/booking by its id: :id/accept

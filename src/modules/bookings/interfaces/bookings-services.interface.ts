@@ -1,7 +1,7 @@
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { CreateBookingDto } from '../dtos/create-booking-dto';
 import { IFindAllBookingsResponse } from './api-responses.interface';
-import { IListBookingBasic } from './bookings.interface';
+import { IBookingDetailsRepoResult } from './bookings.interface';
 import { IListBookingsQuery } from './request.interface';
 import { BookingDetailsResponseDto } from '../dtos/booking-details-response.dto';
 
@@ -27,15 +27,11 @@ export interface IBookingService {
    */
   getBookingDetails(bookingId: string): Promise<BookingDetailsResponseDto>;
 
-  decorateWithImageUrl<T extends IListBookingBasic>(item: T): Promise<T>;
+  decorateWithImageUrl(
+    item: IBookingDetailsRepoResult,
+  ): Promise<IBookingDetailsRepoResult>;
 }
 
-/**
- * TODOS
- * 2. View one task/booking details by its id: :id
- * 3.
- * 4.
- */
 export interface ITaskerBookingService {
   /**
    * Fetch all taskers bookings
@@ -46,11 +42,6 @@ export interface ITaskerBookingService {
   ): Promise<IFindAllBookingsResponse>;
 
   /**
-   * Fetch One task details
-   */
-  getOneTaskDetails(taskId: string); // --give a response type
-
-  /**
    * Accept one task/booking by its id: :id/accept
    */
   acceptTask(taskId: string): Promise<IBaseResponse>;
@@ -59,4 +50,11 @@ export interface ITaskerBookingService {
    * Reject one task/booking by its id: :id/reject
    */
   rejectTask(taskId: string): Promise<IBaseResponse>;
+}
+
+export interface IAdminBookingService {
+  /**
+   * Fetch all bookings
+   */
+  getAllBookings(filter: IListBookingsQuery): Promise<IFindAllBookingsResponse>;
 }

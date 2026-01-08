@@ -1,12 +1,13 @@
 import { BOOKING_TOKEN } from '@modules/bookings/bookings.token';
+import { BookingDetailsResponseDto } from '@modules/bookings/dtos/booking-details-response.dto';
 import { IFindAllBookingsResponse } from '@modules/bookings/interfaces/api-responses.interface';
 import type { IBookingRepository } from '@modules/bookings/interfaces/bookings-repositories.interface';
 import type {
   IBookingService,
   ITaskerBookingService,
 } from '@modules/bookings/interfaces/bookings-services.interface';
-import { IListTaskersBooking } from '@modules/bookings/interfaces/bookings.interface';
 import { IListBookingsQuery } from '@modules/bookings/interfaces/request.interface';
+import { BookingsMapper } from '@modules/bookings/mappers/bookings.mapper';
 
 import {
   Inject,
@@ -59,17 +60,16 @@ export class TaskerBookingService implements ITaskerBookingService {
     taskerId: string,
     filter: IListBookingsQuery,
   ): Promise<IFindAllBookingsResponse> {
-    const result = await this._bookingRepo.getAllTaskerBookings(
-      taskerId,
-      filter,
-    );
+    const result = await this._bookingRepo.getAllBookings({ taskerId }, filter);
     console.log(result);
 
-    const docs: IListTaskersBooking[] = await Promise.all(
-      result.documents.map((item) =>
-        this._bookingService.decorateWithImageUrl<IListTaskersBooking>(item),
-      ),
+    const docs: BookingDetailsResponseDto[] = await Promise.all(
+      result.documents.map(async (item) => {
+        const decorated = await this._bookingService.decorateWithImageUrl(item);
+        return BookingsMapper.toResonseDetailed(decorated);
+      }),
     );
+
     console.log(docs);
 
     return { documents: docs, meta: result.meta };
