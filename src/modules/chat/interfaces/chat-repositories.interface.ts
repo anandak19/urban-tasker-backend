@@ -1,6 +1,6 @@
 import { IBaseRepository } from '@shared/interfaces/base-repository.interface';
 import { ChatDocument } from '../schema/chat.schema';
-import { ICreateChat } from './chat.interface';
+import { IChatAggregationResult, ICreateChat } from './chat.interface';
 import { MessageDocument } from '../schema/message.schema';
 import { ICreateMessage } from './message.interface';
 import { TObjectId } from '@shared/types/db-types';
@@ -11,6 +11,13 @@ export interface IChatRepositories
   findOneByParticipantsIds(
     participants: TObjectId[],
   ): Promise<ChatDocument | null>;
+
+  findOneByIdAndUserId(
+    id: string,
+    myId: string,
+  ): Promise<IChatAggregationResult>;
+
+  findAllUserChats(userId: string): Promise<IChatAggregationResult[]>;
 }
 
 export interface IMessageRepositories

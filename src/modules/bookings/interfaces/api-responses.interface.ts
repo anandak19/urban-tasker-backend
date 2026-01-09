@@ -1,6 +1,5 @@
 import { PaginatedResult } from '@shared/interfaces/query.interface';
-import { IListTaskersBooking, IListUsersBooking } from './bookings.interface';
+import { BookingDetailsResponseDto } from '../dtos/booking-details-response.dto';
 
-export type IFindAllBookingsResponse = PaginatedResult<
-  IListTaskersBooking | IListUsersBooking
->;
+export type IFindAllBookingsResponse =
+  PaginatedResult<BookingDetailsResponseDto>;

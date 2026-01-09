@@ -4,12 +4,16 @@ import {
 } from '@shared/interfaces/query.interface';
 import { BookingDocument } from '../schemas/booking.schema';
 import {
+  IBookingDetailsRepoResult,
+  IBookingMatchArgs,
   ICreateBooking,
   IListTaskersBooking,
-  IListUsersBooking,
 } from './bookings.interface';
+import { IBaseRepository } from '@shared/interfaces/base-repository.interface';
+import { IListBookingsQuery } from './request.interface';
 
-export interface IBookingRepository {
+export interface IBookingRepository
+  extends IBaseRepository<BookingDocument, ICreateBooking> {
   /**
    * Create a new booking
    */
@@ -19,12 +23,16 @@ export interface IBookingRepository {
    * Fetch all bookings
    */
   getAllBookings(
-    userId: string,
-    filter: IFindAllQuery,
-  ): Promise<PaginatedResult<IListUsersBooking>>;
+    matchArgs: IBookingMatchArgs,
+    filter: IListBookingsQuery,
+  ): Promise<PaginatedResult<IBookingDetailsRepoResult>>;
 
   getAllTaskerBookings(
     taskerId: string,
     filter: IFindAllQuery,
   ): Promise<PaginatedResult<IListTaskersBooking>>;
+
+  getBookingDetailsById(
+    bookingId: string,
+  ): Promise<IBookingDetailsRepoResult | null>;
 }

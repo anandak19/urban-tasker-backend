@@ -8,6 +8,8 @@ import { ChatRepository } from './repository/chat.repository';
 import { ChatService } from './services/chat/chat.service';
 import { MessageRepository } from './repository/message.repository';
 import { MessageService } from './services/message/message.service';
+import { ChatController } from './controllers/chat.controller';
+import { UsersModule } from '@modules/users/users.module';
 
 @Module({
   imports: [
@@ -15,7 +17,9 @@ import { MessageService } from './services/message/message.service';
       { name: Chat.name, schema: ChatSchema },
       { name: Message.name, schema: MessageSchema },
     ]),
+    UsersModule,
   ],
+  controllers: [ChatController],
   providers: [
     ChatGateway,
     { provide: CHAT_TOKEN.CHAT_REPOSITORY, useClass: ChatRepository },

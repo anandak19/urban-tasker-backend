@@ -8,6 +8,7 @@ import {
   Controller,
   Get,
   Inject,
+  Param,
   Post,
   Query,
   Req,
@@ -29,6 +30,11 @@ export class BookingsController {
     @Query() dto: GetBookingsDto,
   ) {
     return this._bookingService.getAllBookings(req.user.id, dto);
+  }
+
+  @Get(':taskId')
+  findOneBooking(@Param('taskId') id: string) {
+    return this._bookingService.getBookingDetails(id);
   }
 
   @Post()

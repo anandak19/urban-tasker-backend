@@ -16,14 +16,15 @@ import type {
 import { BOOKING_TOKEN } from '../bookings.token';
 import type { IBookingRepository } from '../interfaces/bookings-repositories.interface';
 import {
+  IBookingDetailsRepoResult,
   ICreateBooking,
-  IListBookingBasic,
-  IListUsersBooking,
 } from '../interfaces/bookings.interface';
 import { IListTaskersQuery } from '@modules/tasker/interfaces/request.interface';
 import { S3_SERVICE } from '@core/lib/s3/s3.module';
 import type { IS3Service } from '@core/lib/s3/s3.interface';
 import { IFindAllBookingsResponse } from '../interfaces/api-responses.interface';
+import { BookingDetailsResponseDto } from '../dtos/booking-details-response.dto';
+import { BookingsMapper } from '../mappers/bookings.mapper';
 
 @Injectable()
 export class BookingService implements IBookingService {
@@ -44,13 +45,11 @@ export class BookingService implements IBookingService {
     userId: string,
     filter: IListTaskersQuery,
   ): Promise<IFindAllBookingsResponse> {
-    const result = await this._bookingRepo.getAllBookings(userId, filter);
+    const result = await this._bookingRepo.getAllBookings({ userId }, filter);
     console.log(result);
 
-    const docs: IListUsersBooking[] = await Promise.all(
-      result.documents.map((item) =>
-        this.decorateWithImageUrl<IListUsersBooking>(item),
-      ),
+    const docs: IBookingDetailsRepoResult[] = await Promise.all(
+      result.documents.map((item) => this.decorateWithImageUrl(item)),
     );
     console.log(docs);
 
@@ -75,11 +74,24 @@ export class BookingService implements IBookingService {
     return { message: 'Booking successfull' };
   }
 
-  async decorateWithImageUrl<T extends IListBookingBasic>(item: T): Promise<T> {
+  async decorateWithImageUrl(
+    item: IBookingDetailsRepoResult,
+  ): Promise<IBookingDetailsRepoResult> {
     if (item.image) {
       item.image = await this._s3.getImageUrl(item.image);
     }
     return item;
+  }
+
+  // by booking id
+  async getBookingDetails(
+    bookingId: string,
+  ): Promise<BookingDetailsResponseDto> {
+    const result = await this._bookingRepo.getBookingDetailsById(bookingId);
+    if (!result) {
+      throw new NotFoundException('Booking details not found');
+    }
+    return BookingsMapper.toResonseDetailed(result);
   }
 
   private async validateBookingData(payload: CreateBookingDto): Promise<void> {
