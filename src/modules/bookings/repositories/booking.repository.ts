@@ -14,6 +14,7 @@ import { toObjectId } from '@shared/utility/db/to-objectid.util';
 import { PaginatedResult } from '@shared/interfaces/query.interface';
 import { IFindAllAggregationResult } from '@shared/interfaces/repository.interface';
 import { IListBookingsQuery } from '../interfaces/request.interface';
+import { TaskStatus } from '@shared/constants/enums/task.enum';
 
 export class BookingRepository
   extends BaseRepository<BookingDocument, ICreateBooking>
@@ -257,6 +258,8 @@ export class BookingRepository
       limit = this._defaultBookingsLimit,
     } = filter;
 
+    console.log('filter', filter);
+
     const skip = (page - 1) * limit;
 
     /* -------- Dynamic Match Stage -------- */
@@ -266,17 +269,11 @@ export class BookingRepository
       matchStage.userId = toObjectId(matchArgs.userId);
     }
 
-    if (matchArgs.taskerId) {
-      matchStage.taskerId = toObjectId(matchArgs.taskerId);
-    }
-
-    if (matchArgs.taskStatus) {
+    if (filter.taskStatus) {
       matchStage.taskStatus = matchArgs.taskStatus;
     }
 
-    if (matchArgs.subcategoryId) {
-      matchStage.subcategoryId = toObjectId(matchArgs.subcategoryId);
-    }
+    console.log('stagematch', matchStage);
 
     const pipeline: PipelineStage[] = [
       { $match: matchStage },
@@ -469,5 +466,71 @@ export class BookingRepository
       ]);
 
     return result ?? null;
+  }
+
+  async changeBookingStatus(
+    bookingId: string,
+    status: TaskStatus,
+  ): Promise<BookingDocument | null> {
+    return await this.updateById(bookingId, {
+      $set: { taskStatus: status },
+    });
+  }
+
+  async startBreak(taskId: string, startTime: Date): Promise<boolean> {
+    const res = await this._bookingModel.updateOne(
+      {
+        _id: toObjectId(taskId),
+        'taskTimes.currentBreakStartTime': { $exists: false },
+      },
+      {
+        $set: {
+          'taskTimes.currentBreakStartTime': startTime,
+        },
+      },
+    );
+
+    return res.acknowledged && res.modifiedCount === 1;
+  }
+
+  async endBreak(taskId: string, breakEndTime: Date): Promise<boolean> {
+    const res = await this._bookingModel.updateOne(
+      {
+        _id: toObjectId(taskId),
+        'taskTimes.currentBreakStartTime': { $exists: true },
+        'taskTimes.currentBreakEndTime': { $exists: false },
+      },
+      [
+        {
+          $set: {
+            'taskTimes.currentBreakEndTime': breakEndTime,
+            'tasksTimes.totalBreakTime': {
+              $add: [
+                'tasksTimes.totalBreakTime',
+                {
+                  $divide: [
+                    {
+                      $substract: [
+                        breakEndTime,
+                        'taskTimes.currentBreakStartTime',
+                      ],
+                    },
+                    1000,
+                  ],
+                },
+              ],
+            },
+          },
+        },
+        {
+          $unset: [
+            'taskTimes.currentBreakStartTime',
+            'taskTimes.currentBreakEndTime',
+          ],
+        },
+      ],
+    );
+
+    return res.acknowledged && res.modifiedCount === 1;
   }
 }

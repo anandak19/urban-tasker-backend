@@ -4,6 +4,7 @@ import { IFindAllBookingsResponse } from './api-responses.interface';
 import { IBookingDetailsRepoResult } from './bookings.interface';
 import { IListBookingsQuery } from './request.interface';
 import { BookingDetailsResponseDto } from '../dtos/booking-details-response.dto';
+import { GetStartCodeResponseDto } from '../dtos/get-start-code-response.dto';
 
 export interface IBookingService {
   /**
@@ -30,8 +31,15 @@ export interface IBookingService {
   decorateWithImageUrl(
     item: IBookingDetailsRepoResult,
   ): Promise<IBookingDetailsRepoResult>;
+
+  /**
+   * To get a 4 digit work starter code
+   * @param taskId
+   */
+  getWorkStartCode(taskId: string): Promise<GetStartCodeResponseDto>;
 }
 
+// service belongs to the booking and tasker
 export interface ITaskerBookingService {
   /**
    * Fetch all taskers bookings
@@ -50,6 +58,30 @@ export interface ITaskerBookingService {
    * Reject one task/booking by its id: :id/reject
    */
   rejectTask(taskId: string): Promise<IBaseResponse>;
+
+  /**
+   * To varify start code and change status to in_progress
+   * @param taskId
+   * @param code
+   */
+  verifyStartCodeAndStartWork(
+    taskId: string,
+    code: string,
+  ): Promise<IBaseResponse>;
+
+  // ~ not tested
+  /**
+   * To take break in the task
+   * @param taskId
+   */
+  takeBreak(taskId: string): Promise<IBaseResponse>;
+
+  // ~ not tested
+  /**
+   * To resume task
+   * @param taskId
+   */
+  resumeTask(taskId: string): Promise<IBaseResponse>;
 }
 
 export interface IAdminBookingService {

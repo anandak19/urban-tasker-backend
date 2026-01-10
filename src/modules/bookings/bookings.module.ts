@@ -11,12 +11,14 @@ import { TaskerBookingsController } from './controllers/tasker/tasker-bookings.c
 import { TaskerBookingService } from './services/tasker-booking/tasker-booking.service';
 import { AdminBookingsController } from './controllers/admin/admin-bookings.controller';
 import { AdminBookingService } from './services/admin-booking/admin-booking.service';
+import { OtpModule } from '@core/lib/otp/otp.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Booking.name, schema: BookingSchema }]),
     CategoriesModule,
     S3Module,
+    OtpModule,
   ],
   controllers: [
     BookingsController,

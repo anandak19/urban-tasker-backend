@@ -25,9 +25,12 @@ import type { IS3Service } from '@core/lib/s3/s3.interface';
 import { IFindAllBookingsResponse } from '../interfaces/api-responses.interface';
 import { BookingDetailsResponseDto } from '../dtos/booking-details-response.dto';
 import { BookingsMapper } from '../mappers/bookings.mapper';
+import { GetStartCodeResponseDto } from '../dtos/get-start-code-response.dto';
+import { OtpService } from '@core/lib/otp/otp.service';
 
 @Injectable()
 export class BookingService implements IBookingService {
+  private readonly START_CODE_EXPIRY = 1000 * 60 * 5;
   constructor(
     @Inject(CATEGORY_TOKEN.CATEGORY_SERVICE)
     private _categoryService: ICategoryService,
@@ -39,6 +42,8 @@ export class BookingService implements IBookingService {
     private _bookingRepo: IBookingRepository,
 
     @Inject(S3_SERVICE) private _s3: IS3Service,
+
+    private _otpService: OtpService,
   ) {}
 
   async getAllBookings(
@@ -48,10 +53,12 @@ export class BookingService implements IBookingService {
     const result = await this._bookingRepo.getAllBookings({ userId }, filter);
     console.log(result);
 
-    const docs: IBookingDetailsRepoResult[] = await Promise.all(
-      result.documents.map((item) => this.decorateWithImageUrl(item)),
+    const docs: BookingDetailsResponseDto[] = await Promise.all(
+      result.documents.map(async (item) => {
+        const decorated = await this.decorateWithImageUrl(item);
+        return BookingsMapper.toResonseDetailed(decorated);
+      }),
     );
-    console.log(docs);
 
     return { documents: docs, meta: result.meta };
   }
@@ -92,6 +99,17 @@ export class BookingService implements IBookingService {
       throw new NotFoundException('Booking details not found');
     }
     return BookingsMapper.toResonseDetailed(result);
+  }
+
+  // ~ not tested
+  async getWorkStartCode(taskId: string): Promise<GetStartCodeResponseDto> {
+    const code = this._otpService.generateOtp();
+    const expireTimeInMinutes = this.START_CODE_EXPIRY / 60;
+    await this._otpService.storeOtp(taskId, code, this.START_CODE_EXPIRY);
+    return {
+      code,
+      message: `This code will expire in ${expireTimeInMinutes} minutes`,
+    };
   }
 
   private async validateBookingData(payload: CreateBookingDto): Promise<void> {

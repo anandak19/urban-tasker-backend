@@ -1,3 +1,4 @@
+import { OtpService } from '@core/lib/otp/otp.service';
 import { BOOKING_TOKEN } from '@modules/bookings/bookings.token';
 import { BookingDetailsResponseDto } from '@modules/bookings/dtos/booking-details-response.dto';
 import { IFindAllBookingsResponse } from '@modules/bookings/interfaces/api-responses.interface';
@@ -10,6 +11,8 @@ import { IListBookingsQuery } from '@modules/bookings/interfaces/request.interfa
 import { BookingsMapper } from '@modules/bookings/mappers/bookings.mapper';
 
 import {
+  BadRequestException,
+  ConflictException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -25,8 +28,11 @@ export class TaskerBookingService implements ITaskerBookingService {
 
     @Inject(BOOKING_TOKEN.BOOKING_REPOSITORY)
     private _bookingRepo: IBookingRepository,
+
+    private _otpService: OtpService,
   ) {}
 
+  // pending
   getOneTaskDetails(taskId: string) {
     console.log(taskId);
     throw new Error('not implemented');
@@ -73,5 +79,51 @@ export class TaskerBookingService implements ITaskerBookingService {
     console.log(docs);
 
     return { documents: docs, meta: result.meta };
+  }
+
+  // ~ not tested
+  async verifyStartCodeAndStartWork(
+    taskId: string,
+    code: string,
+  ): Promise<IBaseResponse> {
+    const result = await this._otpService.varifyOtp(taskId, code);
+
+    if (!result) {
+      throw new BadRequestException('Start code expired or invalid');
+    }
+
+    const updated = await this._bookingRepo.changeBookingStatus(
+      taskId,
+      TaskStatus.IN_PROGRESS,
+    );
+
+    if (!updated) {
+      throw new InternalServerErrorException(
+        'Faild to change task status to start',
+      );
+    }
+
+    return { message: 'Code varified and task is in progress' };
+  }
+
+  // ~ not tested
+  async takeBreak(taskId: string): Promise<IBaseResponse> {
+    const isUpdated = await this._bookingRepo.startBreak(taskId, new Date());
+    if (!isUpdated) {
+      throw new ConflictException('Break is already active');
+    }
+
+    return { message: 'Break Started' };
+  }
+
+  // ~ not tested
+  async resumeTask(taskId: string): Promise<IBaseResponse> {
+    const isUpdated = await this._bookingRepo.endBreak(taskId, new Date());
+
+    if (!isUpdated) {
+      throw new ConflictException('No active break to resume');
+    }
+
+    return { message: 'Break ended and task is resumed' };
   }
 }

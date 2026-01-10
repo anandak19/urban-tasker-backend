@@ -25,13 +25,11 @@ export class CacheService {
 
   async getReminingTime(key: string): Promise<number | undefined> {
     const raw = await this.keyv.get(key, { raw: true });
-    console.log(raw);
     let remainingTtl: number | null = null;
     if (raw && raw?.expires) {
       const now = Date.now();
       remainingTtl = Math.max(0, raw.expires - now);
       const remainingSeconds = Math.floor(remainingTtl / 1000);
-      console.log('In cache servcie:', remainingSeconds);
       return remainingSeconds;
     } else {
       return 0;

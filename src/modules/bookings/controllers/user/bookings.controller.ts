@@ -39,10 +39,13 @@ export class BookingsController {
 
   @Post()
   bookTasker(@Req() req: IAuthenticatedReqeust, @Body() dto: CreateBookingDto) {
-    //logic
-    console.log('booking', dto);
-    console.log('userid', req.user.id);
-
     return this._bookingService.createBooking(req.user.id, dto);
+  }
+
+  // ~ not tested
+  //get work start code
+  @Get(':taskId/start-code')
+  getWorkStartCode(@Param('taskId') id: string) {
+    return this._bookingService.getWorkStartCode(id);
   }
 }

@@ -1,39 +1,16 @@
 import { WinstonModule } from 'nest-winston';
-import { format, transports } from 'winston';
-import DailyRotateFile from 'winston-daily-rotate-file';
+import * as winston from 'winston';
 
-export const fileLogger = WinstonModule.createLogger({
+export const winstonLogger = WinstonModule.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json(),
+  ),
   transports: [
-    // logging all level
-    new DailyRotateFile({
-      dirname: 'logs',
-      filename: '/app/logs/app-%DATE%.log',
-      datePattern: 'YYYY-MM-DD',
-      level: 'info',
-      maxSize: '20m', //
-      maxFiles: '7d', //
-      zippedArchive: true,
-    }),
-
-    //log error
-    new DailyRotateFile({
-      dirname: 'logs',
-      filename: '/app/logs/error-%DATE%.log',
-      datePattern: 'YYYY-MM-DD',
-      level: 'error',
-      maxSize: '10m', //
-      maxFiles: '14d', //
-    }),
-
-    //cosole
-    new transports.Console({
-      format: format.combine(
-        format.timestamp(),
-        format.printf(
-          ({ timestamp, level, message }) =>
-            `${String(timestamp)} ${level}: ${String(message)}`,
-        ),
-      ),
+    new winston.transports.Console(),
+    new winston.transports.File({
+      filename: '/var/log/app/api.log',
     }),
   ],
 });

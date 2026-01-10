@@ -8,24 +8,20 @@ import { AllExceptionsFilter } from '@core/filters/http-exception.filter';
 import { ResponseInterceptor } from '@core/interceptors/response.interceptor';
 // import { WinstonModule } from 'nest-winston';
 // import { transports } from 'winston';
+// import path from 'path';
+import { winstonLogger } from '@config/logger/logger.config';
 
-import * as fs from 'fs';
-import { join } from 'path';
+// import * as fs from 'fs';
+// import { join } from 'path';
 
-const logDir = join(process.cwd(), 'logs');
-if (!fs.existsSync(logDir)) fs.mkdirSync(logDir);
+// const logDir = '/var/log/server-logs';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    // logger: WinstonModule.createLogger({
-    //   transports: [
-    //     new transports.Console(),
-    //     new transports.File({
-    //       filename: '/app/logs/app.log',
-    //     }),
-    //   ],
-    // }),
+    logger: winstonLogger,
   });
+
+  app.useLogger(winstonLogger);
 
   app.enableCors({
     origin: 'http://localhost:4200',
