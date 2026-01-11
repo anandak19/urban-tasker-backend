@@ -1,7 +1,6 @@
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { CreateBookingDto } from '../dtos/create-booking-dto';
 import { IFindAllBookingsResponse } from './api-responses.interface';
-import { IBookingDetailsRepoResult } from './bookings.interface';
 import { IListBookingsQuery } from './request.interface';
 import { BookingDetailsResponseDto } from '../dtos/booking-details-response.dto';
 import { GetStartCodeResponseDto } from '../dtos/get-start-code-response.dto';
@@ -27,10 +26,6 @@ export interface IBookingService {
    * Get single booking details
    */
   getBookingDetails(bookingId: string): Promise<BookingDetailsResponseDto>;
-
-  decorateWithImageUrl(
-    item: IBookingDetailsRepoResult,
-  ): Promise<IBookingDetailsRepoResult>;
 
   /**
    * To get a 4 digit work starter code

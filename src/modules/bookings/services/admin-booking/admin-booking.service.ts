@@ -1,3 +1,5 @@
+import type { IS3Service } from '@core/lib/s3/s3.interface';
+import { S3_SERVICE } from '@core/lib/s3/s3.module';
 import { BOOKING_TOKEN } from '@modules/bookings/bookings.token';
 import { BookingDetailsResponseDto } from '@modules/bookings/dtos/booking-details-response.dto';
 import { IFindAllBookingsResponse } from '@modules/bookings/interfaces/api-responses.interface';
@@ -12,6 +14,8 @@ export class AdminBookingService implements IAdminBookingService {
   constructor(
     @Inject(BOOKING_TOKEN.BOOKING_REPOSITORY)
     private _bookingRepo: IBookingRepository,
+
+    @Inject(S3_SERVICE) private _s3: IS3Service,
   ) {}
 
   async getAllBookings(
@@ -19,8 +23,13 @@ export class AdminBookingService implements IAdminBookingService {
   ): Promise<IFindAllBookingsResponse> {
     const result = await this._bookingRepo.getAllBookings({}, filter);
 
-    const docs: BookingDetailsResponseDto[] = result.documents.map((item) =>
-      BookingsMapper.toResonseDetailed(item),
+    const docs: BookingDetailsResponseDto[] = await Promise.all(
+      result.documents.map(async (item) => {
+        if (item.image) {
+          item.image = await this._s3.getImageUrl(item.image);
+        }
+        return BookingsMapper.toResonseDetailed(item);
+      }),
     );
 
     return { documents: docs, meta: result.meta };

@@ -1,4 +1,6 @@
 import { OtpService } from '@core/lib/otp/otp.service';
+import type { IS3Service } from '@core/lib/s3/s3.interface';
+import { S3_SERVICE } from '@core/lib/s3/s3.module';
 import { BOOKING_TOKEN } from '@modules/bookings/bookings.token';
 import { BookingDetailsResponseDto } from '@modules/bookings/dtos/booking-details-response.dto';
 import { IFindAllBookingsResponse } from '@modules/bookings/interfaces/api-responses.interface';
@@ -28,6 +30,8 @@ export class TaskerBookingService implements ITaskerBookingService {
 
     @Inject(BOOKING_TOKEN.BOOKING_REPOSITORY)
     private _bookingRepo: IBookingRepository,
+
+    @Inject(S3_SERVICE) private _s3: IS3Service,
 
     private _otpService: OtpService,
   ) {}
@@ -71,8 +75,10 @@ export class TaskerBookingService implements ITaskerBookingService {
 
     const docs: BookingDetailsResponseDto[] = await Promise.all(
       result.documents.map(async (item) => {
-        const decorated = await this._bookingService.decorateWithImageUrl(item);
-        return BookingsMapper.toResonseDetailed(decorated);
+        if (item.image) {
+          item.image = await this._s3.getImageUrl(item.image);
+        }
+        return BookingsMapper.toResonseDetailed(item);
       }),
     );
 

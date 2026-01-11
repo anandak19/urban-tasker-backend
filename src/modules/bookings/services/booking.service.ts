@@ -15,10 +15,7 @@ import type {
 } from '@modules/categories/interfaces/categories-services.interface';
 import { BOOKING_TOKEN } from '../bookings.token';
 import type { IBookingRepository } from '../interfaces/bookings-repositories.interface';
-import {
-  IBookingDetailsRepoResult,
-  ICreateBooking,
-} from '../interfaces/bookings.interface';
+import { ICreateBooking } from '../interfaces/bookings.interface';
 import { IListTaskersQuery } from '@modules/tasker/interfaces/request.interface';
 import { S3_SERVICE } from '@core/lib/s3/s3.module';
 import type { IS3Service } from '@core/lib/s3/s3.interface';
@@ -51,12 +48,15 @@ export class BookingService implements IBookingService {
     filter: IListTaskersQuery,
   ): Promise<IFindAllBookingsResponse> {
     const result = await this._bookingRepo.getAllBookings({ userId }, filter);
-    console.log(result);
+    console.log('All docs found from repo');
+    console.log(result.documents);
 
     const docs: BookingDetailsResponseDto[] = await Promise.all(
       result.documents.map(async (item) => {
-        const decorated = await this.decorateWithImageUrl(item);
-        return BookingsMapper.toResonseDetailed(decorated);
+        if (item.image) {
+          item.image = await this._s3.getImageUrl(item.image);
+        }
+        return BookingsMapper.toResonseDetailed(item);
       }),
     );
 
@@ -80,24 +80,18 @@ export class BookingService implements IBookingService {
 
     return { message: 'Booking successfull' };
   }
-
-  async decorateWithImageUrl(
-    item: IBookingDetailsRepoResult,
-  ): Promise<IBookingDetailsRepoResult> {
-    if (item.image) {
-      item.image = await this._s3.getImageUrl(item.image);
-    }
-    return item;
-  }
-
   // by booking id
   async getBookingDetails(
     bookingId: string,
   ): Promise<BookingDetailsResponseDto> {
     const result = await this._bookingRepo.getBookingDetailsById(bookingId);
+
     if (!result) {
       throw new NotFoundException('Booking details not found');
     }
+    console.log('doc found from repo');
+    console.log(result);
+
     return BookingsMapper.toResonseDetailed(result);
   }
 

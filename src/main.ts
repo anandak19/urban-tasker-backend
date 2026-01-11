@@ -6,22 +6,15 @@ import { useContainer } from 'class-validator';
 import cookieParser from 'cookie-parser';
 import { AllExceptionsFilter } from '@core/filters/http-exception.filter';
 import { ResponseInterceptor } from '@core/interceptors/response.interceptor';
-// import { WinstonModule } from 'nest-winston';
-// import { transports } from 'winston';
-// import path from 'path';
-import { winstonLogger } from '@config/logger/logger.config';
 
-// import * as fs from 'fs';
-// import { join } from 'path';
-
-// const logDir = '/var/log/server-logs';
+// import { winstonLogger } from '@config/logger/logger.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: winstonLogger,
+    // logger: winstonLogger,
   });
 
-  app.useLogger(winstonLogger);
+  // app.useLogger(winstonLogger);
 
   app.enableCors({
     origin: 'http://localhost:4200',
