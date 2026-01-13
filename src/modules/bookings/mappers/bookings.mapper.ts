@@ -6,6 +6,7 @@ import {
 } from '../interfaces/bookings.interface';
 
 export class BookingsMapper {
+  // FindOne
   // Used for booking details fetched by all user roles
   static toResonseDetailed(
     data: IBookingDetailsRepoResult,
@@ -33,9 +34,17 @@ export class BookingsMapper {
       taskSize: data.taskSize,
       taskStatus: data.taskStatus,
       isAccepted: data.isAccepted,
+
+      taskTimes: data.taskTimes,
+      isOnBreak:
+        !!data.taskTimes?.currentBreakStartTime &&
+        !data.taskTimes?.currentBreakEndTime,
+
+      payment: data.payment,
     };
   }
 
+  // Find All
   static toListingResponse(
     data: IBookingListingRepoResult,
   ): BookingListingResponseDto {

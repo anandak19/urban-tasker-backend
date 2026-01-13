@@ -33,7 +33,10 @@ export interface IBookingRepository
     status: TaskStatus,
   ): Promise<BookingDocument | null>;
 
-  // ~ NOT TESTED
+  markTaskStartTime(taskId: string, time: Date): Promise<boolean>;
+
+  markTaskEndTime(taskId: string, time: Date): Promise<boolean>;
+
   /**
    * Add currentBreakStartTime with current time
    * @param taskId
@@ -41,7 +44,6 @@ export interface IBookingRepository
    */
   startBreak(taskId: string, startTime: Date): Promise<boolean>;
 
-  // ~ NOT TESTED
   /**
    * Add currentBreakEndTime with current time
    * calculate the current total break time
@@ -50,4 +52,21 @@ export interface IBookingRepository
    * @param breakEndTime
    */
   endBreak(taskId: string, breakEndTime: Date): Promise<boolean>;
+
+  /**
+   * Set taskStatus to completed
+   * Set the task end time
+   * finds total task time by subtracting the break from total time
+   * @param taskId
+   * @param endTime
+   */
+  finishTask(taskId: string, endTime: Date): Promise<boolean>;
+
+  /**
+   * Set total amount to pay after calculation
+   * set payment status to pending
+   * @param taskId
+   * @param amount
+   */
+  updateTotalPay(taskId: string, amount: number): Promise<boolean>;
 }

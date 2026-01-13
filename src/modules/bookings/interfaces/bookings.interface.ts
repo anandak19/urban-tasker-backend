@@ -1,3 +1,4 @@
+import { PaymentStatus } from '@shared/constants/enums/payment-status.enum';
 import { TaskSize, TaskStatus } from '@shared/constants/enums/task.enum';
 import { TObjectId } from '@shared/types/db-types';
 
@@ -32,6 +33,22 @@ export interface IListBookingBasiczz {
   id: string;
 }
 
+export interface ITaskTimes {
+  taskStartTime: Date;
+  taskEndTime?: Date;
+  currentBreakStartTime?: Date;
+  currentBreakEndTime?: Date;
+  totalBreakTime: number; // in sec
+  totalTaskTime: number;
+}
+
+export interface IPayment {
+  totalAmount: number; // service charge
+  tipAmount: number;
+  payableAmount: number; // final amount
+  paymentStatus: PaymentStatus;
+}
+
 // to list in find by id
 export interface IBookingDetailsRepoResult extends IBookingListingRepoResult {
   location: {
@@ -42,6 +59,10 @@ export interface IBookingDetailsRepoResult extends IBookingListingRepoResult {
   description: string;
 
   taskSize: TaskSize;
+
+  taskTimes?: ITaskTimes;
+
+  payment?: IPayment;
 }
 
 // to list in find all

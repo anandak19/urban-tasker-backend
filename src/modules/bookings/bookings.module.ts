@@ -12,6 +12,7 @@ import { TaskerBookingService } from './services/tasker-booking/tasker-booking.s
 import { AdminBookingsController } from './controllers/admin/admin-bookings.controller';
 import { AdminBookingService } from './services/admin-booking/admin-booking.service';
 import { OtpModule } from '@core/lib/otp/otp.module';
+import { TaskerModule } from '@modules/tasker/tasker.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { OtpModule } from '@core/lib/otp/otp.module';
     CategoriesModule,
     S3Module,
     OtpModule,
+    TaskerModule,
   ],
   controllers: [
     BookingsController,

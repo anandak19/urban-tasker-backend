@@ -13,6 +13,7 @@ import { PaginatedResult } from '@shared/interfaces/query.interface';
 import { IFindAllAggregationResult } from '@shared/interfaces/repository.interface';
 import { IListBookingsQuery } from '../interfaces/request.interface';
 import { TaskStatus } from '@shared/constants/enums/task.enum';
+import { PaymentStatus } from '@shared/constants/enums/payment-status.enum';
 
 export class BookingRepository
   extends BaseRepository<BookingDocument, ICreateBooking>
@@ -36,7 +37,7 @@ export class BookingRepository
     return this.create(payload);
   }
 
-  //ut
+  //find all
   // needs update
   async getAllBookings(
     matchArgs: IBookingMatchArgs,
@@ -56,6 +57,10 @@ export class BookingRepository
 
     if (matchArgs.userId) {
       matchStage.userId = toObjectId(matchArgs.userId);
+    }
+
+    if (matchArgs.taskerId) {
+      matchStage.taskerId = toObjectId(matchArgs.taskerId);
     }
 
     if (filter.taskStatus) {
@@ -174,6 +179,7 @@ export class BookingRepository
     };
   }
 
+  // find one
   // needs update
   async getBookingDetailsById(
     bookingId: string,
@@ -249,6 +255,9 @@ export class BookingRepository
             userId: { $toString: '$user._id' },
             userFirstName: '$user.firstName',
             userLastName: '$user.lastName',
+
+            taskTimes: 1,
+            payment: 1,
           },
         },
       ]);
@@ -263,6 +272,32 @@ export class BookingRepository
     return await this.updateById(bookingId, {
       $set: { taskStatus: status },
     });
+  }
+
+  async markTaskStartTime(taskId: string, time: Date): Promise<boolean> {
+    const res = await this._bookingModel.updateOne(
+      { _id: toObjectId(taskId) },
+      {
+        $set: {
+          'taskTimes.taskStartTime': time,
+        },
+      },
+    );
+
+    return res.acknowledged && res.modifiedCount === 1;
+  }
+
+  async markTaskEndTime(taskId: string, time: Date): Promise<boolean> {
+    const res = await this._bookingModel.updateOne(
+      { _id: toObjectId(taskId) },
+      {
+        $set: {
+          'taskTimes.taskEndTime': time,
+        },
+      },
+    );
+
+    return res.acknowledged && res.modifiedCount === 1;
   }
 
   async startBreak(taskId: string, startTime: Date): Promise<boolean> {
@@ -282,6 +317,8 @@ export class BookingRepository
   }
 
   async endBreak(taskId: string, breakEndTime: Date): Promise<boolean> {
+    console.log('reached end break repo method');
+
     const res = await this._bookingModel.updateOne(
       {
         _id: toObjectId(taskId),
@@ -292,15 +329,15 @@ export class BookingRepository
         {
           $set: {
             'taskTimes.currentBreakEndTime': breakEndTime,
-            'tasksTimes.totalBreakTime': {
+            'taskTimes.totalBreakTime': {
               $add: [
-                'tasksTimes.totalBreakTime',
+                { $ifNull: ['$taskTimes.totalBreakTime', 0] },
                 {
                   $divide: [
                     {
-                      $substract: [
+                      $subtract: [
                         breakEndTime,
-                        'taskTimes.currentBreakStartTime',
+                        '$taskTimes.currentBreakStartTime',
                       ],
                     },
                     1000,
@@ -315,6 +352,50 @@ export class BookingRepository
             'taskTimes.currentBreakStartTime',
             'taskTimes.currentBreakEndTime',
           ],
+        },
+      ],
+    );
+
+    return res.acknowledged && res.modifiedCount === 1;
+  }
+
+  async finishTask(taskId: string, endTime: Date): Promise<boolean> {
+    const res = await this._bookingModel.updateOne(
+      { _id: toObjectId(taskId) },
+      [
+        {
+          $set: {
+            taskStatus: TaskStatus.COMPLETED,
+            'taskTimes.taskEndTime': endTime,
+            'taskTimes.totalTaskTime': {
+              $subtract: [
+                {
+                  $divide: [
+                    { $subtract: [endTime, '$taskTimes.taskStartTime'] },
+                    1000,
+                  ],
+                },
+                { $ifNull: ['$taskTimes.totalBreakTime', 0] },
+              ],
+            },
+          },
+        },
+      ],
+    );
+
+    return res.acknowledged && res.modifiedCount === 1;
+  }
+
+  async updateTotalPay(taskId: string, amount: number): Promise<boolean> {
+    const res = await this._bookingModel.updateOne(
+      { _id: toObjectId(taskId) },
+      [
+        {
+          $set: {
+            'payment.totalAmount': amount,
+            'payment.payableAmount': amount,
+            'payment.paymentStatus': PaymentStatus.PENDING,
+          },
         },
       ],
     );

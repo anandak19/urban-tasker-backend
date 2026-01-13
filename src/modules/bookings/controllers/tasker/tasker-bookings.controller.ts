@@ -7,11 +7,13 @@ import type {
   ITaskerBookingService,
 } from '@modules/bookings/interfaces/bookings-services.interface';
 import {
+  Body,
   Controller,
   Get,
   Inject,
   Param,
   Patch,
+  Post,
   Query,
   Req,
   UseGuards,
@@ -54,16 +56,30 @@ export class TaskerBookingsController {
     return this._taskerBookingService.rejectTask(taskId);
   }
 
-  // ~ not tested
   // varify the start code and chantge task status to in_progress
-  @Get(':taskId/verify-start-code')
+  @Post(':taskId/start')
   varifyCodeAndStartWork(
     @Param('taskId') taskId: string,
-    dto: VerifyStartCodeDto,
+    @Body() dto: VerifyStartCodeDto,
   ) {
     return this._taskerBookingService.verifyStartCodeAndStartWork(
       taskId,
       dto.code,
     );
+  }
+
+  @Patch(':taskId/break')
+  takeBreak(@Param('taskId') taskId: string) {
+    return this._taskerBookingService.takeBreak(taskId);
+  }
+
+  @Patch(':taskId/resume')
+  resumeTask(@Param('taskId') taskId: string) {
+    return this._taskerBookingService.resumeTask(taskId);
+  }
+
+  @Patch(':taskId/finish')
+  finishTask(@Param('taskId') taskId: string) {
+    return this._taskerBookingService.finishTask(taskId);
   }
 }

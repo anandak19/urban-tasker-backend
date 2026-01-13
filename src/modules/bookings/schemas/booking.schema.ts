@@ -3,6 +3,7 @@ import { TaskSize, TaskStatus } from '@shared/constants/enums/task.enum';
 import { HydratedDocument, Types } from 'mongoose';
 import { TaskTimes } from './task-times.schema';
 import { LocationCordinates } from './location.schema';
+import { Payment } from './payement.schema';
 
 @Schema({ timestamps: true })
 export class Booking {
@@ -49,6 +50,9 @@ export class Booking {
 
   @Prop({ type: Boolean, default: false })
   isDeleted: boolean;
+
+  @Prop({ type: Payment })
+  payment: Payment;
 }
 
 export type BookingDocument = HydratedDocument<Booking>;

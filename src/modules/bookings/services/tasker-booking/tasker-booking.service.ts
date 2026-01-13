@@ -11,6 +11,8 @@ import type {
 } from '@modules/bookings/interfaces/bookings-services.interface';
 import { IListBookingsQuery } from '@modules/bookings/interfaces/request.interface';
 import { BookingsMapper } from '@modules/bookings/mappers/bookings.mapper';
+import type { ITaskerService } from '@modules/tasker/interfaces/tasker-services.interface';
+import { TASKER_TOKEN } from '@modules/tasker/tasker.token';
 
 import {
   BadRequestException,
@@ -20,6 +22,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { TaskStatus } from '@shared/constants/enums/task.enum';
+import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constants';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 
 @Injectable()
@@ -30,6 +33,9 @@ export class TaskerBookingService implements ITaskerBookingService {
 
     @Inject(BOOKING_TOKEN.BOOKING_REPOSITORY)
     private _bookingRepo: IBookingRepository,
+
+    @Inject(TASKER_TOKEN.SERVICE)
+    private _taskerService: ITaskerService,
 
     @Inject(S3_SERVICE) private _s3: IS3Service,
 
@@ -87,7 +93,6 @@ export class TaskerBookingService implements ITaskerBookingService {
     return { documents: docs, meta: result.meta };
   }
 
-  // ~ not tested
   async verifyStartCodeAndStartWork(
     taskId: string,
     code: string,
@@ -109,10 +114,19 @@ export class TaskerBookingService implements ITaskerBookingService {
       );
     }
 
+    //update start time in timings
+    const timeUpdated = await this._bookingRepo.markTaskStartTime(
+      taskId,
+      new Date(),
+    );
+
+    if (!timeUpdated) {
+      throw new InternalServerErrorException('Faild to start task timer');
+    }
+
     return { message: 'Code varified and task is in progress' };
   }
 
-  // ~ not tested
   async takeBreak(taskId: string): Promise<IBaseResponse> {
     const isUpdated = await this._bookingRepo.startBreak(taskId, new Date());
     if (!isUpdated) {
@@ -122,7 +136,6 @@ export class TaskerBookingService implements ITaskerBookingService {
     return { message: 'Break Started' };
   }
 
-  // ~ not tested
   async resumeTask(taskId: string): Promise<IBaseResponse> {
     const isUpdated = await this._bookingRepo.endBreak(taskId, new Date());
 
@@ -131,5 +144,45 @@ export class TaskerBookingService implements ITaskerBookingService {
     }
 
     return { message: 'Break ended and task is resumed' };
+  }
+
+  async finishTask(taskId: string): Promise<IBaseResponse> {
+    //update timer and status
+    const isTimeUpdated = await this._bookingRepo.finishTask(
+      taskId,
+      new Date(),
+    );
+
+    if (!isTimeUpdated) {
+      throw new InternalServerErrorException('Faild to stop task timer');
+    }
+
+    const task = await this._bookingService.getBookingDetails(taskId);
+
+    // get tasker details
+    const tasker = await this._taskerService.findByUserId(task.taskerId);
+    const hourlyRate = Number(tasker.hourlyRate);
+
+    // calculate the amount in total
+    const totalAmount = this.calculateAmount(
+      task.taskTimes!.totalTaskTime,
+      hourlyRate,
+    );
+
+    // record the amount in db
+    const updated = await this._bookingRepo.updateTotalPay(taskId, totalAmount);
+
+    console.log(totalAmount);
+
+    if (!updated) {
+      throw new InternalServerErrorException(GENERAL_ERRORS.ERROR);
+    }
+
+    return { message: 'Task marked completed' };
+  }
+
+  private calculateAmount(totalWorkInSec: number, houlyRate: number): number {
+    const hours = totalWorkInSec / 3600;
+    return Math.round(hours * houlyRate);
   }
 }

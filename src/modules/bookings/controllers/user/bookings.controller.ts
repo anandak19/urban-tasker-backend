@@ -42,7 +42,6 @@ export class BookingsController {
     return this._bookingService.createBooking(req.user.id, dto);
   }
 
-  // ~ not tested
   //get work start code
   @Get(':taskId/start-code')
   getWorkStartCode(@Param('taskId') id: string) {

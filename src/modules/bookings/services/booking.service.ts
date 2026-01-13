@@ -95,7 +95,6 @@ export class BookingService implements IBookingService {
     return BookingsMapper.toResonseDetailed(result);
   }
 
-  // ~ not tested
   async getWorkStartCode(taskId: string): Promise<GetStartCodeResponseDto> {
     const code = this._otpService.generateOtp();
     const expireTimeInMinutes = this.START_CODE_EXPIRY / 60;

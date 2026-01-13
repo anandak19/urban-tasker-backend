@@ -27,6 +27,7 @@ export class OtpService {
   // varify otp
   async varifyOtp(uuid: string, otp: string): Promise<boolean> {
     const storedOtp = await this._cacheService.get(`otp:${uuid}`);
+    console.log('stored opt', storedOtp);
     return storedOtp === otp;
   }
 }

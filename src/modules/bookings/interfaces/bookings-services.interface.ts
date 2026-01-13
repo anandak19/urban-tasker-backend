@@ -64,19 +64,20 @@ export interface ITaskerBookingService {
     code: string,
   ): Promise<IBaseResponse>;
 
-  // ~ not tested
   /**
    * To take break in the task
    * @param taskId
    */
   takeBreak(taskId: string): Promise<IBaseResponse>;
 
-  // ~ not tested
   /**
    * To resume task
    * @param taskId
    */
   resumeTask(taskId: string): Promise<IBaseResponse>;
+
+  // ~ not tested
+  finishTask(taskId: string): Promise<IBaseResponse>;
 }
 
 export interface IAdminBookingService {

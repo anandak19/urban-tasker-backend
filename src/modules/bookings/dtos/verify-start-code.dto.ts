@@ -1,6 +1,6 @@
-import { IsEmpty } from 'class-validator';
+import { IsString } from 'class-validator';
 
 export class VerifyStartCodeDto {
-  @IsEmpty()
+  @IsString()
   code: string;
 }

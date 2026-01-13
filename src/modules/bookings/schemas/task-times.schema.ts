@@ -18,4 +18,7 @@ export class TaskTimes {
 
   @Prop({ type: Number, default: 0 })
   totalBreakTime: number; // in sec
+
+  @Prop({ type: Number, default: 0 })
+  totalTaskTime: number; // in sec
 }

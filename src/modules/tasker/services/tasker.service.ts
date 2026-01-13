@@ -160,4 +160,14 @@ export class TaskerService implements ITaskerService {
 
     return { message: 'Successfully removed category' };
   }
+
+  async findByUserId(userId: string): Promise<ITasker> {
+    const result = await this._taskerRepo.findOne({
+      userId: toObjectId(userId),
+    });
+    if (!result) {
+      throw new NotFoundException('Tasker not found');
+    }
+    return TaskerMapper.toResponse(result);
+  }
 }
