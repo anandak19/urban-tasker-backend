@@ -45,6 +45,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
       }
     }
 
+    console.log(exception);
+
     this._logger.error(
       `[${request.method}] ${request.url} - ${status} - ${message}`,
     );

@@ -15,19 +15,19 @@ import type {
 } from '@modules/categories/interfaces/categories-services.interface';
 import { BOOKING_TOKEN } from '../bookings.token';
 import type { IBookingRepository } from '../interfaces/bookings-repositories.interface';
-import {
-  IBookingDetailsRepoResult,
-  ICreateBooking,
-} from '../interfaces/bookings.interface';
+import { ICreateBooking } from '../interfaces/bookings.interface';
 import { IListTaskersQuery } from '@modules/tasker/interfaces/request.interface';
 import { S3_SERVICE } from '@core/lib/s3/s3.module';
 import type { IS3Service } from '@core/lib/s3/s3.interface';
 import { IFindAllBookingsResponse } from '../interfaces/api-responses.interface';
 import { BookingDetailsResponseDto } from '../dtos/booking-details-response.dto';
 import { BookingsMapper } from '../mappers/bookings.mapper';
+import { GetStartCodeResponseDto } from '../dtos/get-start-code-response.dto';
+import { OtpService } from '@core/lib/otp/otp.service';
 
 @Injectable()
 export class BookingService implements IBookingService {
+  private readonly START_CODE_EXPIRY = 1000 * 60 * 5;
   constructor(
     @Inject(CATEGORY_TOKEN.CATEGORY_SERVICE)
     private _categoryService: ICategoryService,
@@ -39,6 +39,8 @@ export class BookingService implements IBookingService {
     private _bookingRepo: IBookingRepository,
 
     @Inject(S3_SERVICE) private _s3: IS3Service,
+
+    private _otpService: OtpService,
   ) {}
 
   async getAllBookings(
@@ -46,12 +48,17 @@ export class BookingService implements IBookingService {
     filter: IListTaskersQuery,
   ): Promise<IFindAllBookingsResponse> {
     const result = await this._bookingRepo.getAllBookings({ userId }, filter);
-    console.log(result);
+    console.log('All docs found from repo');
+    console.log(result.documents);
 
-    const docs: IBookingDetailsRepoResult[] = await Promise.all(
-      result.documents.map((item) => this.decorateWithImageUrl(item)),
+    const docs: BookingDetailsResponseDto[] = await Promise.all(
+      result.documents.map(async (item) => {
+        if (item.image) {
+          item.image = await this._s3.getImageUrl(item.image);
+        }
+        return BookingsMapper.toResonseDetailed(item);
+      }),
     );
-    console.log(docs);
 
     return { documents: docs, meta: result.meta };
   }
@@ -73,25 +80,29 @@ export class BookingService implements IBookingService {
 
     return { message: 'Booking successfull' };
   }
-
-  async decorateWithImageUrl(
-    item: IBookingDetailsRepoResult,
-  ): Promise<IBookingDetailsRepoResult> {
-    if (item.image) {
-      item.image = await this._s3.getImageUrl(item.image);
-    }
-    return item;
-  }
-
   // by booking id
   async getBookingDetails(
     bookingId: string,
   ): Promise<BookingDetailsResponseDto> {
     const result = await this._bookingRepo.getBookingDetailsById(bookingId);
+
     if (!result) {
       throw new NotFoundException('Booking details not found');
     }
+    console.log('doc found from repo');
+    console.log(result);
+
     return BookingsMapper.toResonseDetailed(result);
+  }
+
+  async getWorkStartCode(taskId: string): Promise<GetStartCodeResponseDto> {
+    const code = this._otpService.generateOtp();
+    const expireTimeInMinutes = this.START_CODE_EXPIRY / 60;
+    await this._otpService.storeOtp(taskId, code, this.START_CODE_EXPIRY);
+    return {
+      code,
+      message: `This code will expire in ${expireTimeInMinutes} minutes`,
+    };
   }
 
   private async validateBookingData(payload: CreateBookingDto): Promise<void> {

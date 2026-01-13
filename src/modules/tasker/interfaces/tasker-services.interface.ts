@@ -46,6 +46,8 @@ export interface ITaskerService {
     taskerId: string,
     categoryId: string,
   ): Promise<IBaseResponse>;
+
+  findByUserId(userId: string): Promise<ITasker>;
 }
 
 export interface IPortfolioImageService {

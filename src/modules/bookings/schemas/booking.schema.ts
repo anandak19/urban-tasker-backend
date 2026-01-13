@@ -1,6 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { TaskSize, TaskStatus } from '@shared/constants/enums/task.enum';
 import { HydratedDocument, Types } from 'mongoose';
+import { TaskTimes } from './task-times.schema';
+import { LocationCordinates } from './location.schema';
+import { Payment } from './payement.schema';
 
 @Schema({ timestamps: true })
 export class Booking {
@@ -27,20 +30,8 @@ export class Booking {
   @Prop({ required: true, lowercase: true, trim: true })
   city: string;
 
-  // @Prop({ required: true })
-  // address: string;
-
-  @Prop({
-    type: {
-      latitude: { type: Number, required: true },
-      longitude: { type: Number, required: true },
-    },
-    required: true,
-  })
-  location: {
-    latitude: number;
-    longitude: number;
-  };
+  @Prop({ type: LocationCordinates, required: true })
+  location: LocationCordinates;
 
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   taskerId: Types.ObjectId;
@@ -54,8 +45,14 @@ export class Booking {
   @Prop({ type: Boolean, default: false })
   isAccepted: boolean;
 
+  @Prop({ type: TaskTimes, required: false })
+  taskTimes?: TaskTimes;
+
   @Prop({ type: Boolean, default: false })
   isDeleted: boolean;
+
+  @Prop({ type: Payment })
+  payment: Payment;
 }
 
 export type BookingDocument = HydratedDocument<Booking>;

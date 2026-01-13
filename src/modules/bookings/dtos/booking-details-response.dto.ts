@@ -1,16 +1,17 @@
 import { TaskSize } from '@shared/constants/enums/task.enum';
-import { BookingDetailsBasic } from './bookings-basic.dto';
+import { BookingListingResponseDto } from './booking-listing-response.dto';
+import { LocationDto } from './location.dto';
+import { IPayment, ITaskTimes } from '../interfaces/bookings.interface';
 
-// used for user/taskr/admin
-export class BookingDetailsResponseDto extends BookingDetailsBasic {
-  city: string;
+// used in booking details fetch by user, tasker, admin
+export class BookingDetailsResponseDto extends BookingListingResponseDto {
   description: string;
+  location: LocationDto;
 
   taskSize: TaskSize;
 
-  taskerId: string;
-  taskerName: string;
-
-  userId: string;
-  userName: string;
+  //rest of the field that get added later
+  taskTimes?: ITaskTimes;
+  isOnBreak?: boolean;
+  payment?: IPayment;
 }

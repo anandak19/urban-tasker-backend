@@ -1,6 +1,10 @@
+import { PaymentStatus } from '@shared/constants/enums/payment-status.enum';
 import { TaskSize, TaskStatus } from '@shared/constants/enums/task.enum';
 import { TObjectId } from '@shared/types/db-types';
 
+/**
+ * To create new booking by user
+ */
 export interface ICreateBooking {
   categoryId: string | TObjectId;
   subcategoryId: string | TObjectId;
@@ -18,7 +22,8 @@ export interface ICreateBooking {
   taskerId: string | TObjectId;
 }
 
-export interface IListBookingBasic {
+// may gets removed
+export interface IListBookingBasiczz {
   subcategoryId: string;
   categoryName: string;
   isAccepted: boolean;
@@ -28,20 +33,40 @@ export interface IListBookingBasic {
   id: string;
 }
 
-export interface IListUsersBooking extends IListBookingBasic {
-  taskerId: string | TObjectId;
-  taskerFirstName: string;
-  taskerLastName: string;
+export interface ITaskTimes {
+  taskStartTime: Date;
+  taskEndTime?: Date;
+  currentBreakStartTime?: Date;
+  currentBreakEndTime?: Date;
+  totalBreakTime: number; // in sec
+  totalTaskTime: number;
 }
 
-export interface IListTaskersBooking extends IListBookingBasic {
-  userId: string | TObjectId;
-  userFirstName: string;
-  userLastName: string;
+export interface IPayment {
+  totalAmount: number; // service charge
+  tipAmount: number;
+  payableAmount: number; // final amount
+  paymentStatus: PaymentStatus;
 }
 
-//vibee/using
-export interface IBookingDetailsRepoResult {
+// to list in find by id
+export interface IBookingDetailsRepoResult extends IBookingListingRepoResult {
+  location: {
+    latitude: number;
+    longitude: number;
+  };
+
+  description: string;
+
+  taskSize: TaskSize;
+
+  taskTimes?: ITaskTimes;
+
+  payment?: IPayment;
+}
+
+// to list in find all
+export interface IBookingListingRepoResult {
   id: string;
 
   //about category
@@ -53,10 +78,7 @@ export interface IBookingDetailsRepoResult {
   city: string;
   date: string;
   time: string;
-  description: string;
 
-  // status
-  taskSize: TaskSize;
   taskStatus: TaskStatus;
   isAccepted: boolean;
 

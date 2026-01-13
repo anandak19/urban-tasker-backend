@@ -31,7 +31,7 @@ export class AdminBookingsController {
   }
 
   @Get(':taskId')
-  getBookingDetails(@Param() taskId: string) {
+  getBookingDetails(@Param('taskId') taskId: string) {
     return this._bookingService.getBookingDetails(taskId);
   }
 }

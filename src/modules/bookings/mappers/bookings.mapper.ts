@@ -1,18 +1,29 @@
 import { BookingDetailsResponseDto } from '../dtos/booking-details-response.dto';
-import { IBookingDetailsRepoResult } from '../interfaces/bookings.interface';
+import { BookingListingResponseDto } from '../dtos/booking-listing-response.dto';
+import {
+  IBookingDetailsRepoResult,
+  IBookingListingRepoResult,
+} from '../interfaces/bookings.interface';
 
 export class BookingsMapper {
+  // FindOne
+  // Used for booking details fetched by all user roles
   static toResonseDetailed(
     data: IBookingDetailsRepoResult,
   ): BookingDetailsResponseDto {
     return {
-      categoryName: data.categoryName,
-      city: data.city,
-      date: data.date,
-      description: data.description,
       id: data.id,
-      image: data.image || '',
+
+      categoryName: data.categoryName,
       subcategoryId: data.subcategoryId,
+      image: data.image || '',
+
+      city: data.city,
+      time: data.time,
+      date: data.date,
+      location: data.location,
+
+      description: data.description,
 
       taskerId: data.taskerId,
       taskerName: `${data.taskerFirstName} ${data.taskerLastName}`,
@@ -23,7 +34,39 @@ export class BookingsMapper {
       taskSize: data.taskSize,
       taskStatus: data.taskStatus,
       isAccepted: data.isAccepted,
+
+      taskTimes: data.taskTimes,
+      isOnBreak:
+        !!data.taskTimes?.currentBreakStartTime &&
+        !data.taskTimes?.currentBreakEndTime,
+
+      payment: data.payment,
+    };
+  }
+
+  // Find All
+  static toListingResponse(
+    data: IBookingListingRepoResult,
+  ): BookingListingResponseDto {
+    return {
+      id: data.id,
+
+      subcategoryId: data.id,
+      categoryName: data.categoryName,
+      image: data.image ?? '',
+
+      city: data.city,
+      date: data.date,
       time: data.time,
+
+      taskerName: `${data.taskerFirstName} ${data.taskerLastName}`,
+      taskerId: data.taskerId,
+
+      userId: data.userId,
+      userName: `${data.userFirstName} ${data.userLastName}`,
+
+      taskStatus: data.taskStatus,
+      isAccepted: data.isAccepted,
     };
   }
 }

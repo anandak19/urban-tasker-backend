@@ -1,16 +1,13 @@
-import {
-  IFindAllQuery,
-  PaginatedResult,
-} from '@shared/interfaces/query.interface';
+import { PaginatedResult } from '@shared/interfaces/query.interface';
 import { BookingDocument } from '../schemas/booking.schema';
 import {
   IBookingDetailsRepoResult,
   IBookingMatchArgs,
   ICreateBooking,
-  IListTaskersBooking,
 } from './bookings.interface';
 import { IBaseRepository } from '@shared/interfaces/base-repository.interface';
 import { IListBookingsQuery } from './request.interface';
+import { TaskStatus } from '@shared/constants/enums/task.enum';
 
 export interface IBookingRepository
   extends IBaseRepository<BookingDocument, ICreateBooking> {
@@ -27,12 +24,49 @@ export interface IBookingRepository
     filter: IListBookingsQuery,
   ): Promise<PaginatedResult<IBookingDetailsRepoResult>>;
 
-  getAllTaskerBookings(
-    taskerId: string,
-    filter: IFindAllQuery,
-  ): Promise<PaginatedResult<IListTaskersBooking>>;
-
   getBookingDetailsById(
     bookingId: string,
   ): Promise<IBookingDetailsRepoResult | null>;
+
+  changeBookingStatus(
+    bookingId: string,
+    status: TaskStatus,
+  ): Promise<BookingDocument | null>;
+
+  markTaskStartTime(taskId: string, time: Date): Promise<boolean>;
+
+  markTaskEndTime(taskId: string, time: Date): Promise<boolean>;
+
+  /**
+   * Add currentBreakStartTime with current time
+   * @param taskId
+   * @param startTime
+   */
+  startBreak(taskId: string, startTime: Date): Promise<boolean>;
+
+  /**
+   * Add currentBreakEndTime with current time
+   * calculate the current total break time
+   * add the current total break time to existing total break time
+   * @param taskId
+   * @param breakEndTime
+   */
+  endBreak(taskId: string, breakEndTime: Date): Promise<boolean>;
+
+  /**
+   * Set taskStatus to completed
+   * Set the task end time
+   * finds total task time by subtracting the break from total time
+   * @param taskId
+   * @param endTime
+   */
+  finishTask(taskId: string, endTime: Date): Promise<boolean>;
+
+  /**
+   * Set total amount to pay after calculation
+   * set payment status to pending
+   * @param taskId
+   * @param amount
+   */
+  updateTotalPay(taskId: string, amount: number): Promise<boolean>;
 }

@@ -6,26 +6,15 @@ import { useContainer } from 'class-validator';
 import cookieParser from 'cookie-parser';
 import { AllExceptionsFilter } from '@core/filters/http-exception.filter';
 import { ResponseInterceptor } from '@core/interceptors/response.interceptor';
-// import { WinstonModule } from 'nest-winston';
-// import { transports } from 'winston';
 
-import * as fs from 'fs';
-import { join } from 'path';
-
-const logDir = join(process.cwd(), 'logs');
-if (!fs.existsSync(logDir)) fs.mkdirSync(logDir);
+// import { winstonLogger } from '@config/logger/logger.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    // logger: WinstonModule.createLogger({
-    //   transports: [
-    //     new transports.Console(),
-    //     new transports.File({
-    //       filename: '/app/logs/app.log',
-    //     }),
-    //   ],
-    // }),
+    // logger: winstonLogger,
   });
+
+  // app.useLogger(winstonLogger);
 
   app.enableCors({
     origin: 'http://localhost:4200',
