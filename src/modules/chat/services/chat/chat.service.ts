@@ -1,7 +1,10 @@
 import { CHAT_TOKEN } from '@modules/chat/chat.token';
 import { ChatResponseDto } from '@modules/chat/dto/chat-response.dto';
 import type { IChatRepositories } from '@modules/chat/interfaces/chat-repositories.interface';
-import { IChatService } from '@modules/chat/interfaces/chat-services.interface';
+import type {
+  IChatService,
+  IMessageService,
+} from '@modules/chat/interfaces/chat-services.interface';
 import {
   IChat,
   IChatAggregationResult,
@@ -21,7 +24,11 @@ import { toObjectId } from '@shared/utility/db/to-objectid.util';
 export class ChatService implements IChatService {
   constructor(
     @Inject(CHAT_TOKEN.CHAT_REPOSITORY) private _chatRepo: IChatRepositories,
+
     @Inject(USER_TOKENS.SERVICE) private _userService: IUserService,
+
+    @Inject(CHAT_TOKEN.MESSAGE_SERVICE)
+    private _messageService: IMessageService,
   ) {}
 
   //public methods
@@ -95,6 +102,12 @@ export class ChatService implements IChatService {
             chat.partner.profileImage,
           );
         }
+
+        chat.unReadMessageCount =
+          await this._messageService.getUnreadmessageCount(
+            chat._id.toString(),
+            chat.partner._id.toString(),
+          );
 
         return ChatMapper.toListChatResponse(chat);
       }),

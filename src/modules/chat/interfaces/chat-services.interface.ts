@@ -27,5 +27,11 @@ export interface IMessageService {
 
   create(senderId: string, roomId: string, text: string): Promise<IMessage>;
 
-  markMessagesAsRead(senderId: string, roomId: string): Promise<boolean>;
+  markMessagesAsRead(roomId: string, senderId: string): Promise<boolean>;
+
+  getUnreadmessageCount(roomId: string, senderId: string): Promise<number>;
+
+  uploadMessageImage(
+    imageFile: Express.Multer.File,
+  ): Promise<{ publicKey: string }>;
 }

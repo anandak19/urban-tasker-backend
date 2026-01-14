@@ -9,6 +9,7 @@ export class MessageMapper {
       senderId: messageDoc.senderId.toString(),
       isRead: messageDoc.isRead,
       text: messageDoc.text,
+      time: messageDoc.createdAt.toISOString(),
     };
   }
 }

@@ -19,5 +19,9 @@ export class Message {
   isDeleted: boolean;
 }
 
-export type MessageDocument = HydratedDocument<Message>;
+export type MessageDocument = HydratedDocument<Message> & {
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export const MessageSchema = SchemaFactory.createForClass(Message);

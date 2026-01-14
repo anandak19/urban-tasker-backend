@@ -24,4 +24,5 @@ export interface IChatPartnerAggregationResult extends IChatPartnerBasic {
 export interface IChatAggregationResult {
   _id: TObjectId; // chatId
   partner: IChatPartnerAggregationResult;
+  unReadMessageCount?: number;
 }

@@ -16,14 +16,29 @@ export class MessageRepository
     super(_messageModal);
   }
 
+  //public methods
   async markMessagesAsRead(roomId: string, senderId: string): Promise<boolean> {
+    console.log('Room id ', roomId);
+    console.log('sender id', senderId);
+
     return await this.updateMany(
       { roomId, senderId: toObjectId(senderId), isRead: false },
       { $set: { isRead: true } },
     );
   }
 
-  //public methods
+  async getUnreadMessageCount(
+    roomId: string,
+    senderId: string,
+  ): Promise<number> {
+    const count = await this._messageModal.countDocuments({
+      roomId,
+      senderId: toObjectId(senderId),
+      isRead: false,
+    });
+
+    return count || 0;
+  }
 
   //private methods
 }

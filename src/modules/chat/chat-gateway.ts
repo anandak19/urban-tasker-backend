@@ -22,6 +22,10 @@ import type {
 } from './interfaces/chat-services.interface';
 import { CurrentUser } from './decorators/current-user.decorator';
 import type { IPayload } from '@modules/auth/interfaces/auth.interface';
+import {
+  CHAT_CLIENT_EVENTS,
+  CHAT_SERVER_EVENTS,
+} from '@shared/constants/enums/events.enum';
 
 @WebSocketGateway({
   cors: { origin: 'http://localhost:4200', credentials: true },
@@ -45,6 +49,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket<any, any, any, ISocketData>,
   ) {
     try {
+      console.log('connection requeste came in server');
+
       // extract access token from cookie
       const cookies = cookie.parse(client.handshake.headers.cookie || '');
       const accessToken = cookies['access-token'];
@@ -72,11 +78,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   // on joining to a chat
-  @SubscribeMessage('joinChat')
+  @SubscribeMessage(CHAT_CLIENT_EVENTS.JOIN_CHAT)
   async handleJoinChat(
     @ConnectedSocket() client: Socket<any, any, any, ISocketData>,
     @MessageBody() data: { roomId: string },
   ) {
+    console.log('join requeste came in server');
     // join the socket of requested clint to that room
     if (!client.rooms.has(data.roomId)) {
       await client.join(data.roomId);
@@ -99,24 +106,27 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.disconnect();
   }
 
-  @SubscribeMessage('getAllMessages')
+  @SubscribeMessage(CHAT_CLIENT_EVENTS.GET_ALL_MESSAGES)
   async handleGetAllMessages(@MessageBody() data: { roomId: string }) {
     console.log('Called get all messages event');
     const messages = await this._messageService.findAllByRoomId(data.roomId);
     console.log(messages);
-    return messages;
+    return { success: true, data: messages };
   }
 
   // read chat
-  @SubscribeMessage('readMessage')
+  @SubscribeMessage(CHAT_CLIENT_EVENTS.READ_MESSAGE)
   async handleReadMessage(
     @MessageBody() data: { roomId: string; senderId: string },
   ) {
-    await this._messageService.markMessagesAsRead(data.senderId, data.roomId);
+    console.log('reading messages of sender ', data.senderId);
+    console.log('in room ', data.roomId);
+
+    await this._messageService.markMessagesAsRead(data.roomId, data.senderId);
   }
 
   // new message listener
-  @SubscribeMessage('sendMessage')
+  @SubscribeMessage(CHAT_CLIENT_EVENTS.SEND_MESSAGE)
   async handleSendMessage(
     @MessageBody() data: { roomId: string; message: string },
     @CurrentUser() user: IPayload,
@@ -132,6 +142,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(savedMessage);
 
     // emit message to room
-    this.server.to(data.roomId).emit('newMessage', savedMessage);
+    this.server
+      .to(data.roomId)
+      .emit(CHAT_SERVER_EVENTS.NEW_MESSAGE, savedMessage);
   }
 }

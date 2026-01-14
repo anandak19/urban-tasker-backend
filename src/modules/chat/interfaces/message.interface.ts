@@ -10,4 +10,5 @@ export interface IMessage extends Omit<ICreateMessage, 'senderId'> {
   senderId: string;
   isRead: boolean;
   id: string;
+  time: string;
 }
