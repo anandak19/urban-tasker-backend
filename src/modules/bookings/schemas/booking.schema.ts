@@ -23,9 +23,9 @@ export class Booking {
   @Prop({ required: true })
   date: string;
 
-  // HH:mm
-  @Prop({ required: true })
-  time: string;
+  // in minutes
+  @Prop({ required: true, min: 0, max: 1410 })
+  time: number;
 
   @Prop({ required: true, lowercase: true, trim: true })
   city: string;

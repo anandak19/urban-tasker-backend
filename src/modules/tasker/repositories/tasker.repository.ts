@@ -65,6 +65,10 @@ export class TaskerRepository
   ): Promise<PaginatedResult<IListTaskers>> {
     const categoryObjectId = toObjectId(availQuery.subcategoryId);
 
+    console.log('avail taskers query');
+
+    console.log(availQuery);
+
     const {
       page = this._defaultTaskersPage,
       limit = this._defaultTaskersLimit,
@@ -100,6 +104,38 @@ export class TaskerRepository
           'availability.end': { $gte: availQuery.time },
         },
       },
+
+      // --here check booking conflic
+      {
+        $lookup: {
+          from: 'bookings',
+          let: {
+            taskerId: '$userId',
+            bookingDate: availQuery.date,
+            bookingTime: availQuery.time,
+            bookingCity: availQuery.city,
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    { $eq: ['$taskerId', '$$taskerId'] },
+                    { $eq: ['$date', '$$bookingDate'] },
+                    { $eq: ['$time', '$$bookingTime'] },
+                    { $eq: ['$city', '$$bookingCity'] },
+                    { $eq: ['$isDeleted', false] },
+                  ],
+                },
+              },
+            },
+          ],
+          as: 'conflictingBookings',
+        },
+      },
+
+      { $match: { conflictingBookings: { $eq: [] } } },
+
       // join users
       {
         $lookup: {
@@ -142,6 +178,9 @@ export class TaskerRepository
       .exec();
 
     const data = result?.data ?? [];
+    console.log('data');
+    console.log(data);
+
     const total = result?.total?.[0]?.count ?? 0;
 
     return {

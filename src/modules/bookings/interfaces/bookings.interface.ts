@@ -11,7 +11,7 @@ export interface ICreateBooking {
   description: string;
   taskSize: TaskSize;
   date: string;
-  time: string;
+  time: number;
   city: string;
   // address: string;
   location: {
@@ -77,7 +77,7 @@ export interface IBookingListingRepoResult {
   //time place discription
   city: string;
   date: string;
-  time: string;
+  time: number;
 
   taskStatus: TaskStatus;
   isAccepted: boolean;

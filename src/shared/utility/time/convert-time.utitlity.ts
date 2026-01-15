@@ -2,6 +2,7 @@ import {
   WEEK_DAYS,
   WeekDayKeys,
 } from '@modules/availability/constants/week-days.constant';
+import { toZonedTime } from 'date-fns-tz';
 
 export const timeToMinutes = (time: string) => {
   const [h, m] = time.split(':').map(Number);
@@ -14,7 +15,7 @@ export const isInvalidTimes = (start: number, end: number): boolean => {
   return end <= start;
 };
 
-// convert to hh:mm format
+// convert minutes to hh:mm format
 export const toTimeString = (minutes: number): string => {
   const h = Math.floor(minutes / 60);
   const m = minutes % 60;
@@ -36,4 +37,9 @@ export const getWeekDayNumberFromDate = (date: Date | string): number => {
 export const getMinutesFromMidnight = (time: string): number => {
   const [hours, minutes] = time.split(':').map(Number);
   return hours * 60 + minutes;
+};
+
+export const getCurrIST = (): Date => {
+  const istDate = toZonedTime(new Date(), 'Asia/Kolkata');
+  return istDate;
 };

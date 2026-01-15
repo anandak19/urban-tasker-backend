@@ -1,12 +1,16 @@
 import {
   IsDateString,
   IsEnum,
+  IsInt,
   IsString,
+  Max,
+  Min,
   ValidateNested,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { LocationDto } from './location.dto';
 import { TaskSize } from '@shared/constants/enums/task.enum';
+import { timeStringToMinutes } from '@core/transformers/trim-string.transformer';
 
 export class CreateBookingDto {
   // About task
@@ -26,8 +30,11 @@ export class CreateBookingDto {
   @IsDateString()
   date: string;
 
-  @IsString()
-  time: string;
+  @Transform(timeStringToMinutes) // convert hh:mm to minutes
+  @IsInt()
+  @Min(0)
+  @Max(1410)
+  time: number;
 
   @IsString()
   city: string;
