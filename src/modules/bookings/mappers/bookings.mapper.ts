@@ -1,3 +1,4 @@
+import { toTimeString } from '@shared/utility/time/convert-time.utitlity';
 import { BookingDetailsResponseDto } from '../dtos/booking-details-response.dto';
 import { BookingListingResponseDto } from '../dtos/booking-listing-response.dto';
 import {
@@ -19,7 +20,7 @@ export class BookingsMapper {
       image: data.image || '',
 
       city: data.city,
-      time: data.time,
+      time: toTimeString(data.time), //conver mm to hh:mm
       date: data.date,
       location: data.location,
 
@@ -57,7 +58,7 @@ export class BookingsMapper {
 
       city: data.city,
       date: data.date,
-      time: data.time,
+      time: toTimeString(data.time),
 
       taskerName: `${data.taskerFirstName} ${data.taskerLastName}`,
       taskerId: data.taskerId,

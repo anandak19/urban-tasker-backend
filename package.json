@@ -45,6 +45,8 @@
     "class-validator": "^0.14.2",
     "cookie": "^1.1.1",
     "cookie-parser": "^1.4.7",
+    "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
     "ejs": "^3.1.10",
     "joi": "^18.0.1",
     "keyv": "^5.5.3",

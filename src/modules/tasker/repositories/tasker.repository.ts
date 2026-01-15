@@ -65,6 +65,9 @@ export class TaskerRepository
   ): Promise<PaginatedResult<IListTaskers>> {
     const categoryObjectId = toObjectId(availQuery.subcategoryId);
 
+    console.log('avail taskers query');
+    console.log(availQuery);
+
     const {
       page = this._defaultTaskersPage,
       limit = this._defaultTaskersLimit,
@@ -73,75 +76,142 @@ export class TaskerRepository
 
     const skip = (page - 1) * limit;
 
-    const pipeline: PipelineStage[] = [
-      {
-        $match: {
-          city: availQuery.city,
-          workCategories: categoryObjectId,
-        },
-      },
-      // join availability collection
-      {
+    // [Pipeline]
+    const bookingPipeline: PipelineStage[] = [
+      { $match: { city: availQuery.city, workCategories: categoryObjectId } },
+    ];
+
+    // booking stage config -- for lookup of booking collection
+    const bookingLookupLet: Record<string, any> = {
+      taskerId: '$userId',
+      bookingCity: availQuery.city,
+    };
+
+    // booking stage config -- for lookup of booking -> expr -> and values
+    const bookingLookupExprAnd = [
+      { $eq: ['$city', '$$bookingCity'] },
+      { $eq: ['$taskerId', '$$taskerId'] },
+      { $eq: ['$isDeleted', false] },
+    ];
+
+    // [Condition] IF TIME WAS IN THE QUERY
+    if (availQuery.time) {
+      // [Stage 1] Availability lookup stage
+      const availabilitylookupStage = {
         $lookup: {
           from: 'availabilities',
           localField: 'userId',
           foreignField: 'taskerId',
           as: 'availability',
         },
-      },
-      //
-      { $unwind: '$availability' },
+      };
 
-      //filter by day , check slot
-      {
+      // [Stage 2] Availability unwind
+      const availabilityUnwindStage = { $unwind: '$availability' };
+
+      // [Stage 3] Availability match filter
+      const availabilityMatchFilterStage = {
         $match: {
           'availability.day': availQuery.day,
           'availability.start': { $lte: availQuery.time },
           'availability.end': { $gte: availQuery.time },
         },
-      },
-      // join users
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'userId',
-          foreignField: '_id',
-          as: 'user',
-        },
-      },
-      {
-        $unwind: '$user',
-      },
-      // project
-      {
-        $facet: {
-          data: [
-            { $sort: sort },
-            { $skip: skip },
-            { $limit: limit },
-            {
-              $project: {
-                _id: 0,
-                userId: 1,
-                firstName: '$user.firstName',
-                lastName: '$user.lastName',
-                hourlyRate: 1,
-                city: 1,
-                rating: 1,
-                profileImageUrl: 1,
+      };
+
+      // [Pipeline Join]
+      bookingPipeline.push(
+        availabilitylookupStage,
+        availabilityUnwindStage,
+        availabilityMatchFilterStage,
+      );
+
+      // booking stage config -- let values
+      bookingLookupLet.bookingTime = availQuery.time;
+
+      // booking stage config -- for lookup of booking -> expr -> and values
+      bookingLookupExprAnd.push({ $eq: ['$time', '$$bookingTime'] });
+    }
+
+    // [Condition] IF DATE WAS IN THE QUERY
+    if (availQuery.date) {
+      bookingLookupLet.bookingDate = availQuery.date;
+      // booking stage config -- for lookup of booking -> expr -> and values
+      bookingLookupExprAnd.push({ $eq: ['$date', '$$bookingDate'] });
+    }
+
+    // [Stage 4]: booking lookup stage
+    const bookingLookupStage = {
+      $lookup: {
+        from: 'bookings',
+        let: bookingLookupLet,
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: bookingLookupExprAnd,
               },
             },
-          ],
-          total: [{ $count: 'count' }],
-        },
+          },
+        ],
+        as: 'conflictingBookings',
       },
-    ];
+    };
+    // [Stage 5]: booking match filter stage
+    const bookingMatchFilterStage = {
+      $match: { conflictingBookings: { $eq: [] } },
+    };
+    // [Pipeline Join]
+    bookingPipeline.push(bookingLookupStage, bookingMatchFilterStage);
+
+    // [Stage 6]: Lookup Users Stage
+    const lookupUsersStage = {
+      $lookup: {
+        from: 'users',
+        localField: 'userId',
+        foreignField: '_id',
+        as: 'user',
+      },
+    };
+    // [Stage 7]: Unwind users stage
+    const unwindUsersStage = { $unwind: '$user' };
+    // [Pipeline Join]
+    bookingPipeline.push(lookupUsersStage, unwindUsersStage);
+
+    // [Stage 8]: Final facet with projection stage
+    const finalStage = {
+      $facet: {
+        data: [
+          { $sort: sort },
+          { $skip: skip },
+          { $limit: limit },
+          {
+            $project: {
+              _id: 0,
+              userId: 1,
+              firstName: '$user.firstName',
+              lastName: '$user.lastName',
+              hourlyRate: 1,
+              city: 1,
+              rating: 1,
+              profileImageUrl: 1,
+            },
+          },
+        ],
+        total: [{ $count: 'count' }],
+      },
+    };
+
+    // [Pipeline Join]
+    bookingPipeline.push(finalStage);
 
     const [result] = await this._taskerModel
-      .aggregate<IFindAllAggregationResult<IListTaskers>>(pipeline)
+      .aggregate<IFindAllAggregationResult<IListTaskers>>(bookingPipeline)
       .exec();
 
     const data = result?.data ?? [];
+    console.log('data');
+    console.log(data);
+
     const total = result?.total?.[0]?.count ?? 0;
 
     return {

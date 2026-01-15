@@ -18,6 +18,9 @@ export class GetAvailableTaskersQueryDto extends PickType(GetDocsDto, [
   @IsString()
   city: string;
 
+  @IsString()
+  subcategoryId: string;
+
   @IsDateString()
   date: string;
 
@@ -26,9 +29,6 @@ export class GetAvailableTaskersQueryDto extends PickType(GetDocsDto, [
   @Min(0)
   @Max(1410)
   time: number;
-
-  @IsString()
-  subcategoryId: string;
 
   @Type(() => Number)
   @IsNumber()

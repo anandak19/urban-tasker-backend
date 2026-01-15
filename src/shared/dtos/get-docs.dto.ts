@@ -12,7 +12,7 @@ export class GetDocsDto {
   @Type(() => Number)
   @Min(1)
   @Max(20)
-  limit?: number = 1;
+  limit?: number = 5;
 
   @IsOptional()
   @Transform(TrimStringTransform)

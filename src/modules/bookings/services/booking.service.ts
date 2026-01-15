@@ -3,6 +3,7 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import type { IBookingService } from '../interfaces/bookings-services.interface';
@@ -24,6 +25,7 @@ import { BookingDetailsResponseDto } from '../dtos/booking-details-response.dto'
 import { BookingsMapper } from '../mappers/bookings.mapper';
 import { GetStartCodeResponseDto } from '../dtos/get-start-code-response.dto';
 import { OtpService } from '@core/lib/otp/otp.service';
+import { getCurrIST } from '@shared/utility/time/convert-time.utitlity';
 
 @Injectable()
 export class BookingService implements IBookingService {
@@ -42,6 +44,8 @@ export class BookingService implements IBookingService {
 
     private _otpService: OtpService,
   ) {}
+
+  logger = new Logger(BookingService.name);
 
   async getAllBookings(
     userId: string,
@@ -141,29 +145,41 @@ export class BookingService implements IBookingService {
   }
 
   private validateBookingDateTime(
-    date: string, // YYYY-MM-DD
-    time: string, // HH:mm
+    date: string, // date string from client
+    time: number, // minutes from today 12:00 AM
   ): void {
-    // Normalize today (date-only)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    this.logger.verbose('validateBookingDateTime');
+    console.log('input date, time', date, time);
 
+    const now = getCurrIST();
+
+    // current time in minutes from today 12 AM
+    console.log('now', now);
+    console.log('now hour', now.getHours());
+    console.log('now minutes', now.getMinutes());
+
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    console.log('currentMinutes');
+    console.log(currentMinutes);
+
+    // today at 12 AM
+    const today = new Date(now);
+
+    today.setHours(0, 0, 0, 0);
+    // booking date at 12 AM
     const bookingDate = new Date(date);
     bookingDate.setHours(0, 0, 0, 0);
 
-    //  Past date check
+    // 1️⃣ past date check
     if (bookingDate < today) {
       throw new BadRequestException('Booking date cannot be in the past');
     }
 
-    // Same-day time check
+    // 2️⃣ same-day time check
     if (bookingDate.getTime() === today.getTime()) {
-      const [hour, minute] = time.split(':').map(Number);
+      console.log('same day booking');
 
-      const bookingDateTime = new Date();
-      bookingDateTime.setHours(hour, minute, 0, 0);
-
-      if (bookingDateTime <= new Date()) {
+      if (time <= currentMinutes) {
         throw new BadRequestException('Booking time cannot be in the past');
       }
     }
