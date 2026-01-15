@@ -1,6 +1,7 @@
 import { ChatResponseDto } from '../dto/chat-response.dto';
+import { MessageType } from '../schema/message.schema';
 import { IChat } from './chat.interface';
-import { IMessage } from './message.interface';
+import { IMessage, ImessagePayload } from './message.interface';
 
 export interface IChatService {
   /**
@@ -25,7 +26,18 @@ export interface IChatService {
 export interface IMessageService {
   findAllByRoomId(roomId: string): Promise<IMessage[]>;
 
-  create(senderId: string, roomId: string, text: string): Promise<IMessage>;
+  create(
+    senderId: string,
+    roomId: string,
+    type: MessageType,
+    payload: ImessagePayload,
+  ): Promise<IMessage>;
 
-  markMessagesAsRead(senderId: string, roomId: string): Promise<boolean>;
+  markMessagesAsRead(roomId: string, senderId: string): Promise<boolean>;
+
+  getUnreadmessageCount(roomId: string, senderId: string): Promise<number>;
+
+  uploadMessageImage(
+    imageFile: Express.Multer.File,
+  ): Promise<{ publicKey: string }>;
 }

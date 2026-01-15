@@ -6,14 +6,14 @@ import {
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
+  WsException,
 } from '@nestjs/websockets';
 
 import { Socket, Server } from 'socket.io';
 import { AUTH_TOKENS } from '@modules/auth/auth-tokens';
-import { Inject } from '@nestjs/common';
-import type { ITokenService } from '@modules/auth/interfaces/services.interface';
+import { Inject, UsePipes, ValidationPipe } from '@nestjs/common';
+import type { ISocektAuthService } from '@modules/auth/interfaces/services.interface';
 import type { ISocketData } from './interfaces/socket-data.interface';
-import * as cookie from 'cookie';
 import { ServerEvents } from './interfaces/events.interface';
 import { CHAT_TOKEN } from './chat.token';
 import type {
@@ -22,6 +22,11 @@ import type {
 } from './interfaces/chat-services.interface';
 import { CurrentUser } from './decorators/current-user.decorator';
 import type { IPayload } from '@modules/auth/interfaces/auth.interface';
+import {
+  CHAT_CLIENT_EVENTS,
+  CHAT_SERVER_EVENTS,
+} from '@shared/constants/enums/events.enum';
+import { SendMessageDto } from './dto/send-message.dto';
 
 @WebSocketGateway({
   cors: { origin: 'http://localhost:4200', credentials: true },
@@ -29,15 +34,14 @@ import type { IPayload } from '@modules/auth/interfaces/auth.interface';
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server<any, ServerEvents>;
 
-  private users = new Map<string, string>(); // userid -> socketId
-
   constructor(
-    @Inject(AUTH_TOKENS.TOKEN_SERVICE) private _tokenService: ITokenService,
-
     @Inject(CHAT_TOKEN.CHAT_SERVICE) private _chatService: IChatService,
 
     @Inject(CHAT_TOKEN.MESSAGE_SERVICE)
     private _messageService: IMessageService,
+
+    @Inject(AUTH_TOKENS.SOCKET_AUTH_SERVICE)
+    private _socketAuthService: ISocektAuthService,
   ) {}
 
   // on connecting to the socket server
@@ -45,38 +49,25 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket<any, any, any, ISocketData>,
   ) {
     try {
-      // extract access token from cookie
-      const cookies = cookie.parse(client.handshake.headers.cookie || '');
-      const accessToken = cookies['access-token'];
-
-      // if no access token disconnect the connection
-      if (!accessToken) {
-        client.disconnect();
-        return;
+      await this._socketAuthService.authenticateSocket(client);
+    } catch (err) {
+      if (err instanceof WsException) {
+        client.emit('authError', {
+          code: err.getError(),
+        });
       }
 
-      // varify the access token and extract payload out of it
-      const payload = await this._tokenService.verifyToken(accessToken);
-
-      // attach payload to client socket
-      client.data.user = payload;
-
-      // map and store user id -> socket id
-      this.users.set(payload.id, client.id);
-
-      console.log('Socket authenticated:', payload);
-    } catch {
-      client.emit('authError', { message: 'Unauthorized' });
       client.disconnect();
     }
   }
 
   // on joining to a chat
-  @SubscribeMessage('joinChat')
+  @SubscribeMessage(CHAT_CLIENT_EVENTS.JOIN_CHAT)
   async handleJoinChat(
     @ConnectedSocket() client: Socket<any, any, any, ISocketData>,
     @MessageBody() data: { roomId: string },
   ) {
+    console.log('join requeste came in server');
     // join the socket of requested clint to that room
     if (!client.rooms.has(data.roomId)) {
       await client.join(data.roomId);
@@ -99,39 +90,52 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.disconnect();
   }
 
-  @SubscribeMessage('getAllMessages')
+  @SubscribeMessage(CHAT_CLIENT_EVENTS.GET_ALL_MESSAGES)
   async handleGetAllMessages(@MessageBody() data: { roomId: string }) {
     console.log('Called get all messages event');
     const messages = await this._messageService.findAllByRoomId(data.roomId);
     console.log(messages);
-    return messages;
+    return { success: true, data: messages };
   }
 
   // read chat
-  @SubscribeMessage('readMessage')
+  @SubscribeMessage(CHAT_CLIENT_EVENTS.READ_MESSAGE)
   async handleReadMessage(
     @MessageBody() data: { roomId: string; senderId: string },
   ) {
-    await this._messageService.markMessagesAsRead(data.senderId, data.roomId);
+    console.log('reading messages of sender ', data.senderId);
+    console.log('in room ', data.roomId);
+
+    await this._messageService.markMessagesAsRead(data.roomId, data.senderId);
   }
 
   // new message listener
-  @SubscribeMessage('sendMessage')
+  @UsePipes(new ValidationPipe({ whitelist: true }))
+  @SubscribeMessage(CHAT_CLIENT_EVENTS.SEND_MESSAGE)
   async handleSendMessage(
-    @MessageBody() data: { roomId: string; message: string },
+    @MessageBody() dto: SendMessageDto,
     @CurrentUser() user: IPayload,
   ) {
-    // --- here write logic to save message to db
+    console.log('dto');
+    console.log(dto);
+
+    // save message to db
     const savedMessage = await this._messageService.create(
       user.id,
-      data.roomId,
-      data.message,
+      dto.roomId,
+      dto.type,
+      {
+        text: dto.message,
+        publicKey: dto.publicKey,
+      },
     );
 
     console.log(`New Message`);
     console.log(savedMessage);
 
     // emit message to room
-    this.server.to(data.roomId).emit('newMessage', savedMessage);
+    this.server
+      .to(dto.roomId)
+      .emit(CHAT_SERVER_EVENTS.NEW_MESSAGE, savedMessage);
   }
 }

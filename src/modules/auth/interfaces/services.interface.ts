@@ -9,6 +9,8 @@ import {
 import { IGoogleUserAuthData, IPayload, ITokens } from './auth.interface';
 import { UserResponseDto } from '@modules/users/dtos/user-response.dto';
 import { IUserData } from '@modules/users/interfaces/user.interface';
+import { Socket } from 'socket.io';
+import { ISocketData } from '@modules/chat/interfaces/socket-data.interface';
 
 /**
  * Methods needed for signup process
@@ -153,4 +155,12 @@ export interface IPasswordService {
    * @returns {Promise<IBaseResponse>} - message
    */
   resetPassword(token: string, newPassword: string): Promise<IBaseResponse>;
+}
+
+export interface ISocektAuthService {
+  /**
+   * Authenticate socket and return  payload
+   * @param client
+   */
+  authenticateSocket(client: Socket<any, any, any, ISocketData>): Promise<void>;
 }

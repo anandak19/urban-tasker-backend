@@ -238,6 +238,8 @@ export class AuthService implements IAuthService {
     return tokens.refreshToken;
   }
 
+  // authenticateSocket(client: C )
+
   private _getPaylod(user: IUserData): IPayload {
     return {
       id: user.id,

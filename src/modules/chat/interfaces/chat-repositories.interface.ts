@@ -23,4 +23,6 @@ export interface IChatRepositories
 export interface IMessageRepositories
   extends IBaseRepository<MessageDocument, ICreateMessage> {
   markMessagesAsRead(roomId: string, senderId: string): Promise<boolean>;
+
+  getUnreadMessageCount(roomId: string, senderId: string): Promise<number>;
 }

@@ -10,6 +10,7 @@ import { MessageRepository } from './repository/message.repository';
 import { MessageService } from './services/message/message.service';
 import { ChatController } from './controllers/chat.controller';
 import { UsersModule } from '@modules/users/users.module';
+import { S3Module } from '@core/lib/s3/s3.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { UsersModule } from '@modules/users/users.module';
       { name: Message.name, schema: MessageSchema },
     ]),
     UsersModule,
+    S3Module,
   ],
   controllers: [ChatController],
   providers: [

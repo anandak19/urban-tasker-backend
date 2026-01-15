@@ -15,10 +15,11 @@ export class ChatMapper {
     return {
       id: chatData._id.toString(),
       partner: {
-        id: chatData._id.toString(),
+        id: chatData.partner._id.toString(),
         name: chatData.partner.firstName + ' ' + chatData.partner.lastName,
         image: chatData.partner.profileImage?.value || '',
       },
+      unReadMessageCount: chatData.unReadMessageCount,
     };
   }
 }
