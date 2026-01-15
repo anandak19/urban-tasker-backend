@@ -1,13 +1,12 @@
 export interface IAvailTaskerQuery {
   city: string;
+  subcategoryId: string;
 
   date: string;
 
   day: number;
 
   time: number;
-
-  subcategoryId: string;
 
   latitude: number;
 
