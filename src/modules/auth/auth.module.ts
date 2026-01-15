@@ -27,6 +27,7 @@ import { GoogleStrategy } from './strategies/google.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 
 import { TokenModule } from '@modules/Token/token.module';
+import { SocketAuthService } from './services/auth/socket-auth.service';
 console.log('Loaded AuthModule');
 
 @Global()
@@ -50,12 +51,17 @@ console.log('Loaded AuthModule');
   providers: [
     { provide: AUTH_TOKENS.SIGNUP_SERVICE, useClass: SignupService },
     { provide: AUTH_TOKENS.AUTH_SERVICE, useClass: AuthService },
+    { provide: AUTH_TOKENS.SOCKET_AUTH_SERVICE, useClass: SocketAuthService },
     { provide: AUTH_TOKENS.TOKEN_SERVICE, useClass: TokenService },
     { provide: AUTH_TOKENS.PASSWORD_SERVICE, useClass: PasswordService },
     GoogleStrategy,
     LocalStrategy,
   ],
-  exports: [AUTH_TOKENS.AUTH_SERVICE, AUTH_TOKENS.TOKEN_SERVICE],
+  exports: [
+    AUTH_TOKENS.AUTH_SERVICE,
+    AUTH_TOKENS.TOKEN_SERVICE,
+    AUTH_TOKENS.SOCKET_AUTH_SERVICE,
+  ],
 })
 export class AuthModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

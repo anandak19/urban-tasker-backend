@@ -6,8 +6,13 @@ import type { IMessageService } from '@modules/chat/interfaces/chat-services.int
 import {
   ICreateMessage,
   IMessage,
+  ImessagePayload,
 } from '@modules/chat/interfaces/message.interface';
 import { MessageMapper } from '@modules/chat/mappers/message.mapper';
+import {
+  MessageDocument,
+  MessageType,
+} from '@modules/chat/schema/message.schema';
 import {
   Inject,
   Injectable,
@@ -29,17 +34,35 @@ export class MessageService implements IMessageService {
   async create(
     senderId: string,
     roomId: string,
-    text: string,
+    type: MessageType,
+    payload: ImessagePayload,
   ): Promise<IMessage> {
+    if (type === MessageType.TEXT && !payload.text) {
+      throw new Error('Text message must contain text');
+    }
+
+    if (type === MessageType.IMAGE && !payload.publicKey) {
+      throw new Error('Image message must contain public key');
+    }
+
     const newMessage: ICreateMessage = {
       senderId: toObjectId(senderId),
       roomId,
-      text,
+      type,
+      ...(payload.text && { text: payload.text }),
+      ...(payload.publicKey && { publicKey: payload.publicKey }),
     };
 
     const savedMessage = await this._messageRepo.create(newMessage);
     if (!savedMessage) {
       console.log(`[Message Service]: Massage faild to save`);
+    }
+
+    if (savedMessage.type === MessageType.IMAGE && savedMessage.publicKey) {
+      const signedUrl = await this._s3Service.getImageUrl(
+        savedMessage.publicKey,
+      );
+      return MessageMapper.toMessageResponse(savedMessage, signedUrl);
     }
 
     return MessageMapper.toMessageResponse(savedMessage);
@@ -60,11 +83,25 @@ export class MessageService implements IMessageService {
     console.log('res');
     console.log(result);
 
-    return result.documents.length
-      ? result.documents.map((message) =>
-          MessageMapper.toMessageResponse(message),
-        )
-      : [];
+    const mappedMessages = await Promise.all(
+      result.documents.map(async (message: MessageDocument) => {
+        // Image message → attach signed URL
+        if (message.type === MessageType.IMAGE && message.publicKey) {
+          const signedUrl = await this._s3Service.getImageUrl(
+            message.publicKey,
+          );
+
+          return MessageMapper.toMessageResponse(message, signedUrl);
+        }
+
+        // Text message
+        return MessageMapper.toMessageResponse(message);
+      }),
+    );
+
+    console.log(mappedMessages);
+
+    return mappedMessages;
   }
 
   //http
