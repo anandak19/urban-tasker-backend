@@ -42,4 +42,10 @@ export interface IS3Service {
    * @param file
    */
   uploadMessageImage(file: Express.Multer.File): Promise<string>;
+
+  /**
+   * Upload complaint images
+   * @param file
+   */
+  uploadComplaintImage(file: Express.Multer.File): Promise<string>;
 }

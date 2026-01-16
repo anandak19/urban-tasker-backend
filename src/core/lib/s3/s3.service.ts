@@ -86,6 +86,10 @@ export class S3Service implements IS3Service {
     return await this._uploadFile(file, 'message-images');
   }
 
+  async uploadComplaintImage(file: Express.Multer.File): Promise<string> {
+    return await this._uploadFile(file, 'complaint-images');
+  }
+
   private async _uploadFile(
     file: Express.Multer.File,
     folder: string,
