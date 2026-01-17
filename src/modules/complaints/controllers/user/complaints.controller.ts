@@ -25,7 +25,7 @@ export class ComplaintsController {
     private _complaintService: IComplaintService,
   ) {}
   //create complaint
-  @UseInterceptors(ImageUploadInterceptor('images', 2))
+  @UseInterceptors(ImageUploadInterceptor('images', 3))
   @Post()
   createComplaint(
     @Param('taskId') taskId: string,
