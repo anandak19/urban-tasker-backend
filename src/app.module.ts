@@ -17,6 +17,7 @@ import { AvailabilityModule } from './modules/availability/availability.module';
 import { TaskerModule } from './modules/tasker/tasker.module';
 import { BookingsModule } from './modules/bookings/bookings.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { ComplaintsModule } from './modules/complaints/complaints.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { ChatModule } from './modules/chat/chat.module';
     TaskerModule,
     BookingsModule,
     ChatModule,
+    ComplaintsModule,
   ],
   controllers: [AppController],
   providers: [],

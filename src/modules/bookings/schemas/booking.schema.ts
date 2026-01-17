@@ -4,9 +4,13 @@ import { HydratedDocument, Types } from 'mongoose';
 import { TaskTimes } from './task-times.schema';
 import { LocationCordinates } from './location.schema';
 import { Payment } from './payement.schema';
+import { generatePrefixedId } from '@shared/utility/unique-id/id-generator.util';
 
 @Schema({ timestamps: true })
 export class Booking {
+  @Prop({ default: () => generatePrefixedId('TSK'), unique: true, index: true })
+  tskId: string;
+
   @Prop({ type: Types.ObjectId, ref: 'Category', required: true })
   categoryId: Types.ObjectId;
 

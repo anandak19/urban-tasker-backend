@@ -10,18 +10,6 @@ import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constan
 
 @Injectable()
 export class MultiImageValidatorPipe implements PipeTransform {
-  private readonly singleImagePipe = new ParseFilePipe({
-    validators: [
-      new MaxFileSizeValidator({
-        maxSize: 1024 * 1024,
-        message: 'Image is too large',
-      }),
-      new FileTypeValidator({
-        fileType: /(jpg|jpeg|png)$/i,
-      }),
-    ],
-  });
-
   async transform(value: Express.Multer.File[] | undefined) {
     if (!value || !Array.isArray(value)) {
       throw new BadRequestException(GENERAL_ERRORS.IMAGE_REQUIRED);
@@ -38,4 +26,16 @@ export class MultiImageValidatorPipe implements PipeTransform {
 
     return validatedFiles;
   }
+
+  private readonly singleImagePipe = new ParseFilePipe({
+    validators: [
+      new MaxFileSizeValidator({
+        maxSize: 1024 * 1024,
+        message: 'Image is too large',
+      }),
+      new FileTypeValidator({
+        fileType: /(jpg|jpeg|png)$/i,
+      }),
+    ],
+  });
 }
