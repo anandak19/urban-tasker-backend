@@ -80,8 +80,6 @@ export class MessageService implements IMessageService {
     };
 
     const result = await this._messageRepo.findAll(options, filter);
-    console.log('res');
-    console.log(result);
 
     const mappedMessages = await Promise.all(
       result.documents.map(async (message: MessageDocument) => {
@@ -98,8 +96,6 @@ export class MessageService implements IMessageService {
         return MessageMapper.toMessageResponse(message);
       }),
     );
-
-    console.log(mappedMessages);
 
     return mappedMessages;
   }

@@ -91,7 +91,6 @@ export class ChatService implements IChatService {
   }
 
   async findAllUserChats(userId: string): Promise<ChatResponseDto[]> {
-    console.log('service');
     const result: IChatAggregationResult[] =
       await this._chatRepo.findAllUserChats(userId);
 
@@ -112,8 +111,6 @@ export class ChatService implements IChatService {
         return ChatMapper.toListChatResponse(chat);
       }),
     );
-
-    console.log(response);
 
     return response;
   }

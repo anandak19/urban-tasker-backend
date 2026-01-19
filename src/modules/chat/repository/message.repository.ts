@@ -18,9 +18,6 @@ export class MessageRepository
 
   //public methods
   async markMessagesAsRead(roomId: string, senderId: string): Promise<boolean> {
-    console.log('Room id ', roomId);
-    console.log('sender id', senderId);
-
     return await this.updateMany(
       { roomId, senderId: toObjectId(senderId), isRead: false },
       { $set: { isRead: true } },
