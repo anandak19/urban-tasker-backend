@@ -24,13 +24,16 @@ import { CurrentUser } from './decorators/current-user.decorator';
 import type { IPayload } from '@modules/auth/interfaces/auth.interface';
 import {
   CHAT_CLIENT_EVENTS,
+  CHAT_COMMON_EVENTS,
   CHAT_SERVER_EVENTS,
 } from '@shared/constants/enums/events.enum';
 import { SendMessageDto } from './dto/send-message.dto';
 import type {
   IAnswerPayload,
+  ICallHangupTo,
+  ICallRejectTo,
   IIceCandidatePayload,
-  IOfferPayload,
+  IOfferTo,
 } from './interfaces/video-chat.interface';
 
 @WebSocketGateway({
@@ -148,16 +151,57 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage(CHAT_CLIENT_EVENTS.OFFER_ARRIVED)
   handleOffer(
     @CurrentUser() user: IPayload,
-    @MessageBody() offerData: IOfferPayload,
+    @MessageBody() offerData: IOfferTo,
   ) {
     this._logger.verbose(`Offer receved from the user with id: ${user.id}`);
-    console.log(`And wants to connect with user with id: ${offerData.to}`);
+    console.log(`And wants to connect with user with id: ${offerData.to.id}`);
+    console.log(offerData.to);
 
-    const toUserSocket = this.connections.get(offerData.to);
+    const toUserSocket = this.connections.get(offerData.to.id);
     if (toUserSocket) {
       this.server.to(toUserSocket).emit('offer', {
-        from: user.id,
+        from: {
+          id: user.id,
+          name: user.firstName,
+        },
         offer: offerData.offer,
+      });
+    }
+  }
+
+  // handle reject
+  @SubscribeMessage(CHAT_COMMON_EVENTS.CALL_REJECT)
+  handleReject(
+    @CurrentUser() user: IPayload,
+    @MessageBody() rejectData: ICallRejectTo,
+  ) {
+    this._logger.verbose(
+      `Offer Rejected/ call rejected from ${user.firstName} to: ${rejectData.to}`,
+    );
+
+    const toUserSocket = this.connections.get(rejectData.to);
+
+    if (toUserSocket) {
+      this.server.to(toUserSocket).emit('callReject', {
+        from: rejectData.to,
+      });
+    }
+  }
+
+  @SubscribeMessage(CHAT_COMMON_EVENTS.CALL_HANGUP)
+  handleHangup(
+    @CurrentUser() user: IPayload,
+    @MessageBody() hangupData: ICallHangupTo,
+  ) {
+    this._logger.verbose(
+      `Call hangup from ${user.firstName} to: ${hangupData.to.id}`,
+    );
+
+    const toUserSocket = this.connections.get(hangupData.to.id);
+
+    if (toUserSocket) {
+      this.server.to(toUserSocket).emit('callHangup', {
+        from: { id: user.id, name: user.firstName },
       });
     }
   }

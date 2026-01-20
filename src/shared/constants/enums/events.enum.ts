@@ -10,3 +10,8 @@ export enum CHAT_CLIENT_EVENTS {
 export enum CHAT_SERVER_EVENTS {
   NEW_MESSAGE = 'newMessage',
 }
+
+export enum CHAT_COMMON_EVENTS {
+  CALL_REJECT = 'callReject',
+  CALL_HANGUP = 'callHangup',
+}
