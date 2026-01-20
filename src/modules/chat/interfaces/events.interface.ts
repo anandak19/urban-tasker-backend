@@ -3,6 +3,7 @@ import {
   IAnswerResponse,
   ICallHangupFrom,
   ICallRejectFrom,
+  IFromData,
   IIceCandidateResponse,
   IOfferFrom,
 } from './video-chat.interface';
@@ -17,4 +18,6 @@ export interface ServerEvents {
   iceCandidates: (payload: IIceCandidateResponse) => void;
   callReject: (payload: ICallRejectFrom) => void;
   callHangup: (payload: ICallHangupFrom) => void;
+
+  userBusy: (payload: IFromData) => void;
 }

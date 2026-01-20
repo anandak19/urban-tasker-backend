@@ -37,6 +37,14 @@ export interface ICallHangupFrom {
   from: IUserInfo;
 }
 
+export interface IToData {
+  to: string;
+}
+
+export interface IFromData {
+  from: string;
+}
+
 export interface IIceCandidatePayload {
   candidate: RTCIceCandidateInit;
   to: string;
@@ -46,3 +54,5 @@ export interface IIceCandidateResponse
   extends Pick<IIceCandidatePayload, 'candidate'> {
   from: string;
 }
+
+export type TCallStatus = 'idle' | 'ringing' | 'incall';

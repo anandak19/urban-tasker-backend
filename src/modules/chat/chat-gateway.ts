@@ -34,6 +34,7 @@ import type {
   ICallRejectTo,
   IIceCandidatePayload,
   IOfferTo,
+  TCallStatus,
 } from './interfaces/video-chat.interface';
 
 @WebSocketGateway({
@@ -43,6 +44,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server<any, ServerEvents>;
 
   connections = new Map<string, string>();
+  userCallState = new Map<string, TCallStatus>();
 
   _logger = new Logger(ChatGateway.name);
 
@@ -150,12 +152,23 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // handle offer
   @SubscribeMessage(CHAT_CLIENT_EVENTS.OFFER_ARRIVED)
   handleOffer(
+    @ConnectedSocket() client: Socket<any, any, any, ISocketData>,
     @CurrentUser() user: IPayload,
     @MessageBody() offerData: IOfferTo,
   ) {
     this._logger.verbose(`Offer receved from the user with id: ${user.id}`);
     console.log(`And wants to connect with user with id: ${offerData.to.id}`);
     console.log(offerData.to);
+
+    const state = this.userCallState.get(offerData.to.id);
+
+    if ((state && state === 'incall') || state === 'ringing') {
+      client.emit('userBusy');
+      this.userCallState.set(user.id, 'idle');
+      return;
+    }
+    this.userCallState.set(user.id, 'incall');
+    this.userCallState.set(offerData.to.id, 'ringing');
 
     const toUserSocket = this.connections.get(offerData.to.id);
     if (toUserSocket) {
@@ -180,6 +193,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
 
     const toUserSocket = this.connections.get(rejectData.to);
+    this.userCallState.set(user.id, 'idle');
+    this.userCallState.set(rejectData.to, 'idle');
 
     if (toUserSocket) {
       this.server.to(toUserSocket).emit('callReject', {
@@ -198,6 +213,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
 
     const toUserSocket = this.connections.get(hangupData.to.id);
+    this.userCallState.set(user.id, 'idle');
+    this.userCallState.set(hangupData.to.id, 'idle');
 
     if (toUserSocket) {
       this.server.to(toUserSocket).emit('callHangup', {
@@ -236,6 +253,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       `Answer got from: ${user.id} send to : ${answerData.to}`,
     );
     const toUserSocket = this.connections.get(answerData.to);
+
+    this.userCallState.set(user.id, 'incall');
+    this.userCallState.set(answerData.to, 'incall');
 
     if (toUserSocket) {
       this.server.to(toUserSocket).emit('answer', {
