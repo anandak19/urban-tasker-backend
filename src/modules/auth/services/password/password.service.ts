@@ -109,6 +109,7 @@ export class PasswordService implements IPasswordService {
       id: user.id,
       email: user.email,
       userRole: user.userRole,
+      firstName: user.firstName,
     };
   }
 }

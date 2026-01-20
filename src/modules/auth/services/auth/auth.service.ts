@@ -135,11 +135,7 @@ export class AuthService implements IAuthService {
     res: Response,
     userData: IUserData,
   ): Promise<IBaseResponse> {
-    const payload: IPayload = {
-      email: userData.email,
-      userRole: userData.userRole,
-      id: userData.id,
-    };
+    const payload: IPayload = this._getPaylod(userData);
 
     const refreshToken = await this._setTokensInCookie(res, payload);
 
@@ -177,11 +173,7 @@ export class AuthService implements IAuthService {
       throw new NotFoundException(USER_ERRORS.USER_NOT_FOUND);
     }
 
-    const newPayload: IPayload = {
-      id: user.id,
-      email: user.email,
-      userRole: user.userRole,
-    };
+    const newPayload: IPayload = this._getPaylod(user);
 
     const accessToken = await this._tokenService.getNewAccessToken(newPayload);
 
@@ -240,11 +232,12 @@ export class AuthService implements IAuthService {
 
   // authenticateSocket(client: C )
 
-  private _getPaylod(user: IUserData): IPayload {
+  private _getPaylod(user: IUserData | UserResponseDto): IPayload {
     return {
       id: user.id,
       email: user.email,
       userRole: user.userRole,
+      firstName: user.firstName,
     };
   }
 }
