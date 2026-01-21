@@ -19,10 +19,7 @@ import type {
 } from '@modules/auth/interfaces/services.interface';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { USER_TOKENS } from '@modules/users/user-tokens';
-import type {
-  IAdminUserService,
-  IUserService,
-} from '@modules/users/interfaces/user-services.interface';
+import type { IUserService } from '@modules/users/interfaces/user-services.interface';
 import {
   COOKIE_KEYS,
   COOKIE_TIME,
@@ -45,6 +42,8 @@ import { type IRefreshTokenService } from '@modules/Token/interfaces/services.in
 import { TOKEN_TOKENS } from '@modules/Token/token-tokens';
 import { ILoginResponse } from '@modules/auth/interfaces/response.interface';
 import { ImageSource } from '@shared/constants/enums/image-source.enum';
+import { WALLET_TOKENS } from '@modules/wallet/wallet-tokens';
+import type { IWalletService } from '@modules/wallet/interfaces/wallet-services.interface';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AuthService implements IAuthService {
@@ -53,13 +52,13 @@ export class AuthService implements IAuthService {
 
     @Inject(USER_TOKENS.SERVICE) private _userService: IUserService,
 
-    @Inject(USER_TOKENS.ADMIN_USER_SERVICE)
-    private _adminUserService: IAdminUserService,
-
     @Inject(LOGGER_SERVICE) private _logger: ILoggerService,
 
     @Inject(TOKEN_TOKENS.REFERESH_TOKEN_SERVICE)
     private _refreshTokenService: IRefreshTokenService,
+
+    @Inject(WALLET_TOKENS.WALLET_SERVICE)
+    private _walletService: IWalletService,
 
     private _cookieService: CookieService,
   ) {}
@@ -126,6 +125,9 @@ export class AuthService implements IAuthService {
       this._logger.error('AuthServce: Faild to save google user to db');
       throw new InternalServerErrorException(AUTH_MESSAGES.LOGIN_FAILD);
     }
+
+    // creae wallet
+    await this._walletService.create(savedUser.email);
     console.log('Save success');
 
     return savedUser;

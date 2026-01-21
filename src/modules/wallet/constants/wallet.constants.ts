@@ -1,0 +1,5 @@
+export const WALLET_CONSTANTS = {
+  MIN_WITHDRAW_AMOUNT: 100,
+  MAX_WITHDRAW_AMOUNT: 50000,
+  CURRENCY: 'INR',
+} as const;
