@@ -32,12 +32,18 @@ import { AuthProvider } from '@shared/constants/enums/auth-providers.enum';
 import { generateOtpHtml } from '@shared/constants/email/email-templates';
 import { LOGGER_SERVICE } from '@core/lib/logger/logger.service';
 import type { ILoggerService } from '@core/lib/logger/logger.interface';
+import { WALLET_TOKENS } from '@modules/wallet/wallet-tokens';
+import type { IWalletService } from '@modules/wallet/interfaces/wallet-services.interface';
 
 @Injectable({ scope: Scope.REQUEST })
 export class SignupService implements ISignupService {
   constructor(
     @Inject(USER_TOKENS.SERVICE) private _userService: IUserService,
     @Inject(LOGGER_SERVICE) private _logger: ILoggerService,
+
+    @Inject(WALLET_TOKENS.WALLET_SERVICE)
+    private _walletService: IWalletService,
+
     private _cookieService: CookieService,
     private _uuidService: UuidService,
     private _cacheService: CacheService,
@@ -182,6 +188,9 @@ export class SignupService implements ISignupService {
     if (!savedUser) {
       throw new InternalServerErrorException('Faild to signup user');
     }
+
+    // creae wallet
+    await this._walletService.create(savedUser.id);
     /*
     TODO: 
     Call method to delete temp user data from cache

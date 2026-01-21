@@ -28,6 +28,7 @@ import { LocalStrategy } from './strategies/local.strategy';
 
 import { TokenModule } from '@modules/Token/token.module';
 import { SocketAuthService } from './services/auth/socket-auth.service';
+import { WalletModule } from '@modules/wallet/wallet.module';
 console.log('Loaded AuthModule');
 
 @Global()
@@ -41,6 +42,7 @@ console.log('Loaded AuthModule');
     EmailModule,
     CacheModule,
     LoggerModule,
+    WalletModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'secret',
       signOptions: { expiresIn: '15m' },
