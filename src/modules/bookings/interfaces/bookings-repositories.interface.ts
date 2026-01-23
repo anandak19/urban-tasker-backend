@@ -8,6 +8,8 @@ import {
 import { IBaseRepository } from '@shared/interfaces/base-repository.interface';
 import { IListBookingsQuery } from './request.interface';
 import { TaskStatus } from '@shared/constants/enums/task.enum';
+import { PaymentStatus } from '@shared/constants/enums/payment-status.enum';
+import { ClientSession } from 'mongoose';
 
 export interface IBookingRepository
   extends IBaseRepository<BookingDocument, ICreateBooking> {
@@ -32,6 +34,8 @@ export interface IBookingRepository
     bookingId: string,
     status: TaskStatus,
   ): Promise<BookingDocument | null>;
+
+  changePaymentStatus(taskId: string, status: PaymentStatus): Promise<boolean>;
 
   markTaskStartTime(taskId: string, time: Date): Promise<boolean>;
 
@@ -69,4 +73,10 @@ export interface IBookingRepository
    * @param amount
    */
   updateTotalPay(taskId: string, amount: number): Promise<boolean>;
+
+  updateTipAmount(
+    taskId: string,
+    tipAmount: number,
+    session?: ClientSession,
+  ): Promise<boolean>;
 }

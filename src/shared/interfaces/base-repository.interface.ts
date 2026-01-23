@@ -48,7 +48,7 @@ export interface IBaseRepository<TDocument, TCreate> {
    * @param data - object containing data for new docuemnt
    * @returns {Promise<TDocument>} - returns new saved/created document
    */
-  create(data: TCreate): Promise<TDocument>;
+  create(data: TCreate, session?: ClientSession): Promise<TDocument>;
 
   /**
    * To update a document by its id
@@ -81,4 +81,9 @@ export interface IBaseRepository<TDocument, TCreate> {
   find(
     filter: FilterQuery<InferRawDocType<TDocument>>,
   ): Promise<TDocument[] | null>;
+
+  updateOneData(
+    filter: FilterQuery<TDocument>,
+    update: Partial<TDocument>,
+  ): Promise<boolean>;
 }

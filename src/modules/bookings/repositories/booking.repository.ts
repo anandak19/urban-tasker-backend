@@ -7,7 +7,13 @@ import {
 } from '../interfaces/bookings.interface';
 import { IBookingRepository } from '../interfaces/bookings-repositories.interface';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, InferRawDocType, Model, PipelineStage } from 'mongoose';
+import {
+  ClientSession,
+  FilterQuery,
+  InferRawDocType,
+  Model,
+  PipelineStage,
+} from 'mongoose';
 import { toObjectId } from '@shared/utility/db/to-objectid.util';
 import { PaginatedResult } from '@shared/interfaces/query.interface';
 import { IFindAllAggregationResult } from '@shared/interfaces/repository.interface';
@@ -274,6 +280,23 @@ export class BookingRepository
     });
   }
 
+  async changePaymentStatus(
+    taskId: string,
+    status: PaymentStatus,
+  ): Promise<boolean> {
+    const id = toObjectId(taskId);
+    console.log(id);
+
+    const res = await this._bookingModel.findByIdAndUpdate(id, {
+      $set: { 'payment.paymentStatus': status },
+    });
+
+    console.log('updated booking pay');
+    console.log(res);
+
+    return res ? true : false;
+  }
+
   async markTaskStartTime(taskId: string, time: Date): Promise<boolean> {
     const res = await this._bookingModel.updateOne(
       { _id: toObjectId(taskId) },
@@ -393,7 +416,6 @@ export class BookingRepository
         {
           $set: {
             'payment.totalAmount': amount,
-            'payment.payableAmount': amount,
             'payment.paymentStatus': PaymentStatus.PENDING,
           },
         },
@@ -401,5 +423,21 @@ export class BookingRepository
     );
 
     return res.acknowledged && res.modifiedCount === 1;
+  }
+
+  async updateTipAmount(
+    taskId: string,
+    tipAmount: number,
+    session?: ClientSession,
+  ): Promise<boolean> {
+    const res = await this._bookingModel.updateOne(
+      { _id: toObjectId(taskId) },
+      {
+        $set: { 'payment.tipAmount': tipAmount },
+      },
+      { session },
+    );
+
+    return res.modifiedCount > 0;
   }
 }

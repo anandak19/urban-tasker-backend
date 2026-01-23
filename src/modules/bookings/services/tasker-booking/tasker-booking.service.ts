@@ -157,7 +157,7 @@ export class TaskerBookingService implements ITaskerBookingService {
       throw new InternalServerErrorException('Faild to stop task timer');
     }
 
-    const task = await this._bookingService.getBookingDetails(taskId);
+    const task = await this._bookingService.getBookingDetails(taskId); // returns details with calculated pay
 
     // get tasker details
     const tasker = await this._taskerService.findByUserId(task.taskerId);

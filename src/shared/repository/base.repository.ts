@@ -105,8 +105,9 @@ export abstract class BaseRepository<TDocument, TCreate>
   }
 
   // CREAE NEW DOC
-  async create(data: TCreate): Promise<TDocument> {
-    return await this._model.create(data);
+  async create(data: TCreate, session?: ClientSession): Promise<TDocument> {
+    const [doc] = await this._model.create([data], { session });
+    return doc;
   }
 
   // UPDATE A DOC BY ID: returns updated
@@ -130,6 +131,17 @@ export abstract class BaseRepository<TDocument, TCreate>
     console.log(result);
 
     return result.acknowledged && result.matchedCount > 0;
+  }
+
+  async updateOneData(
+    filter: FilterQuery<TDocument>,
+    update: Partial<TDocument>,
+  ): Promise<boolean> {
+    const res = await this._model.updateOne(filter, { $set: update });
+    console.log('Update base');
+    console.log(res);
+
+    return res.acknowledged && res.modifiedCount > 0;
   }
 
   // DELETE ONE DOC BY ID

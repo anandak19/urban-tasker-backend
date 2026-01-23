@@ -1,6 +1,7 @@
 import { PaymentStatus } from '@shared/constants/enums/payment-status.enum';
 import { TaskSize, TaskStatus } from '@shared/constants/enums/task.enum';
 import { TObjectId } from '@shared/types/db-types';
+import { Payment } from '../schemas/payement.schema';
 
 /**
  * To create new booking by user
@@ -20,6 +21,7 @@ export interface ICreateBooking {
   };
   userId: string | TObjectId;
   taskerId: string | TObjectId;
+  payment?: Partial<Payment>;
 }
 
 // may gets removed
@@ -62,7 +64,7 @@ export interface IBookingDetailsRepoResult extends IBookingListingRepoResult {
 
   taskTimes?: ITaskTimes;
 
-  payment?: IPayment;
+  payment: IPayment;
 }
 
 // to list in find all
