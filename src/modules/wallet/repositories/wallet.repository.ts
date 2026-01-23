@@ -18,7 +18,10 @@ export class WalletRepository
   }
 
   // ~ NOT TESTED
-  async creditAmountById(id: string, amount: number): Promise<boolean> {
+  async creditAmountById(
+    id: string,
+    amount: number,
+  ): Promise<WalletDocument | null> {
     const update: UpdateQuery<WalletDocument> = {
       $set: {
         lastCreditAmount: amount,
@@ -28,9 +31,7 @@ export class WalletRepository
         totalEarnings: amount,
       },
     };
-    const result = await this.updateById(id, update);
-
-    return result ? true : false;
+    return await this.updateById(id, update);
   }
 
   // ~ NOT TESTED

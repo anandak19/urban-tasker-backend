@@ -6,6 +6,7 @@ import { BookingDetailsResponseDto } from '../dtos/booking-details-response.dto'
 import { GetStartCodeResponseDto } from '../dtos/get-start-code-response.dto';
 import { PaymentStatus } from '@shared/constants/enums/payment-status.enum';
 import { ClientSession } from 'mongoose';
+import { PaymentStatusDto } from '../dtos/payment-status.dto';
 
 export interface IBookingService {
   /**
@@ -45,6 +46,8 @@ export interface IBookingService {
   ): Promise<boolean>;
 
   updatePaymentStatus(taskId: string, status: PaymentStatus): Promise<boolean>;
+
+  getTaskPaymentStatus(taskId: string): Promise<PaymentStatusDto>;
 }
 
 // service belongs to the booking and tasker

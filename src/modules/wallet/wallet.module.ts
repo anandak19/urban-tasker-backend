@@ -32,6 +32,9 @@ import { WalletTransactionService } from './services/wallet-transaction/wallet-t
       useClass: WalletTransactionService,
     },
   ],
-  exports: [WALLET_TOKENS.WALLET_SERVICE],
+  exports: [
+    WALLET_TOKENS.WALLET_SERVICE,
+    WALLET_TOKENS.WALLET_TRANSACTION_SERVICE,
+  ],
 })
 export class WalletModule {}

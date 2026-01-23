@@ -36,9 +36,11 @@ export class WalletController {
   // view wallet transactions
   @Get(':walletId')
   findAllByWalletId(
-    @Param(':walletId') walletId: string,
+    @Param('walletId') walletId: string,
     @Query() query: GetDocsDto,
   ) {
+    console.log('Called transacton history: ', walletId);
+
     return this._walletTransactionService.findAllByWalletId(walletId, query);
   }
 }

@@ -27,13 +27,12 @@ export class WalletTransactionService implements IWalletTransactionService {
     private _walletTransactionRepo: IWalletTransactionRepository,
   ) {}
 
-  // ~ NOT TESTED
   async create(
     data: ICreateWalletTransaction,
   ): Promise<DetaildWalletTransactionResponseDto> {
     const createdData = await this._walletTransactionRepo.create(data);
 
-    if (createdData) {
+    if (!createdData) {
       throw new InternalServerErrorException(
         WALLET_TRANSACTION_MESSAGES.CREATE_FAILD,
       );
@@ -57,6 +56,8 @@ export class WalletTransactionService implements IWalletTransactionService {
     };
 
     const result = await this._walletTransactionRepo.findAll(option, filter); // override the mehtod for new return type/ projection type
+
+    console.log(result);
 
     const documents = result.documents.map((item) =>
       WalletTransactionMapper.toListResponse(item),

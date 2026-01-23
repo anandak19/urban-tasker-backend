@@ -70,7 +70,7 @@ export class BookingRepository
     }
 
     if (filter.taskStatus) {
-      matchStage.taskStatus = matchArgs.taskStatus;
+      matchStage.taskStatus = filter.taskStatus;
     }
 
     console.log('stagematch', matchStage);

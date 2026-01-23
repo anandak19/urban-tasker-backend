@@ -32,10 +32,18 @@ import { VarifyPaymentDto } from '../dtos/varify-payment.dto';
 import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import { AppConfig } from '@config/app.config';
-import type { IWalletService } from '@modules/wallet/interfaces/wallet-services.interface';
+import type {
+  IWalletService,
+  IWalletTransactionService,
+} from '@modules/wallet/interfaces/wallet-services.interface';
 import { WALLET_TOKENS } from '@modules/wallet/wallet-tokens';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
+import { ICreateWalletTransaction } from '@modules/wallet/interfaces/wallet-transactions.interface';
+import {
+  WalletTransactionSource,
+  WalletTransactionType,
+} from '@modules/wallet/constants/wallet.enums';
 // import { withTransaction } from '@shared/database/transaction.util';
 
 @Injectable()
@@ -52,6 +60,9 @@ export class PaymentService implements IPaymentService {
 
     @Inject(WALLET_TOKENS.WALLET_SERVICE)
     private _walletService: IWalletService,
+
+    @Inject(WALLET_TOKENS.WALLET_TRANSACTION_SERVICE)
+    private _walletTransactionService: IWalletTransactionService,
 
     @InjectConnection() private readonly connection: Connection,
 
@@ -173,7 +184,6 @@ export class PaymentService implements IPaymentService {
   }
 
   async verifyPayment(
-    userData: IPayload,
     taskId: string,
     dto: VarifyPaymentDto,
   ): Promise<IRazorpayOrderVarificationResponse> {
@@ -221,24 +231,36 @@ export class PaymentService implements IPaymentService {
     }
 
     // update taskers wallet
-    // await this.creditToTasker(taskId, order.amount_paid);
-
-    console.log('payement varified');
+    await this.creditToTasker(taskId, order.amount_paid, dto.orderId);
 
     return { isPaid: true };
   }
 
-  private async creditToTasker(taskId: string, amount: number): Promise<void> {
+  //Make this session based later
+  private async creditToTasker(
+    taskId: string,
+    amountInPaise: number,
+    razorpayPaymentId: string,
+  ): Promise<void> {
+    const amount = Math.floor(amountInPaise / 100);
     const task = await this._bookingService.getBookingDetails(taskId);
-    const isCredited = await this._walletService.creditAmountByUserId(
+    const updatedTaskerWallet = await this._walletService.creditAmountByUserId(
       task.taskerId,
       amount,
     );
 
-    if (!isCredited) {
-      throw new InternalServerErrorException(
-        'Faild to credit amount to tasker',
-      );
-    }
+    const newTransaction: ICreateWalletTransaction = {
+      amount: amount,
+      referenceId: razorpayPaymentId,
+      source: WalletTransactionSource.PAYMENT,
+      type: WalletTransactionType.CREDIT,
+      userId: toObjectId(task.userId),
+      walletId: toObjectId(updatedTaskerWallet.id),
+    };
+    console.log('new t to save');
+    console.log(newTransaction);
+
+    // crete transaction
+    await this._walletTransactionService.create(newTransaction);
   }
 }

@@ -16,7 +16,6 @@ export interface IPaymentService {
   ): Promise<IRazorpayOrderResponse>;
 
   verifyPayment(
-    userData: IPayload,
     taskId: string,
     dto: VarifyPaymentDto,
   ): Promise<IRazorpayOrderVarificationResponse>;

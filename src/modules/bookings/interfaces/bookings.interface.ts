@@ -36,11 +36,11 @@ export interface IListBookingBasiczz {
 }
 
 export interface ITaskTimes {
-  taskStartTime: Date;
-  taskEndTime?: Date;
+  taskStartTime?: Date;
+  taskEndTime: Date | null;
   currentBreakStartTime?: Date;
   currentBreakEndTime?: Date;
-  totalBreakTime: number; // in sec
+  totalBreakTime?: number; // in sec
   totalTaskTime: number;
 }
 

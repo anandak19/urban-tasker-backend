@@ -42,6 +42,9 @@ export class WalletTransaction {
 
   @Prop({ type: Boolean, default: true })
   isSuccess: boolean;
+
+  @Prop({ required: false, type: Boolean, default: false })
+  isDeleted: boolean;
 }
 
 export type WalletTransactionDocument = HydratedDocument<WalletTransaction>;

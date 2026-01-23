@@ -28,6 +28,9 @@ export class Wallet {
     default: WalletStatus.ACTIVE,
   })
   status: WalletStatus;
+
+  @Prop({ required: false, type: Boolean, default: false })
+  isDeleted: boolean;
 }
 
 export type WalletDocument = HydratedDocument<Wallet>;

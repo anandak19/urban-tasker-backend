@@ -38,11 +38,10 @@ export class PaymentController {
 
   @Post('varify-payment/:orderId')
   verifyPayment(
-    @Request() req: IAuthenticatedReqeust,
     @Param('orderId') taskId: string,
     @Body() dto: VarifyPaymentDto,
   ) {
     console.log('incoming id', taskId);
-    return this._paymentService.verifyPayment(req.user, taskId, dto);
+    return this._paymentService.verifyPayment(taskId, dto);
   }
 }

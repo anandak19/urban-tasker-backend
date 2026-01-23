@@ -29,6 +29,7 @@ import { getCurrIST } from '@shared/utility/time/convert-time.utitlity';
 import { TaskStatus } from '@shared/constants/enums/task.enum';
 import { PaymentStatus } from '@shared/constants/enums/payment-status.enum';
 import { ClientSession } from 'mongoose';
+import { PaymentStatusDto } from '../dtos/payment-status.dto';
 
 @Injectable()
 export class BookingService implements IBookingService {
@@ -133,6 +134,14 @@ export class BookingService implements IBookingService {
     status: PaymentStatus,
   ): Promise<boolean> {
     return await this._bookingRepo.changePaymentStatus(taskId, status);
+  }
+
+  async getTaskPaymentStatus(taskId: string): Promise<PaymentStatusDto> {
+    const result = await this.getBookingDetails(taskId);
+
+    return {
+      paymentStatus: result.payment.paymentStatus,
+    };
   }
 
   private async validateBookingData(payload: CreateBookingDto): Promise<void> {

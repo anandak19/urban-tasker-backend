@@ -106,8 +106,12 @@ export abstract class BaseRepository<TDocument, TCreate>
 
   // CREAE NEW DOC
   async create(data: TCreate, session?: ClientSession): Promise<TDocument> {
-    const [doc] = await this._model.create([data], { session });
-    return doc;
+    if (session) {
+      const [doc] = await this._model.create([data], { session });
+      return doc;
+    }
+
+    return this._model.create(data);
   }
 
   // UPDATE A DOC BY ID: returns updated
