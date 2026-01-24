@@ -103,7 +103,7 @@ export class BookingService implements IBookingService {
     // calculate total pay
     if (result.taskStatus === TaskStatus.COMPLETED) {
       result.payment.payableAmount =
-        result.payment.totalAmount + (result.payment.tipAmount || 0);
+        result.payment.subTotal + (result.payment.tipAmount || 0);
     }
 
     return BookingsMapper.toResonseDetailed(result);

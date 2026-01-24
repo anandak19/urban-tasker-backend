@@ -67,12 +67,15 @@ export interface IBookingRepository
   finishTask(taskId: string, endTime: Date): Promise<boolean>;
 
   /**
-   * Set total amount to pay after calculation
+   * Set total amount after calculation
    * set payment status to pending
-   * @param taskId
-   * @param amount
    */
-  updateTotalPay(taskId: string, amount: number): Promise<boolean>;
+  updateAmounts(
+    taskId: string,
+    amount: number,
+    platFormFee: number,
+    subTotal: number,
+  ): Promise<boolean>;
 
   updateTipAmount(
     taskId: string,

@@ -7,6 +7,12 @@ export class Payment {
   totalAmount: number; // service charge
 
   @Prop({ default: 0 })
+  platFormFee: number;
+
+  @Prop({ default: 0 })
+  subTotal: number;
+
+  @Prop({ default: 0 })
   tipAmount: number;
 
   @Prop({ default: 0 })

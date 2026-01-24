@@ -410,13 +410,20 @@ export class BookingRepository
     return res.acknowledged && res.modifiedCount === 1;
   }
 
-  async updateTotalPay(taskId: string, amount: number): Promise<boolean> {
+  async updateAmounts(
+    taskId: string,
+    amount: number,
+    platFormFee: number,
+    subTotal: number,
+  ): Promise<boolean> {
     const res = await this._bookingModel.updateOne(
       { _id: toObjectId(taskId) },
       [
         {
           $set: {
             'payment.totalAmount': amount,
+            'payment.platFormFee': platFormFee,
+            'payment.subTotal': subTotal,
             'payment.paymentStatus': PaymentStatus.PENDING,
           },
         },

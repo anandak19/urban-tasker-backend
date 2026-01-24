@@ -17,7 +17,6 @@ export class WalletRepository
     super(_walletModal);
   }
 
-  // ~ NOT TESTED
   async creditAmountById(
     id: string,
     amount: number,

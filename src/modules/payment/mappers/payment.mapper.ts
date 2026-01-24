@@ -15,6 +15,10 @@ export class PaymentMapper {
       paymentStatus: bookingData.payment.paymentStatus,
       serviceFee: bookingData.payment.totalAmount,
       tipAmount: bookingData.payment.tipAmount,
+
+      platFormFee: bookingData.payment.platFormFee,
+      subTotal: bookingData.payment.subTotal,
+
       totalPayable: bookingData.payment.payableAmount,
       totalWorkHours: convertSecondsToHHMM(
         bookingData.taskTimes!.totalTaskTime,

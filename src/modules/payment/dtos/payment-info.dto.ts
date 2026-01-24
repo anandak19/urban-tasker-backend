@@ -5,6 +5,10 @@ export class PaymentInfoResponseDto {
   hourlyRate: number;
   serviceFee: number;
   tipAmount: number;
+
+  platFormFee: number;
+  subTotal: number;
+
   totalPayable: number;
   paymentStatus: PaymentStatus;
 }

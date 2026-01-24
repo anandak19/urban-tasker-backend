@@ -107,7 +107,7 @@ export class PaymentService implements IPaymentService {
 
     // calculate total pay with tip
     const tip = dto.tipAmount ? dto.tipAmount : task.payment?.tipAmount;
-    const totalPayable = Number(task.payment.totalAmount) + Number(tip);
+    const totalPayable = Number(task.payment.subTotal) + Number(tip);
 
     // create new razorpay order
     const orderCreateRequestBody: Orders.RazorpayOrderCreateRequestBody = {
@@ -207,6 +207,10 @@ export class PaymentService implements IPaymentService {
       throw new BadGatewayException('Invalid Razorpay signature');
     }
 
+    const task = await this._bookingService.getBookingDetails(taskId);
+
+    const taskerCharge = task.payment.totalAmount + task.payment.tipAmount;
+
     // update the status of task, paymentdoc
     const isUpdated = await this._paymentRepo.updateOneData(
       { razorpayPaymentId: dto.orderId },
@@ -232,7 +236,7 @@ export class PaymentService implements IPaymentService {
     }
 
     // update taskers wallet
-    await this.creditToTasker(taskId, order.amount_paid, dto.orderId);
+    await this.creditToTasker(taskId, taskerCharge, dto.orderId);
 
     return { isPaid: true };
   }
@@ -240,10 +244,9 @@ export class PaymentService implements IPaymentService {
   //Make this session based later
   private async creditToTasker(
     taskId: string,
-    amountInPaise: number,
+    amount: number,
     razorpayPaymentId: string,
   ): Promise<void> {
-    const amount = Math.floor(amountInPaise / 100);
     const task = await this._bookingService.getBookingDetails(taskId);
     const updatedTaskerWallet = await this._walletService.creditAmountByUserId(
       task.taskerId,
