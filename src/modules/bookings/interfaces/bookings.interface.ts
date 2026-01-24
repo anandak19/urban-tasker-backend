@@ -65,6 +65,8 @@ export interface IBookingDetailsRepoResult extends IBookingListingRepoResult {
   taskTimes?: ITaskTimes;
 
   payment: IPayment;
+
+  tskId: string;
 }
 
 // to list in find all

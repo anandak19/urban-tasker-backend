@@ -132,6 +132,7 @@ export class PaymentService implements IPaymentService {
       payerId: toObjectId(userData.id),
       receiverId: toObjectId(task.taskerId),
       taskId: toObjectId(task.id),
+      tskId: task.tskId,
       razorpayPaymentId: order.id,
       razorpayReceiptId: order.receipt,
       amountInPaise: order.amount_due,

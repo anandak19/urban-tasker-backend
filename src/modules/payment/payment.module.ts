@@ -9,6 +9,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Payment, PaymentSchema } from './schemas/payment.schema';
 import { PaymentRepository } from './repositories/payment.repository';
 import { WalletModule } from '@modules/wallet/wallet.module';
+import { PaymentAdminService } from './services/admin/payment-admin.service';
+import { PaymentAdminController } from './controllers/admin/payment-admin.controller';
 
 @Module({
   imports: [
@@ -17,7 +19,7 @@ import { WalletModule } from '@modules/wallet/wallet.module';
     WalletModule,
     MongooseModule.forFeature([{ name: Payment.name, schema: PaymentSchema }]),
   ],
-  controllers: [PaymentController],
+  controllers: [PaymentController, PaymentAdminController],
   providers: [
     RazorpayProvider,
     {
@@ -27,6 +29,10 @@ import { WalletModule } from '@modules/wallet/wallet.module';
     {
       provide: PAYMENT_TOKENS.PAYMENT_REPOSITORY,
       useClass: PaymentRepository,
+    },
+    {
+      provide: PAYMENT_TOKENS.ADMIN_PAYMENT_SERVICE,
+      useClass: PaymentAdminService,
     },
   ],
   exports: [RazorpayProvider, PAYMENT_TOKENS.PAYMENT_SERVICE],

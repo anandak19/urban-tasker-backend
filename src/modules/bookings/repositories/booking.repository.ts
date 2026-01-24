@@ -150,6 +150,7 @@ export class BookingRepository
                 taskStatus: 1,
                 taskSize: 1,
                 isAccepted: 1,
+                tskId: 1,
 
                 taskerId: { $toString: '$tasker._id' },
                 taskerFirstName: '$tasker.firstName',

@@ -35,6 +35,7 @@ export class BookingsMapper {
       taskSize: data.taskSize,
       taskStatus: data.taskStatus,
       isAccepted: data.isAccepted,
+      tskId: data.tskId,
 
       taskTimes: {
         taskStartTime: data.taskTimes?.taskStartTime,

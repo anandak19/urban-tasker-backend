@@ -14,4 +14,6 @@ export class BookingDetailsResponseDto extends BookingListingResponseDto {
   //rest of the field that get added later
   taskTimes?: ITaskTimes;
   isOnBreak?: boolean;
+
+  tskId: string;
 }

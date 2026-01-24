@@ -21,8 +21,8 @@ export abstract class BaseRepository<TDocument, TCreate>
   constructor(protected readonly _model: Model<TDocument>) {}
 
   private _logger = new Logger(BaseRepository.name);
-  private _defaultPage = 1;
-  private _defaultLimit = 10;
+  defaultPage = 1;
+  defaultLimit = 10;
 
   // GET ALL DOCS : paginated, isDeleted: false
   async findAll(
@@ -30,8 +30,8 @@ export abstract class BaseRepository<TDocument, TCreate>
     filter: FilterQuery<InferRawDocType<TDocument>> = {},
   ): Promise<PaginatedResult<TDocument>> {
     const {
-      page = this._defaultPage,
-      limit = this._defaultLimit,
+      page = this.defaultPage,
+      limit = this.defaultLimit,
       sort = {},
       select = {},
     } = options;

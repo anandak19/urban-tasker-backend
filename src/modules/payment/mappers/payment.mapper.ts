@@ -2,6 +2,8 @@ import { BookingDetailsResponseDto } from '@modules/bookings/dtos/booking-detail
 import { ITasker } from '@modules/tasker/interfaces/tasker.interface';
 import { PaymentInfoResponseDto } from '../dtos/payment-info.dto';
 import { convertSecondsToHHMM } from '@shared/utility/time/convert-time.utitlity';
+import { IPaymentListItemRepoResult } from '../interfaces/payment.interface';
+import { ListPaymentDto } from '../dtos/list-payments.dto';
 
 export class PaymentMapper {
   static toPaymentInfoResponse(
@@ -17,6 +19,22 @@ export class PaymentMapper {
       totalWorkHours: convertSecondsToHHMM(
         bookingData.taskTimes!.totalTaskTime,
       ), // Remove ! later
+    };
+  }
+
+  static toListResponse(data: IPaymentListItemRepoResult): ListPaymentDto {
+    console.log(data);
+
+    return {
+      paymentId: data.razorpayPaymentId,
+      sender: data.senderName,
+      receiver: data.receiverName,
+      amount: Math.floor(data.amountInPaise / 100),
+      status: data.paymentStatus,
+      receiptId: data.razorpayReceiptId,
+      paidAt: data.createdAt,
+      tskId: data.tskId,
+      id: data.id,
     };
   }
 }
