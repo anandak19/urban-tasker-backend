@@ -47,9 +47,9 @@ export interface ITaskTimes {
 export interface IPayment {
   totalAmount: number; // service charge
   platFormFee: number;
-  subTotal: number;
+  subTotal: number; // service charge + platFormFee
   tipAmount: number;
-  payableAmount: number; // final amount
+  payableAmount?: number; // final amount
   paymentStatus: PaymentStatus;
 }
 

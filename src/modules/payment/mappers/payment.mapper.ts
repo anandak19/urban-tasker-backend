@@ -19,7 +19,10 @@ export class PaymentMapper {
       platFormFee: bookingData.payment.platFormFee,
       subTotal: bookingData.payment.subTotal,
 
-      totalPayable: bookingData.payment.payableAmount,
+      totalPayable:
+        bookingData.payment.payableAmount ??
+        Number(bookingData.payment.subTotal) +
+          Number(bookingData.payment.tipAmount),
       totalWorkHours: convertSecondsToHHMM(
         bookingData.taskTimes!.totalTaskTime,
       ), // Remove ! later

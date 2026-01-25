@@ -26,4 +26,8 @@ export interface IUserRepository
     pagination?: IFindAllQuery,
     filter?: IUserFilter,
   ): Promise<PaginatedResult<UserDocument>>;
+
+  getTotalUsersCount(): Promise<number>;
+
+  getTotalTaskersCount(): Promise<number>;
 }

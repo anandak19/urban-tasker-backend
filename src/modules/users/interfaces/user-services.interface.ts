@@ -80,11 +80,15 @@ export interface IUserProfileService {
 }
 
 export interface IAdminUserService {
-  findAllUsers(userQuery: GetDocsDto);
+  findAllUsers(userQuery: GetDocsDto); // add return type here
 
   suspendUser(id: string, reasonData: SuspendUserDto): Promise<IUserData>;
 
   unSuspendUser(id: string): Promise<IUserData>;
 
   changeUserRoleById(id: TObjectId, userRole: UserRoles): Promise<IUserData>;
+
+  getTotalUsersCount(): Promise<number>;
+
+  getTotalTaskersCount(): Promise<number>;
 }

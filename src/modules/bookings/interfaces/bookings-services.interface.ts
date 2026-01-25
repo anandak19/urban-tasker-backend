@@ -7,6 +7,7 @@ import { GetStartCodeResponseDto } from '../dtos/get-start-code-response.dto';
 import { PaymentStatus } from '@shared/constants/enums/payment-status.enum';
 import { ClientSession } from 'mongoose';
 import { PaymentStatusDto } from '../dtos/payment-status.dto';
+import { IEarningsAggregationResponse } from './repo-responses.interface';
 
 export interface IBookingService {
   /**
@@ -101,4 +102,7 @@ export interface IAdminBookingService {
    * Fetch all bookings
    */
   getAllBookings(filter: IListBookingsQuery): Promise<IFindAllBookingsResponse>;
+
+  // ~
+  getEarningsSummery(): Promise<IEarningsAggregationResponse>;
 }

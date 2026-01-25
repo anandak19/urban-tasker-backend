@@ -133,4 +133,12 @@ export class AdminUserService implements IAdminUserService {
       throw new InternalServerErrorException(GENERAL_ERRORS.ERROR);
     }
   }
+
+  async getTotalUsersCount(): Promise<number> {
+    return await this._userRepo.getTotalUsersCount();
+  }
+
+  async getTotalTaskersCount(): Promise<number> {
+    return await this._userRepo.getTotalTaskersCount();
+  }
 }

@@ -20,6 +20,10 @@ import { IFindAllAggregationResult } from '@shared/interfaces/repository.interfa
 import { IListBookingsQuery } from '../interfaces/request.interface';
 import { TaskStatus } from '@shared/constants/enums/task.enum';
 import { PaymentStatus } from '@shared/constants/enums/payment-status.enum';
+import {
+  IEarningsAggregationResponse,
+  IEarningsAggregationResult,
+} from '../interfaces/repo-responses.interface';
 
 export class BookingRepository
   extends BaseRepository<BookingDocument, ICreateBooking>
@@ -447,5 +451,54 @@ export class BookingRepository
     );
 
     return res.modifiedCount > 0;
+  }
+
+  // ~
+  async getEarningsSummery(): Promise<IEarningsAggregationResponse> {
+    const pipeline: PipelineStage[] = [
+      {
+        $match: {
+          'payment.paymentStatus': PaymentStatus.PAID,
+          taskStatus: TaskStatus.COMPLETED,
+        },
+      },
+      {
+        $facet: {
+          totalTasksCompleted: [{ $count: 'count' }],
+          totalEarnings: [
+            {
+              $group: {
+                _id: null,
+                earnings: { $sum: '$payment.platFormFee' },
+              },
+            },
+          ],
+          totalTransactionAmount: [
+            {
+              $group: {
+                _id: null,
+                totalAmount: {
+                  $sum: {
+                    $add: [
+                      { $ifNull: ['$payment.subTotal', 0] },
+                      { $ifNull: ['$payment.tipAmount', 0] },
+                    ],
+                  },
+                },
+              },
+            },
+          ],
+        },
+      },
+    ];
+
+    const [result] =
+      await this._bookingModel.aggregate<IEarningsAggregationResult>(pipeline);
+
+    return {
+      totalEarnings: result?.totalEarnings?.[0]?.earnings ?? 0,
+      totalTasksCompleted: result?.totalTasksCompleted?.[0]?.count ?? 0,
+      totalIncomingAmount: result.totalTransactionAmount?.[0]?.totalAmount ?? 0,
+    };
   }
 }
