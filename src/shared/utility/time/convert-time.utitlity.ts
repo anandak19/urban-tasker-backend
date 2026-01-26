@@ -43,3 +43,19 @@ export const getCurrIST = (): Date => {
   const istDate = toZonedTime(new Date(), 'Asia/Kolkata');
   return istDate;
 };
+
+export const convertSecondsToHHMM = (totalSeconds: number): string => {
+  if (totalSeconds <= 0) {
+    return '00:00';
+  }
+
+  const roundedMinutes = Math.round(totalSeconds / 60);
+
+  const hours = Math.floor(roundedMinutes / 60);
+  const minutes = roundedMinutes % 60;
+
+  const hh = hours.toString().padStart(2, '0');
+  const mm = minutes.toString().padStart(2, '0');
+
+  return `${hh}:${mm}`;
+};

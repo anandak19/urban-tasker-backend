@@ -10,5 +10,5 @@ export interface ICreateWalletTransaction {
   type: WalletTransactionType;
   amount: number;
   source: WalletTransactionSource;
-  referenceId: string;
+  referenceId?: string;
 }

@@ -13,6 +13,7 @@ import {
 } from '@shared/interfaces/query.interface';
 import { IUserFilter } from '../interfaces/user-query.interface';
 import { IFindAllOptions } from '@shared/interfaces/repository.interface';
+import { UserRoles } from '@shared/constants/enums/user.enum';
 
 @Injectable()
 export class UserRepository
@@ -63,5 +64,17 @@ export class UserRepository
       }
       throw error;
     }
+  }
+
+  async getTotalUsersCount(): Promise<number> {
+    return this._userModel.countDocuments({
+      userRole: UserRoles.USER,
+    });
+  }
+
+  async getTotalTaskersCount(): Promise<number> {
+    return this._userModel.countDocuments({
+      userRole: UserRoles.TASKER,
+    });
   }
 }

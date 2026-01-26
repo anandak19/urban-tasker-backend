@@ -9,9 +9,11 @@ export class BookingDetailsResponseDto extends BookingListingResponseDto {
   location: LocationDto;
 
   taskSize: TaskSize;
+  payment: IPayment;
 
   //rest of the field that get added later
   taskTimes?: ITaskTimes;
   isOnBreak?: boolean;
-  payment?: IPayment;
+
+  tskId: string;
 }

@@ -55,10 +55,13 @@ export interface IWalletService {
    *
    * @param userId - Unique identifier of the user
    * @param amount - Amount to be credited to the wallet (must be > 0)
-   * @returns Promise<boolean> - Returns true if the credit operation succeeds
-   *                            Returns false if the operation fails
+   * @returns Promise<WalletResponseDto> -
+   *
    */
-  creditAmountByUserId(userId: string, amount: number): Promise<boolean>;
+  creditAmountByUserId(
+    userId: string,
+    amount: number,
+  ): Promise<WalletResponseDto>;
 
   /**
    * Debits a specified amount from the user's wallet.

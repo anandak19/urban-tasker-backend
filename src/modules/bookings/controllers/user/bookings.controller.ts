@@ -47,4 +47,9 @@ export class BookingsController {
   getWorkStartCode(@Param('taskId') id: string) {
     return this._bookingService.getWorkStartCode(id);
   }
+
+  @Get(':taskId/status')
+  getTaskPaymentStatus(@Param('taskId') id: string) {
+    return this._bookingService.getTaskPaymentStatus(id);
+  }
 }

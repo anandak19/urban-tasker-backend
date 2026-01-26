@@ -29,6 +29,9 @@ export default () => {
     AWS_SECRET_KEY: process.env.AWS_SECRET_KEY,
     AWS_REGION: process.env.AWS_REGION,
     AWS_BUCKET_NAME: process.env.AWS_BUCKET_NAME,
+
+    RAZORPAY_API_KEY: process.env.RAZORPAY_API_KEY,
+    RAZORPAY_KEY_SECREAT: process.env.RAZORPAY_KEY_SECREAT,
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

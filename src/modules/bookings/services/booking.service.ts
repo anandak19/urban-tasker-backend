@@ -26,6 +26,10 @@ import { BookingsMapper } from '../mappers/bookings.mapper';
 import { GetStartCodeResponseDto } from '../dtos/get-start-code-response.dto';
 import { OtpService } from '@core/lib/otp/otp.service';
 import { getCurrIST } from '@shared/utility/time/convert-time.utitlity';
+import { TaskStatus } from '@shared/constants/enums/task.enum';
+import { PaymentStatus } from '@shared/constants/enums/payment-status.enum';
+import { ClientSession } from 'mongoose';
+import { PaymentStatusDto } from '../dtos/payment-status.dto';
 
 @Injectable()
 export class BookingService implements IBookingService {
@@ -76,6 +80,7 @@ export class BookingService implements IBookingService {
     const bookingPayload: ICreateBooking = {
       ...payload,
       userId,
+      payment: {},
     };
     const savedBooking = await this._bookingRepo.createBooking(bookingPayload);
     if (!savedBooking) {
@@ -93,8 +98,13 @@ export class BookingService implements IBookingService {
     if (!result) {
       throw new NotFoundException('Booking details not found');
     }
-    console.log('doc found from repo');
     console.log(result);
+
+    // calculate total pay
+    if (result.taskStatus === TaskStatus.COMPLETED) {
+      result.payment.payableAmount =
+        result.payment.subTotal + (result.payment.tipAmount || 0);
+    }
 
     return BookingsMapper.toResonseDetailed(result);
   }
@@ -106,6 +116,31 @@ export class BookingService implements IBookingService {
     return {
       code,
       message: `This code will expire in ${expireTimeInMinutes} minutes`,
+    };
+  }
+
+  // internal user only
+  async updateTipAmount(
+    taskId: string,
+    tipAmount: number,
+    session?: ClientSession,
+  ): Promise<boolean> {
+    return await this._bookingRepo.updateTipAmount(taskId, tipAmount, session);
+  }
+
+  // internal user only
+  async updatePaymentStatus(
+    taskId: string,
+    status: PaymentStatus,
+  ): Promise<boolean> {
+    return await this._bookingRepo.changePaymentStatus(taskId, status);
+  }
+
+  async getTaskPaymentStatus(taskId: string): Promise<PaymentStatusDto> {
+    const result = await this.getBookingDetails(taskId);
+
+    return {
+      paymentStatus: result.payment.paymentStatus,
     };
   }
 

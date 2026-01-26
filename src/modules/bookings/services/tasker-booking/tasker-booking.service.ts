@@ -27,6 +27,8 @@ import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 
 @Injectable()
 export class TaskerBookingService implements ITaskerBookingService {
+  private readonly PLATFORM_FEE_PERCENTAGE = 3;
+
   constructor(
     @Inject(BOOKING_TOKEN.BOOKING_SERVICE)
     private _bookingService: IBookingService,
@@ -157,7 +159,7 @@ export class TaskerBookingService implements ITaskerBookingService {
       throw new InternalServerErrorException('Faild to stop task timer');
     }
 
-    const task = await this._bookingService.getBookingDetails(taskId);
+    const task = await this._bookingService.getBookingDetails(taskId); // returns details with calculated pay
 
     // get tasker details
     const tasker = await this._taskerService.findByUserId(task.taskerId);
@@ -169,8 +171,15 @@ export class TaskerBookingService implements ITaskerBookingService {
       hourlyRate,
     );
 
+    const platformFee = this.calcuatePlatformFee(totalAmount);
+
     // record the amount in db
-    const updated = await this._bookingRepo.updateTotalPay(taskId, totalAmount);
+    const updated = await this._bookingRepo.updateAmounts(
+      taskId,
+      totalAmount,
+      platformFee,
+      totalAmount + platformFee,
+    );
 
     console.log(totalAmount);
 
@@ -184,5 +193,10 @@ export class TaskerBookingService implements ITaskerBookingService {
   private calculateAmount(totalWorkInSec: number, houlyRate: number): number {
     const hours = totalWorkInSec / 3600;
     return Math.round(hours * houlyRate);
+  }
+
+  private calcuatePlatformFee(serviceCharge: number) {
+    const amount = (this.PLATFORM_FEE_PERCENTAGE / 100) * serviceCharge;
+    return Math.floor(amount);
   }
 }

@@ -4,6 +4,10 @@ import { IFindAllBookingsResponse } from './api-responses.interface';
 import { IListBookingsQuery } from './request.interface';
 import { BookingDetailsResponseDto } from '../dtos/booking-details-response.dto';
 import { GetStartCodeResponseDto } from '../dtos/get-start-code-response.dto';
+import { PaymentStatus } from '@shared/constants/enums/payment-status.enum';
+import { ClientSession } from 'mongoose';
+import { PaymentStatusDto } from '../dtos/payment-status.dto';
+import { IEarningsAggregationResponse } from './repo-responses.interface';
 
 export interface IBookingService {
   /**
@@ -25,13 +29,26 @@ export interface IBookingService {
   /**
    * Get single booking details
    */
-  getBookingDetails(bookingId: string): Promise<BookingDetailsResponseDto>;
+  getBookingDetails(
+    bookingId: string,
+    session?: ClientSession,
+  ): Promise<BookingDetailsResponseDto>;
 
   /**
    * To get a 4 digit work starter code
    * @param taskId
    */
   getWorkStartCode(taskId: string): Promise<GetStartCodeResponseDto>;
+
+  updateTipAmount(
+    taskId: string,
+    tipAmount: number,
+    session?: ClientSession,
+  ): Promise<boolean>;
+
+  updatePaymentStatus(taskId: string, status: PaymentStatus): Promise<boolean>;
+
+  getTaskPaymentStatus(taskId: string): Promise<PaymentStatusDto>;
 }
 
 // service belongs to the booking and tasker
@@ -85,4 +102,7 @@ export interface IAdminBookingService {
    * Fetch all bookings
    */
   getAllBookings(filter: IListBookingsQuery): Promise<IFindAllBookingsResponse>;
+
+  // ~
+  getEarningsSummery(): Promise<IEarningsAggregationResponse>;
 }

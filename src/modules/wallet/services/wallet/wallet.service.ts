@@ -79,7 +79,10 @@ export class WalletService implements IWalletService {
    */
 
   // ~ NOT TESTED
-  async creditAmountByUserId(userId: string, amount: number): Promise<boolean> {
+  async creditAmountByUserId(
+    userId: string,
+    amount: number,
+  ): Promise<WalletResponseDto> {
     this._validateAmount(amount);
     const wallet = await this.findOneByUserId(userId);
 
@@ -87,12 +90,13 @@ export class WalletService implements IWalletService {
       throw new NotFoundException(WALLET_MESSAGES.WALLET_NOT_FOUND);
     }
 
-    const isUpdated = await this._walletRepo.creditAmountById(
-      wallet.id,
-      amount,
-    );
+    const updated = await this._walletRepo.creditAmountById(wallet.id, amount);
 
-    return isUpdated;
+    if (!updated) {
+      throw new InternalServerErrorException('Faild to credit amount');
+    }
+
+    return WalletMapper.toResponse(updated);
   }
 
   // ~ NOT TESTED

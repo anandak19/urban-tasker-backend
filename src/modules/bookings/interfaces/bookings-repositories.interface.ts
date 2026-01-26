@@ -8,6 +8,9 @@ import {
 import { IBaseRepository } from '@shared/interfaces/base-repository.interface';
 import { IListBookingsQuery } from './request.interface';
 import { TaskStatus } from '@shared/constants/enums/task.enum';
+import { PaymentStatus } from '@shared/constants/enums/payment-status.enum';
+import { ClientSession } from 'mongoose';
+import { IEarningsAggregationResponse } from './repo-responses.interface';
 
 export interface IBookingRepository
   extends IBaseRepository<BookingDocument, ICreateBooking> {
@@ -32,6 +35,8 @@ export interface IBookingRepository
     bookingId: string,
     status: TaskStatus,
   ): Promise<BookingDocument | null>;
+
+  changePaymentStatus(taskId: string, status: PaymentStatus): Promise<boolean>;
 
   markTaskStartTime(taskId: string, time: Date): Promise<boolean>;
 
@@ -63,10 +68,21 @@ export interface IBookingRepository
   finishTask(taskId: string, endTime: Date): Promise<boolean>;
 
   /**
-   * Set total amount to pay after calculation
+   * Set total amount after calculation
    * set payment status to pending
-   * @param taskId
-   * @param amount
    */
-  updateTotalPay(taskId: string, amount: number): Promise<boolean>;
+  updateAmounts(
+    taskId: string,
+    amount: number,
+    platFormFee: number,
+    subTotal: number,
+  ): Promise<boolean>;
+
+  updateTipAmount(
+    taskId: string,
+    tipAmount: number,
+    session?: ClientSession,
+  ): Promise<boolean>;
+
+  getEarningsSummery(): Promise<IEarningsAggregationResponse>;
 }

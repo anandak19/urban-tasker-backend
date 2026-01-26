@@ -35,8 +35,16 @@ export class BookingsMapper {
       taskSize: data.taskSize,
       taskStatus: data.taskStatus,
       isAccepted: data.isAccepted,
+      tskId: data.tskId,
 
-      taskTimes: data.taskTimes,
+      taskTimes: {
+        taskStartTime: data.taskTimes?.taskStartTime,
+        taskEndTime: data.taskTimes?.taskEndTime ?? null,
+        currentBreakStartTime: data.taskTimes?.currentBreakStartTime,
+        currentBreakEndTime: data.taskTimes?.currentBreakEndTime,
+        totalBreakTime: data.taskTimes?.totalBreakTime,
+        totalTaskTime: data.taskTimes?.totalTaskTime ?? 0,
+      },
       isOnBreak:
         !!data.taskTimes?.currentBreakStartTime &&
         !data.taskTimes?.currentBreakEndTime,

@@ -21,8 +21,8 @@ export abstract class BaseRepository<TDocument, TCreate>
   constructor(protected readonly _model: Model<TDocument>) {}
 
   private _logger = new Logger(BaseRepository.name);
-  private _defaultPage = 1;
-  private _defaultLimit = 10;
+  defaultPage = 1;
+  defaultLimit = 10;
 
   // GET ALL DOCS : paginated, isDeleted: false
   async findAll(
@@ -30,8 +30,8 @@ export abstract class BaseRepository<TDocument, TCreate>
     filter: FilterQuery<InferRawDocType<TDocument>> = {},
   ): Promise<PaginatedResult<TDocument>> {
     const {
-      page = this._defaultPage,
-      limit = this._defaultLimit,
+      page = this.defaultPage,
+      limit = this.defaultLimit,
       sort = {},
       select = {},
     } = options;
@@ -105,8 +105,13 @@ export abstract class BaseRepository<TDocument, TCreate>
   }
 
   // CREAE NEW DOC
-  async create(data: TCreate): Promise<TDocument> {
-    return await this._model.create(data);
+  async create(data: TCreate, session?: ClientSession): Promise<TDocument> {
+    if (session) {
+      const [doc] = await this._model.create([data], { session });
+      return doc;
+    }
+
+    return this._model.create(data);
   }
 
   // UPDATE A DOC BY ID: returns updated
@@ -130,6 +135,17 @@ export abstract class BaseRepository<TDocument, TCreate>
     console.log(result);
 
     return result.acknowledged && result.matchedCount > 0;
+  }
+
+  async updateOneData(
+    filter: FilterQuery<TDocument>,
+    update: Partial<TDocument>,
+  ): Promise<boolean> {
+    const res = await this._model.updateOne(filter, { $set: update });
+    console.log('Update base');
+    console.log(res);
+
+    return res.acknowledged && res.modifiedCount > 0;
   }
 
   // DELETE ONE DOC BY ID

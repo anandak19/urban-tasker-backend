@@ -15,9 +15,9 @@ export interface IWalletRepository
    *
    * @param id - Wallet document ID
    * @param amount - Amount to be credited (positive number)
-   * @returns Promise<boolean> - true if the update was successful
+   * @returns Promise<WalletDocument> -
    */
-  creditAmountById(id: string, amount: number): Promise<boolean>;
+  creditAmountById(id: string, amount: number): Promise<WalletDocument | null>;
 
   /**
    * Decrements the wallet balance by the given amount.

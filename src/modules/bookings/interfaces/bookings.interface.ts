@@ -1,6 +1,7 @@
 import { PaymentStatus } from '@shared/constants/enums/payment-status.enum';
 import { TaskSize, TaskStatus } from '@shared/constants/enums/task.enum';
 import { TObjectId } from '@shared/types/db-types';
+import { Payment } from '../schemas/payement.schema';
 
 /**
  * To create new booking by user
@@ -20,6 +21,7 @@ export interface ICreateBooking {
   };
   userId: string | TObjectId;
   taskerId: string | TObjectId;
+  payment?: Partial<Payment>;
 }
 
 // may gets removed
@@ -34,18 +36,20 @@ export interface IListBookingBasiczz {
 }
 
 export interface ITaskTimes {
-  taskStartTime: Date;
-  taskEndTime?: Date;
+  taskStartTime?: Date;
+  taskEndTime: Date | null;
   currentBreakStartTime?: Date;
   currentBreakEndTime?: Date;
-  totalBreakTime: number; // in sec
+  totalBreakTime?: number; // in sec
   totalTaskTime: number;
 }
 
 export interface IPayment {
   totalAmount: number; // service charge
+  platFormFee: number;
+  subTotal: number; // service charge + platFormFee
   tipAmount: number;
-  payableAmount: number; // final amount
+  payableAmount?: number; // final amount
   paymentStatus: PaymentStatus;
 }
 
@@ -62,7 +66,9 @@ export interface IBookingDetailsRepoResult extends IBookingListingRepoResult {
 
   taskTimes?: ITaskTimes;
 
-  payment?: IPayment;
+  payment: IPayment;
+
+  tskId: string;
 }
 
 // to list in find all

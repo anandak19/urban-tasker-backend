@@ -19,6 +19,8 @@ import { BookingsModule } from './modules/bookings/bookings.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { ComplaintsModule } from './modules/complaints/complaints.module';
 import { WalletModule } from './modules/wallet/wallet.module';
+import { PaymentModule } from './modules/payment/payment.module';
+import { ReportsModule } from './modules/reports/reports.module';
 
 @Module({
   imports: [
@@ -38,6 +40,8 @@ import { WalletModule } from './modules/wallet/wallet.module';
     ChatModule,
     ComplaintsModule,
     WalletModule,
+    PaymentModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [],

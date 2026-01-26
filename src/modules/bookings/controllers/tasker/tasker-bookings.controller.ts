@@ -1,4 +1,5 @@
 import { AuthGuard } from '@core/guards/auth/auth.guard';
+import { TaskerGuard } from '@core/guards/tasker-guard/tasker-guard.guard';
 import { BOOKING_TOKEN } from '@modules/bookings/bookings.token';
 import { GetBookingsDto } from '@modules/bookings/dtos/booking-listing-query.dto';
 import { VerifyStartCodeDto } from '@modules/bookings/dtos/verify-start-code.dto';
@@ -20,7 +21,7 @@ import {
 } from '@nestjs/common';
 import type { IAuthenticatedReqeust } from '@shared/interfaces/request.interface';
 
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, TaskerGuard)
 @Controller('tasker/bookings')
 export class TaskerBookingsController {
   constructor(
@@ -32,6 +33,7 @@ export class TaskerBookingsController {
   ) {}
 
   // List all tasks of tasker they gets booked for (filter by: pagination, status)
+
   @Get()
   getAllTasks(@Req() req: IAuthenticatedReqeust, @Query() dto: GetBookingsDto) {
     console.log(dto);
@@ -39,12 +41,14 @@ export class TaskerBookingsController {
   }
 
   // View one task/booking details by its id: :id
+
   @Get(':taskId')
   getOneTaskDetails(@Param() taskId: string) {
     return this._bookingService.getBookingDetails(taskId);
   }
 
   // Accept one task/booking by its id: :id/accept
+
   @Patch(':taskId/accept')
   acceptTask(@Param('taskId') taskId: string) {
     return this._taskerBookingService.acceptTask(taskId);

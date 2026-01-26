@@ -7,13 +7,23 @@ import {
 } from '../interfaces/bookings.interface';
 import { IBookingRepository } from '../interfaces/bookings-repositories.interface';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, InferRawDocType, Model, PipelineStage } from 'mongoose';
+import {
+  ClientSession,
+  FilterQuery,
+  InferRawDocType,
+  Model,
+  PipelineStage,
+} from 'mongoose';
 import { toObjectId } from '@shared/utility/db/to-objectid.util';
 import { PaginatedResult } from '@shared/interfaces/query.interface';
 import { IFindAllAggregationResult } from '@shared/interfaces/repository.interface';
 import { IListBookingsQuery } from '../interfaces/request.interface';
 import { TaskStatus } from '@shared/constants/enums/task.enum';
 import { PaymentStatus } from '@shared/constants/enums/payment-status.enum';
+import {
+  IEarningsAggregationResponse,
+  IEarningsAggregationResult,
+} from '../interfaces/repo-responses.interface';
 
 export class BookingRepository
   extends BaseRepository<BookingDocument, ICreateBooking>
@@ -64,7 +74,7 @@ export class BookingRepository
     }
 
     if (filter.taskStatus) {
-      matchStage.taskStatus = matchArgs.taskStatus;
+      matchStage.taskStatus = filter.taskStatus;
     }
 
     console.log('stagematch', matchStage);
@@ -144,6 +154,7 @@ export class BookingRepository
                 taskStatus: 1,
                 taskSize: 1,
                 isAccepted: 1,
+                tskId: 1,
 
                 taskerId: { $toString: '$tasker._id' },
                 taskerFirstName: '$tasker.firstName',
@@ -274,6 +285,23 @@ export class BookingRepository
     });
   }
 
+  async changePaymentStatus(
+    taskId: string,
+    status: PaymentStatus,
+  ): Promise<boolean> {
+    const id = toObjectId(taskId);
+    console.log(id);
+
+    const res = await this._bookingModel.findByIdAndUpdate(id, {
+      $set: { 'payment.paymentStatus': status },
+    });
+
+    console.log('updated booking pay');
+    console.log(res);
+
+    return res ? true : false;
+  }
+
   async markTaskStartTime(taskId: string, time: Date): Promise<boolean> {
     const res = await this._bookingModel.updateOne(
       { _id: toObjectId(taskId) },
@@ -386,14 +414,20 @@ export class BookingRepository
     return res.acknowledged && res.modifiedCount === 1;
   }
 
-  async updateTotalPay(taskId: string, amount: number): Promise<boolean> {
+  async updateAmounts(
+    taskId: string,
+    amount: number,
+    platFormFee: number,
+    subTotal: number,
+  ): Promise<boolean> {
     const res = await this._bookingModel.updateOne(
       { _id: toObjectId(taskId) },
       [
         {
           $set: {
             'payment.totalAmount': amount,
-            'payment.payableAmount': amount,
+            'payment.platFormFee': platFormFee,
+            'payment.subTotal': subTotal,
             'payment.paymentStatus': PaymentStatus.PENDING,
           },
         },
@@ -401,5 +435,70 @@ export class BookingRepository
     );
 
     return res.acknowledged && res.modifiedCount === 1;
+  }
+
+  async updateTipAmount(
+    taskId: string,
+    tipAmount: number,
+    session?: ClientSession,
+  ): Promise<boolean> {
+    const res = await this._bookingModel.updateOne(
+      { _id: toObjectId(taskId) },
+      {
+        $set: { 'payment.tipAmount': tipAmount },
+      },
+      { session },
+    );
+
+    return res.modifiedCount > 0;
+  }
+
+  // ~
+  async getEarningsSummery(): Promise<IEarningsAggregationResponse> {
+    const pipeline: PipelineStage[] = [
+      {
+        $match: {
+          'payment.paymentStatus': PaymentStatus.PAID,
+          taskStatus: TaskStatus.COMPLETED,
+        },
+      },
+      {
+        $facet: {
+          totalTasksCompleted: [{ $count: 'count' }],
+          totalEarnings: [
+            {
+              $group: {
+                _id: null,
+                earnings: { $sum: '$payment.platFormFee' },
+              },
+            },
+          ],
+          totalTransactionAmount: [
+            {
+              $group: {
+                _id: null,
+                totalAmount: {
+                  $sum: {
+                    $add: [
+                      { $ifNull: ['$payment.subTotal', 0] },
+                      { $ifNull: ['$payment.tipAmount', 0] },
+                    ],
+                  },
+                },
+              },
+            },
+          ],
+        },
+      },
+    ];
+
+    const [result] =
+      await this._bookingModel.aggregate<IEarningsAggregationResult>(pipeline);
+
+    return {
+      totalEarnings: result?.totalEarnings?.[0]?.earnings ?? 0,
+      totalTasksCompleted: result?.totalTasksCompleted?.[0]?.count ?? 0,
+      totalIncomingAmount: result.totalTransactionAmount?.[0]?.totalAmount ?? 0,
+    };
   }
 }

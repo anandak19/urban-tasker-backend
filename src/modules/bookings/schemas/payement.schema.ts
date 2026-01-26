@@ -7,10 +7,13 @@ export class Payment {
   totalAmount: number; // service charge
 
   @Prop({ default: 0 })
-  tipAmount: number;
+  platFormFee: number; // platfrom earning
 
   @Prop({ default: 0 })
-  payableAmount: number; // final amount
+  subTotal: number; // service + platform fee
+
+  @Prop({ default: 0 })
+  tipAmount: number; // tip
 
   @Prop({
     type: String,
