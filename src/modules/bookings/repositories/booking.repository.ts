@@ -24,6 +24,10 @@ import {
   IEarningsAggregationResponse,
   IEarningsAggregationResult,
 } from '../interfaces/repo-responses.interface';
+import { BookingSummaryFilter } from '@modules/reports/dtos/query-filters.dto';
+import { BookingGroupBy } from '@modules/reports/constants/filter.enum';
+import { BookingSummaryListItemDto } from '@modules/reports/dtos/bookings-summery.dto';
+import { GraphDataItemDto } from '@modules/reports/dtos/graph-data.dto';
 
 export class BookingRepository
   extends BaseRepository<BookingDocument, ICreateBooking>
@@ -453,7 +457,6 @@ export class BookingRepository
     return res.modifiedCount > 0;
   }
 
-  // ~
   async getEarningsSummery(): Promise<IEarningsAggregationResponse> {
     const pipeline: PipelineStage[] = [
       {
@@ -500,5 +503,160 @@ export class BookingRepository
       totalTasksCompleted: result?.totalTasksCompleted?.[0]?.count ?? 0,
       totalIncomingAmount: result.totalTransactionAmount?.[0]?.totalAmount ?? 0,
     };
+  }
+
+  async getBookingSummery(
+    filter: BookingSummaryFilter,
+  ): Promise<PaginatedResult<BookingSummaryListItemDto>> {
+    const { page = this.defaultPage, limit = this.defaultLimit } = filter;
+    const skip = (page - 1) * limit;
+
+    const pipeline: PipelineStage[] = [];
+
+    // 1. [Group]: Calculate- earnings, bookingsCount, completedCount
+    const groupStage: PipelineStage.Group = {
+      $group: {
+        _id:
+          filter.groupBy === BookingGroupBy.CATEGORY
+            ? '$subcategoryId'
+            : '$city',
+
+        bookingsCount: { $sum: 1 },
+
+        earnings: {
+          $sum: {
+            $cond: [
+              { $eq: ['$payment.paymentStatus', PaymentStatus.PAID] },
+              '$payment.platFormFee',
+              0,
+            ],
+          },
+        },
+
+        completedCount: {
+          $sum: {
+            $cond: [{ $eq: ['$taskStatus', TaskStatus.COMPLETED] }, 1, 0],
+          },
+        },
+      },
+    };
+    pipeline.push(groupStage);
+
+    const facetDocsPipeline: PipelineStage.FacetPipelineStage[] = [
+      { $sort: { _id: 1 } },
+      { $skip: skip },
+      { $limit: limit },
+    ];
+
+    const facetTotalPipeline: PipelineStage.FacetPipelineStage[] = [
+      { $count: 'count' },
+    ];
+
+    // Group by category: lookup, unwind and project
+    if (filter.groupBy === BookingGroupBy.CATEGORY) {
+      facetDocsPipeline.push(
+        {
+          $lookup: {
+            from: 'subcategories',
+            localField: '_id',
+            foreignField: '_id',
+            as: 'category',
+          },
+        },
+        {
+          $unwind: '$category',
+        },
+        {
+          $project: {
+            _id: 0,
+            categoryName: '$category.name',
+            bookingsCount: 1,
+            completedCount: 1,
+            earnings: 1,
+          },
+        },
+      );
+    }
+
+    // Group by city: project
+    if (filter.groupBy === BookingGroupBy.CITY) {
+      facetDocsPipeline.push({
+        $project: {
+          _id: 0,
+          city: '$_id',
+          bookingsCount: 1,
+          completedCount: 1,
+          earnings: 1,
+        },
+      });
+    }
+
+    pipeline.push({
+      $facet: {
+        data: facetDocsPipeline,
+        total: facetTotalPipeline,
+      },
+    });
+
+    const [result] =
+      await this._bookingModel.aggregate<
+        IFindAllAggregationResult<BookingSummaryListItemDto>
+      >(pipeline);
+
+    const data = result?.data ?? [];
+    const total = result?.total?.[0]?.count ?? 0;
+    console.log(data);
+
+    return {
+      documents: data,
+      meta: {
+        limit: limit,
+        page: page,
+        total: total,
+        pages: Math.ceil(total / limit) || 1,
+      },
+    };
+  }
+
+  async getGraphData(): Promise<GraphDataItemDto[]> {
+    const fromDate = new Date();
+    fromDate.setMonth(fromDate.getMonth() - 10);
+    fromDate.setDate(1);
+
+    const pipeline: PipelineStage[] = [
+      {
+        $match: {
+          'payment.paymentStatus': PaymentStatus.PAID,
+          'taskTimes.taskEndTime': { $gte: fromDate },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            month: {
+              $dateToString: {
+                format: '%Y-%m',
+                date: '$taskTimes.taskEndTime',
+              },
+            },
+          },
+          totalEarnings: { $sum: '$payment.platFormFee' },
+        },
+      },
+      {
+        $sort: {
+          '_id.mongth': 1,
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          month: '$_id.month',
+          totalEarnings: 1,
+        },
+      },
+    ];
+
+    return await this._bookingModel.aggregate<GraphDataItemDto>(pipeline);
   }
 }

@@ -8,7 +8,11 @@ import { IAdminBookingService } from '@modules/bookings/interfaces/bookings-serv
 import { IEarningsAggregationResponse } from '@modules/bookings/interfaces/repo-responses.interface';
 import { IListBookingsQuery } from '@modules/bookings/interfaces/request.interface';
 import { BookingsMapper } from '@modules/bookings/mappers/bookings.mapper';
+import { BookingSummaryListItemDto } from '@modules/reports/dtos/bookings-summery.dto';
+import { GraphDataItemDto } from '@modules/reports/dtos/graph-data.dto';
+import { BookingSummaryFilter } from '@modules/reports/dtos/query-filters.dto';
 import { Inject, Injectable } from '@nestjs/common';
+import { PaginatedResult } from '@shared/interfaces/query.interface';
 
 @Injectable()
 export class AdminBookingService implements IAdminBookingService {
@@ -39,5 +43,15 @@ export class AdminBookingService implements IAdminBookingService {
   // internal
   async getEarningsSummery(): Promise<IEarningsAggregationResponse> {
     return await this._bookingRepo.getEarningsSummery();
+  }
+
+  getBookingSummery(
+    filter: BookingSummaryFilter,
+  ): Promise<PaginatedResult<BookingSummaryListItemDto>> {
+    return this._bookingRepo.getBookingSummery(filter);
+  }
+
+  getGraphData(): Promise<GraphDataItemDto[]> {
+    return this._bookingRepo.getGraphData();
   }
 }

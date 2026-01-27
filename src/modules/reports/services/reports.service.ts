@@ -6,6 +6,10 @@ import type { IAdminBookingService } from '@modules/bookings/interfaces/bookings
 import type { IAdminUserService } from '@modules/users/interfaces/user-services.interface';
 import { USER_TOKENS } from '@modules/users/user-tokens';
 import { ReportsMapper } from '../mappers/reports.mapper';
+import { BookingSummaryFilter } from '../dtos/query-filters.dto';
+import { PaginatedResult } from '@shared/interfaces/query.interface';
+import { BookingSummaryListItemDto } from '../dtos/bookings-summery.dto';
+import { GraphDataItemDto } from '../dtos/graph-data.dto';
 
 @Injectable()
 export class ReportsService implements IReportService {
@@ -16,6 +20,7 @@ export class ReportsService implements IReportService {
     @Inject(USER_TOKENS.ADMIN_USER_SERVICE)
     private _adminUsersService: IAdminUserService,
   ) {}
+
   // get report summery
   async getDashBoardSummary(): Promise<DashboardSummaryDto> {
     const earningsSummery =
@@ -28,5 +33,15 @@ export class ReportsService implements IReportService {
       totalUsers,
       totalTaskers,
     );
+  }
+
+  async getBookingSummery(
+    filter: BookingSummaryFilter,
+  ): Promise<PaginatedResult<BookingSummaryListItemDto>> {
+    return await this._adminBookingService.getBookingSummery(filter);
+  }
+
+  getGraphData(): Promise<GraphDataItemDto[]> {
+    return this._adminBookingService.getGraphData();
   }
 }
