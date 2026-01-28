@@ -5,7 +5,6 @@ import {
   BadRequestException,
   Inject,
   Injectable,
-  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import Razorpay from 'razorpay';
@@ -37,14 +36,15 @@ import type {
   IWalletTransactionService,
 } from '@modules/wallet/interfaces/wallet-services.interface';
 import { WALLET_TOKENS } from '@modules/wallet/wallet-tokens';
-import { InjectConnection } from '@nestjs/mongoose';
-import { Connection } from 'mongoose';
 import { ICreateWalletTransaction } from '@modules/wallet/interfaces/wallet-transactions.interface';
 import {
   WalletTransactionSource,
   WalletTransactionType,
 } from '@modules/wallet/constants/wallet.enums';
-// import { withTransaction } from '@shared/database/transaction.util';
+
+import { InjectConnection } from '@nestjs/mongoose';
+import { ClientSession, Connection } from 'mongoose';
+import { withTransaction } from '@shared/database/transaction.util';
 
 @Injectable()
 export class PaymentService implements IPaymentService {
@@ -121,67 +121,41 @@ export class PaymentService implements IPaymentService {
     };
     const order = await this.reazorpay.orders.create(orderCreateRequestBody);
 
-    //CAN USE TRANSACTION FROM HERE
-    if (dto.tipAmount) {
-      // update the tip field value in db here
-      await this._bookingService.updateTipAmount(task.id, dto.tipAmount);
-    }
+    // transaction
+    return withTransaction<IRazorpayOrderResponse>(
+      this.connection,
+      async (session) => {
+        // update tip amount
+        if (dto.tipAmount) {
+          await this._bookingService.updateTipAmount(
+            task.id,
+            dto.tipAmount,
+            session,
+          );
+        }
 
-    // save payment details in db
-    const newPayment: ICreatePayment = {
-      payerId: toObjectId(userData.id),
-      receiverId: toObjectId(task.taskerId),
-      taskId: toObjectId(task.id),
-      tskId: task.tskId,
-      razorpayPaymentId: order.id,
-      razorpayReceiptId: order.receipt,
-      amountInPaise: order.amount_due,
-    };
+        const newPayment: ICreatePayment = {
+          payerId: toObjectId(userData.id),
+          receiverId: toObjectId(task.taskerId),
+          taskId: toObjectId(task.id),
+          tskId: task.tskId,
+          razorpayPaymentId: order.id,
+          razorpayReceiptId: order.receipt,
+          amountInPaise: totalPayable * 100,
+        };
 
-    await this._paymentRepo.create(newPayment);
+        await this._paymentRepo.create(newPayment, session);
 
-    return {
-      orderId: order.id,
-      userId: userData.id,
-      amountToPaidInMinorUnits: order.amount_due,
-      currency: order.currency,
-      status: order.status,
-      receipt: order.receipt,
-    };
-
-    // return withTransaction<IRazorpayOrderResponse>(
-    //   this.connection,
-    //   async (session) => {
-    //     // update tip amount
-    //     if (dto.tipAmount) {
-    //       await this._bookingService.updateTipAmount(
-    //         task.id,
-    //         dto.tipAmount,
-    //         session,
-    //       );
-    //     }
-
-    //     const newPayment: ICreatePayment = {
-    //       payerId: toObjectId(userData.id),
-    //       receiverId: toObjectId(task.taskerId),
-    //       taskId: toObjectId(task.id),
-    //       razorpayPaymentId: order.id,
-    //       razorpayReceiptId: order.receipt,
-    //       amountInPaise: totalPayable * 100,
-    //     };
-
-    //     await this._paymentRepo.create(newPayment, session);
-
-    //     return {
-    //       orderId: order.id,
-    //       userId: userData.id,
-    //       amountToPaidInMinorUnits: order.amount_due,
-    //       currency: order.currency,
-    //       status: order.status,
-    //       receipt: order.receipt,
-    //     };
-    //   },
-    // );
+        return {
+          orderId: order.id,
+          userId: userData.id,
+          amountToPaidInMinorUnits: order.amount_due,
+          currency: order.currency,
+          status: order.status,
+          receipt: order.receipt,
+        };
+      },
+    );
   }
 
   async verifyPayment(
@@ -211,34 +185,29 @@ export class PaymentService implements IPaymentService {
 
     const taskerCharge = task.payment.totalAmount + task.payment.tipAmount;
 
-    // update the status of task, paymentdoc
-    const isUpdated = await this._paymentRepo.updateOneData(
-      { razorpayPaymentId: dto.orderId },
-      { paymentStatus: PaymentStatus.PAID },
+    // transaction
+    return withTransaction<IRazorpayOrderVarificationResponse>(
+      this.connection,
+      async (session) => {
+        // update the status of task, paymentdoc
+        await this._paymentRepo.updateOneData(
+          { razorpayPaymentId: dto.orderId },
+          { paymentStatus: PaymentStatus.PAID },
+          session,
+        );
+
+        // update the payment status of booking to paid
+        await this._bookingService.updatePaymentStatus(
+          taskId,
+          PaymentStatus.PAID,
+          session,
+        );
+
+        await this.creditToTasker(taskId, taskerCharge, dto.orderId, session);
+
+        return { isPaid: true };
+      },
     );
-
-    if (!isUpdated) {
-      throw new InternalServerErrorException(
-        'Faild to update the payment status',
-      );
-    }
-
-    // update the payment status of booking to paid
-    const isBookingUpdated = await this._bookingService.updatePaymentStatus(
-      taskId,
-      PaymentStatus.PAID,
-    );
-
-    if (!isBookingUpdated) {
-      throw new InternalServerErrorException(
-        'Faild to update the payment status',
-      );
-    }
-
-    // update taskers wallet
-    await this.creditToTasker(taskId, taskerCharge, dto.orderId);
-
-    return { isPaid: true };
   }
 
   //Make this session based later
@@ -246,6 +215,7 @@ export class PaymentService implements IPaymentService {
     taskId: string,
     amount: number,
     razorpayPaymentId: string,
+    session: ClientSession,
   ): Promise<void> {
     const task = await this._bookingService.getBookingDetails(taskId);
     const updatedTaskerWallet = await this._walletService.creditAmountByUserId(
@@ -261,10 +231,8 @@ export class PaymentService implements IPaymentService {
       userId: toObjectId(task.userId),
       walletId: toObjectId(updatedTaskerWallet.id),
     };
-    console.log('new t to save');
-    console.log(newTransaction);
 
     // crete transaction
-    await this._walletTransactionService.create(newTransaction);
+    await this._walletTransactionService.create(newTransaction, session);
   }
 }

@@ -1,6 +1,7 @@
+import { BookingSummaryFilter } from '@modules/reports/dtos/query-filters.dto';
 import type { IReportService } from '@modules/reports/interfaces/reports-services.interface';
 import { REPORTS_TOKENS } from '@modules/reports/reports-tokens';
-import { Controller, Get, Inject } from '@nestjs/common';
+import { Controller, Get, Inject, Query } from '@nestjs/common';
 
 @Controller('admin/reports')
 export class ReportsController {
@@ -10,7 +11,16 @@ export class ReportsController {
 
   @Get('summary')
   getDashboardSummery() {
-    console.log('[sUMMERY]');
     return this._reportService.getDashBoardSummary();
+  }
+
+  @Get('bookings')
+  getBookingsSummary(@Query() query: BookingSummaryFilter) {
+    return this._reportService.getBookingSummery(query);
+  }
+
+  @Get('graph-data')
+  getGraphData() {
+    return this._reportService.getGraphData();
   }
 }

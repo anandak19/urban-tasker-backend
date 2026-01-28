@@ -127,7 +127,7 @@ export class AuthService implements IAuthService {
     }
 
     // creae wallet
-    await this._walletService.create(savedUser.email);
+    await this._walletService.create(savedUser.id);
     console.log('Save success');
 
     return savedUser;

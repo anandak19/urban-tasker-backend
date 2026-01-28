@@ -140,8 +140,13 @@ export abstract class BaseRepository<TDocument, TCreate>
   async updateOneData(
     filter: FilterQuery<TDocument>,
     update: Partial<TDocument>,
+    session?: ClientSession,
   ): Promise<boolean> {
-    const res = await this._model.updateOne(filter, { $set: update });
+    const res = await this._model.updateOne(
+      filter,
+      { $set: update },
+      { session },
+    );
     console.log('Update base');
     console.log(res);
 

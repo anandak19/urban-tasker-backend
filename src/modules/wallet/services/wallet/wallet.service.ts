@@ -13,6 +13,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { toObjectId } from '@shared/utility/db/to-objectid.util';
+import { ClientSession } from 'mongoose';
 
 @Injectable()
 export class WalletService implements IWalletService {
@@ -78,10 +79,10 @@ export class WalletService implements IWalletService {
    * UPDATE METHODS
    */
 
-  // ~ NOT TESTED
   async creditAmountByUserId(
     userId: string,
     amount: number,
+    session?: ClientSession,
   ): Promise<WalletResponseDto> {
     this._validateAmount(amount);
     const wallet = await this.findOneByUserId(userId);
@@ -90,7 +91,11 @@ export class WalletService implements IWalletService {
       throw new NotFoundException(WALLET_MESSAGES.WALLET_NOT_FOUND);
     }
 
-    const updated = await this._walletRepo.creditAmountById(wallet.id, amount);
+    const updated = await this._walletRepo.creditAmountById(
+      wallet.id,
+      amount,
+      session,
+    );
 
     if (!updated) {
       throw new InternalServerErrorException('Faild to credit amount');

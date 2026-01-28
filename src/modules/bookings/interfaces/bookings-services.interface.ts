@@ -8,6 +8,10 @@ import { PaymentStatus } from '@shared/constants/enums/payment-status.enum';
 import { ClientSession } from 'mongoose';
 import { PaymentStatusDto } from '../dtos/payment-status.dto';
 import { IEarningsAggregationResponse } from './repo-responses.interface';
+import { BookingSummaryFilter } from '@modules/reports/dtos/query-filters.dto';
+import { PaginatedResult } from '@shared/interfaces/query.interface';
+import { BookingSummaryListItemDto } from '@modules/reports/dtos/bookings-summery.dto';
+import { GraphDataItemDto } from '@modules/reports/dtos/graph-data.dto';
 
 export interface IBookingService {
   /**
@@ -46,7 +50,11 @@ export interface IBookingService {
     session?: ClientSession,
   ): Promise<boolean>;
 
-  updatePaymentStatus(taskId: string, status: PaymentStatus): Promise<boolean>;
+  updatePaymentStatus(
+    taskId: string,
+    status: PaymentStatus,
+    session?: ClientSession,
+  ): Promise<boolean>;
 
   getTaskPaymentStatus(taskId: string): Promise<PaymentStatusDto>;
 }
@@ -103,6 +111,15 @@ export interface IAdminBookingService {
    */
   getAllBookings(filter: IListBookingsQuery): Promise<IFindAllBookingsResponse>;
 
-  // ~
+  /**
+   * Returns earings ang agrigated summery
+   * User for admin reports
+   */
   getEarningsSummery(): Promise<IEarningsAggregationResponse>;
+
+  getBookingSummery(
+    filter: BookingSummaryFilter,
+  ): Promise<PaginatedResult<BookingSummaryListItemDto>>; // assing return type
+
+  getGraphData(): Promise<GraphDataItemDto[]>;
 }

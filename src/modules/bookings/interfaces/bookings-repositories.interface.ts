@@ -11,6 +11,9 @@ import { TaskStatus } from '@shared/constants/enums/task.enum';
 import { PaymentStatus } from '@shared/constants/enums/payment-status.enum';
 import { ClientSession } from 'mongoose';
 import { IEarningsAggregationResponse } from './repo-responses.interface';
+import { BookingSummaryFilter } from '@modules/reports/dtos/query-filters.dto';
+import { BookingSummaryListItemDto } from '@modules/reports/dtos/bookings-summery.dto';
+import { GraphDataItemDto } from '@modules/reports/dtos/graph-data.dto';
 
 export interface IBookingRepository
   extends IBaseRepository<BookingDocument, ICreateBooking> {
@@ -36,7 +39,11 @@ export interface IBookingRepository
     status: TaskStatus,
   ): Promise<BookingDocument | null>;
 
-  changePaymentStatus(taskId: string, status: PaymentStatus): Promise<boolean>;
+  changePaymentStatus(
+    taskId: string,
+    status: PaymentStatus,
+    session?: ClientSession,
+  ): Promise<boolean>;
 
   markTaskStartTime(taskId: string, time: Date): Promise<boolean>;
 
@@ -85,4 +92,10 @@ export interface IBookingRepository
   ): Promise<boolean>;
 
   getEarningsSummery(): Promise<IEarningsAggregationResponse>;
+
+  getBookingSummery(
+    filter: BookingSummaryFilter,
+  ): Promise<PaginatedResult<BookingSummaryListItemDto>>;
+
+  getGraphData(): Promise<GraphDataItemDto[]>;
 }
