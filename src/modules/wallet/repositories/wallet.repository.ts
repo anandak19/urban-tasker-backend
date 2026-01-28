@@ -3,7 +3,7 @@ import { Wallet, WalletDocument } from '../schemas/wallet.schema';
 import { ICreateWallet } from '../interfaces/wallet.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import { Injectable } from '@nestjs/common';
-import { Model, UpdateQuery } from 'mongoose';
+import { ClientSession, Model, UpdateQuery } from 'mongoose';
 import { IWalletRepository } from '../interfaces/wallet-repositories.interface';
 
 @Injectable()
@@ -20,6 +20,7 @@ export class WalletRepository
   async creditAmountById(
     id: string,
     amount: number,
+    session: ClientSession,
   ): Promise<WalletDocument | null> {
     const update: UpdateQuery<WalletDocument> = {
       $set: {
@@ -30,7 +31,7 @@ export class WalletRepository
         totalEarnings: amount,
       },
     };
-    return await this.updateById(id, update);
+    return await this.updateById(id, update, session);
   }
 
   // ~ NOT TESTED

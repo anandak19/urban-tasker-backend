@@ -8,6 +8,7 @@ import {
   ListWalletTransactionResponseDto,
 } from '../dtos/wallet-transaction-response.dto';
 import { ICreateWalletTransaction } from './wallet-transactions.interface';
+import { ClientSession } from 'mongoose';
 
 export interface IWalletService {
   /**
@@ -61,6 +62,7 @@ export interface IWalletService {
   creditAmountByUserId(
     userId: string,
     amount: number,
+    session?: ClientSession,
   ): Promise<WalletResponseDto>;
 
   /**
@@ -89,6 +91,7 @@ export interface IWalletTransactionService {
    */
   create(
     data: ICreateWalletTransaction,
+    session?: ClientSession,
   ): Promise<DetaildWalletTransactionResponseDto>;
 
   /**

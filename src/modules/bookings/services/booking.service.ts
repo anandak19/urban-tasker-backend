@@ -132,8 +132,9 @@ export class BookingService implements IBookingService {
   async updatePaymentStatus(
     taskId: string,
     status: PaymentStatus,
+    session: ClientSession,
   ): Promise<boolean> {
-    return await this._bookingRepo.changePaymentStatus(taskId, status);
+    return await this._bookingRepo.changePaymentStatus(taskId, status, session);
   }
 
   async getTaskPaymentStatus(taskId: string): Promise<PaymentStatusDto> {

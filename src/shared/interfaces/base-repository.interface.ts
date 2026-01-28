@@ -85,5 +85,6 @@ export interface IBaseRepository<TDocument, TCreate> {
   updateOneData(
     filter: FilterQuery<TDocument>,
     update: Partial<TDocument>,
+    session?: ClientSession,
   ): Promise<boolean>;
 }

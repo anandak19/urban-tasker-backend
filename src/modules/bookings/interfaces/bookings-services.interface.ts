@@ -50,7 +50,11 @@ export interface IBookingService {
     session?: ClientSession,
   ): Promise<boolean>;
 
-  updatePaymentStatus(taskId: string, status: PaymentStatus): Promise<boolean>;
+  updatePaymentStatus(
+    taskId: string,
+    status: PaymentStatus,
+    session?: ClientSession,
+  ): Promise<boolean>;
 
   getTaskPaymentStatus(taskId: string): Promise<PaymentStatusDto>;
 }

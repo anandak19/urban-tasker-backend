@@ -39,7 +39,11 @@ export interface IBookingRepository
     status: TaskStatus,
   ): Promise<BookingDocument | null>;
 
-  changePaymentStatus(taskId: string, status: PaymentStatus): Promise<boolean>;
+  changePaymentStatus(
+    taskId: string,
+    status: PaymentStatus,
+    session?: ClientSession,
+  ): Promise<boolean>;
 
   markTaskStartTime(taskId: string, time: Date): Promise<boolean>;
 

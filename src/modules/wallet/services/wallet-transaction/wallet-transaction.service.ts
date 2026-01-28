@@ -19,6 +19,7 @@ import {
 } from '@shared/interfaces/query.interface';
 import { IFindAllOptions } from '@shared/interfaces/repository.interface';
 import { toObjectId } from '@shared/utility/db/to-objectid.util';
+import { ClientSession } from 'mongoose';
 
 @Injectable()
 export class WalletTransactionService implements IWalletTransactionService {
@@ -27,10 +28,12 @@ export class WalletTransactionService implements IWalletTransactionService {
     private _walletTransactionRepo: IWalletTransactionRepository,
   ) {}
 
+  // internal
   async create(
     data: ICreateWalletTransaction,
+    session: ClientSession,
   ): Promise<DetaildWalletTransactionResponseDto> {
-    const createdData = await this._walletTransactionRepo.create(data);
+    const createdData = await this._walletTransactionRepo.create(data, session);
 
     if (!createdData) {
       throw new InternalServerErrorException(

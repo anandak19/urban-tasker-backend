@@ -3,6 +3,7 @@ import { WalletDocument } from '../schemas/wallet.schema';
 import { ICreateWallet } from './wallet.interface';
 import { WalletTransactionDocument } from '../schemas/wallet-transaction.schema';
 import { ICreateWalletTransaction } from './wallet-transactions.interface';
+import { ClientSession } from 'mongoose';
 
 export interface IWalletRepository
   extends IBaseRepository<WalletDocument, ICreateWallet> {
@@ -17,7 +18,11 @@ export interface IWalletRepository
    * @param amount - Amount to be credited (positive number)
    * @returns Promise<WalletDocument> -
    */
-  creditAmountById(id: string, amount: number): Promise<WalletDocument | null>;
+  creditAmountById(
+    id: string,
+    amount: number,
+    session: ClientSession,
+  ): Promise<WalletDocument | null>;
 
   /**
    * Decrements the wallet balance by the given amount.

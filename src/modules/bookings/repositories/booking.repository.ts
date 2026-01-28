@@ -292,16 +292,18 @@ export class BookingRepository
   async changePaymentStatus(
     taskId: string,
     status: PaymentStatus,
+    session?: ClientSession,
   ): Promise<boolean> {
     const id = toObjectId(taskId);
     console.log(id);
 
-    const res = await this._bookingModel.findByIdAndUpdate(id, {
-      $set: { 'payment.paymentStatus': status },
-    });
-
-    console.log('updated booking pay');
-    console.log(res);
+    const res = await this._bookingModel.findByIdAndUpdate(
+      id,
+      {
+        $set: { 'payment.paymentStatus': status },
+      },
+      { session },
+    );
 
     return res ? true : false;
   }
