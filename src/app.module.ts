@@ -21,6 +21,7 @@ import { ComplaintsModule } from './modules/complaints/complaints.module';
 import { WalletModule } from './modules/wallet/wallet.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { ReviewsModule } from './modules/reviews/reviews.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { ReportsModule } from './modules/reports/reports.module';
     WalletModule,
     PaymentModule,
     ReportsModule,
+    ReviewsModule,
   ],
   controllers: [AppController],
   providers: [],

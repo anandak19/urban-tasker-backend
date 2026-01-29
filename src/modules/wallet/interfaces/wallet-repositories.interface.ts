@@ -21,7 +21,7 @@ export interface IWalletRepository
   creditAmountById(
     id: string,
     amount: number,
-    session: ClientSession,
+    session?: ClientSession,
   ): Promise<WalletDocument | null>;
 
   /**
