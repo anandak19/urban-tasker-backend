@@ -1,3 +1,5 @@
+import { AdminGuard } from '@core/guards/admin.guard';
+import { AuthGuard } from '@core/guards/auth/auth.guard';
 import {
   ImageValidationPipe,
   OptionalImageValidationPipe,
@@ -26,7 +28,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 
-@UseGuards(CategoryExistsGuard) // will check if the parent category exists or not
+@UseGuards(AuthGuard, AdminGuard, CategoryExistsGuard) // will check if the parent category exists or not
 @Controller('admin/category/:id/subcategory')
 export class SubCategoryAdminController {
   constructor(

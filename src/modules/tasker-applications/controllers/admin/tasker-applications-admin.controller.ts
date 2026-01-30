@@ -1,3 +1,4 @@
+import { AdminGuard } from '@core/guards/admin.guard';
 import { UpdateApplicationStatusDto } from '@modules/tasker-applications/dtos/update-application-status.dto';
 import { type ITaskerApplicationService } from '@modules/tasker-applications/interfaces/tasker-applications-services.interface';
 import { TASKER_APPLICATION_TOKENS } from '@modules/tasker-applications/tasker-applications.token';
@@ -9,9 +10,12 @@ import {
   Param,
   Patch,
   Query,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 
+@UseGuards(AuthGuard, AdminGuard)
 @Controller('admin/tasker-applications')
 export class TaskerApplicationsAdminController {
   constructor(

@@ -1,4 +1,5 @@
 import { AuthGuard } from '@core/guards/auth/auth.guard';
+import { TaskerGuard } from '@core/guards/tasker-guard/tasker-guard.guard';
 import { ImageValidationPipe } from '@core/pipes/image-validation.pipe';
 import { CreatePortfolioImageDto } from '@modules/tasker/dtos/create-portfolio-image.dto';
 import type { IPortfolioImageService } from '@modules/tasker/interfaces/tasker-services.interface';
@@ -16,7 +17,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { IAuthenticatedReqeust } from '@shared/interfaces/request.interface';
 
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, TaskerGuard)
 @Controller('tasker/account/portfolio')
 export class PortfolioImageController {
   constructor(

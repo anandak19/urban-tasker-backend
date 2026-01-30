@@ -45,6 +45,7 @@ import {
 import { InjectConnection } from '@nestjs/mongoose';
 import { ClientSession, Connection } from 'mongoose';
 import { withTransaction } from '@shared/database/transaction.util';
+import { PAYMENT_MESSAGES } from '../constants/messages.contant';
 
 @Injectable()
 export class PaymentService implements IPaymentService {
@@ -75,17 +76,17 @@ export class PaymentService implements IPaymentService {
     const task = await this._bookingService.getBookingDetails(taskId); // contains calculated total pay
 
     if (task.payment?.paymentStatus === PaymentStatus.PAID) {
-      throw new BadRequestException('This is already paid task');
+      throw new BadRequestException(PAYMENT_MESSAGES.ALREADY_PAID_TASK);
     }
 
     if (task.taskStatus !== TaskStatus.COMPLETED) {
-      throw new BadRequestException('Task is not yet completed');
+      throw new BadRequestException(PAYMENT_MESSAGES.TASK_NOT_COMPLETED);
     }
 
     const tasker = await this._taskerService.findByUserId(task.taskerId);
 
     if (!tasker) {
-      throw new NotFoundException('Tasker not found');
+      throw new NotFoundException(PAYMENT_MESSAGES.TASKER_NOT_FOUND);
     }
     return PaymentMapper.toPaymentInfoResponse(task, tasker);
   }
@@ -98,11 +99,11 @@ export class PaymentService implements IPaymentService {
     const task = await this._bookingService.getBookingDetails(dto.taskId);
 
     if (!task) {
-      throw new NotFoundException('Task details not found');
+      throw new NotFoundException(PAYMENT_MESSAGES.TASK_NOT_FOUND);
     }
 
     if (task.payment.paymentStatus === PaymentStatus.PAID) {
-      throw new BadRequestException('Already paid');
+      throw new BadRequestException(PAYMENT_MESSAGES.ALREADY_PAID);
     }
 
     // calculate total pay with tip
@@ -165,7 +166,7 @@ export class PaymentService implements IPaymentService {
     const order = await this.reazorpay.orders.fetch(dto.orderId);
 
     if (!order || order.status !== 'paid') {
-      throw new BadRequestException('Invalid order ID or order is not paid');
+      throw new BadRequestException(PAYMENT_MESSAGES.INVALID_ORDER);
     }
 
     const secret = this._config.get('RAZORPAY_KEY_SECREAT', { infer: true })!;
@@ -178,7 +179,7 @@ export class PaymentService implements IPaymentService {
       .digest('hex');
 
     if (expectedSignature !== dto.razorpaySignature) {
-      throw new BadGatewayException('Invalid Razorpay signature');
+      throw new BadGatewayException(PAYMENT_MESSAGES.INVALID_SIGNATURE);
     }
 
     const task = await this._bookingService.getBookingDetails(taskId);
