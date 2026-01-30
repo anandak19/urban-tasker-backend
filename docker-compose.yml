@@ -16,6 +16,7 @@ services:
     volumes:
       - ./src:/usr/src/app/src
       - ./logs:/var/log/app
+      - ~/.aws:/root/.aws:ro
 
   mongo:
     image: mongo:7.0

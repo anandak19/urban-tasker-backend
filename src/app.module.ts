@@ -22,9 +22,11 @@ import { WalletModule } from './modules/wallet/wallet.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
+import { SsmModule } from '@core/lib/ssm/ssm.module';
 
 @Module({
   imports: [
+    SsmModule,
     ConfigModule.forRoot(configOptions),
     CacheModule,
     AuthModule, // use default scope for providers
