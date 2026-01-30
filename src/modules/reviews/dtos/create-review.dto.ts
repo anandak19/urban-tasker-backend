@@ -11,7 +11,7 @@ import {
 export class CreateReviewDto {
   @IsString()
   @IsNotEmpty()
-  taskerId: string;
+  taskId: string;
 
   @IsInt()
   @Min(1)
