@@ -14,6 +14,7 @@ import {
   IFindAllAggregationResult,
   IFindAllOptions,
 } from '@shared/interfaces/repository.interface';
+import { toObjectId } from '@shared/utility/db/to-objectid.util';
 
 @Injectable()
 export class ComplaintRepository
@@ -36,6 +37,12 @@ export class ComplaintRepository
     });
 
     return updated ? true : false;
+  }
+
+  async findTaskerComplaintCount(taskerId: string): Promise<number> {
+    return await this._complaintModal.countDocuments({
+      taskerId: toObjectId(taskerId),
+    });
   }
 
   async findAllComplaints(
