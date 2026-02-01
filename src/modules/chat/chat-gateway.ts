@@ -11,7 +11,13 @@ import {
 
 import { Socket, Server } from 'socket.io';
 import { AUTH_TOKENS } from '@modules/auth/auth-tokens';
-import { Inject, Logger, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  Inject,
+  Logger,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import type { ISocektAuthService } from '@modules/auth/interfaces/services.interface';
 import type { ISocketData } from './interfaces/socket-data.interface';
 import { ServerEvents } from './interfaces/events.interface';
@@ -36,6 +42,7 @@ import type {
   IOfferTo,
   TCallStatus,
 } from './interfaces/video-chat.interface';
+import { WsAuthGuard } from '@core/guards/ws-auth/ws-auth.guard';
 
 @WebSocketGateway({
   cors: { origin: 'http://localhost:4200', credentials: true },
@@ -58,6 +65,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private _socketAuthService: ISocektAuthService,
   ) {}
 
+  /**TODOS
+   * AUTH_REFRESH event:
+   * authenticateSocket, Updates connection context, Acknowledges success
+   */
+
   // on connecting to the socket server
   async handleConnection(
     @ConnectedSocket() client: Socket<any, any, any, ISocketData>,
@@ -70,9 +82,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       );
     } catch (err) {
       if (err instanceof WsException) {
-        client.emit('authError', {
-          code: err.getError(),
-        });
+        client.emit('accessTokenExpired');
       }
 
       client.disconnect();
@@ -126,6 +136,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   // new message listener
+  @UseGuards(WsAuthGuard)
   @UsePipes(new ValidationPipe({ whitelist: true }))
   @SubscribeMessage(CHAT_CLIENT_EVENTS.SEND_MESSAGE)
   async handleSendMessage(

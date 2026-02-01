@@ -3,6 +3,7 @@ import { Types } from 'mongoose';
 
 export interface ICreateComplaint {
   taskId: Types.ObjectId;
+  taskerId: Types.ObjectId;
   createdBy: Types.ObjectId;
   text: string;
   imageKeys: string[];

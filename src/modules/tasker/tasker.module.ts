@@ -14,6 +14,7 @@ import {
 import { PortfolioService } from './services/portfolio/portfolio.service';
 import { PortfolioImageRepository } from './repositories/portfolio-image.repository';
 import { S3Module } from '@core/lib/s3/s3.module';
+import { PortfolioImageController } from './controllers/tasker/portfolio/portfolio-image.controller';
 
 @Module({
   imports: [
@@ -24,7 +25,11 @@ import { S3Module } from '@core/lib/s3/s3.module';
     UsersModule,
     S3Module,
   ],
-  controllers: [TaskerController, TaskerProfileController],
+  controllers: [
+    TaskerController,
+    TaskerProfileController,
+    PortfolioImageController,
+  ],
   providers: [
     {
       provide: TASKER_TOKEN.REPOSITORY,

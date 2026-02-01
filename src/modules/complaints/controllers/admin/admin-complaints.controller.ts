@@ -1,3 +1,5 @@
+import { AdminGuard } from '@core/guards/admin.guard';
+import { AuthGuard } from '@core/guards/auth/auth.guard';
 import { COMPLIANTS_TOKENS } from '@modules/complaints/complaints-token';
 import { ChangeStatusDto } from '@modules/complaints/dtos/change-status.dto';
 import type {
@@ -12,9 +14,11 @@ import {
   Param,
   Patch,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 
+@UseGuards(AuthGuard, AdminGuard)
 @Controller('admin/complaints')
 export class AdminComplaintsController {
   constructor(

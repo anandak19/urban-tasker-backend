@@ -9,16 +9,13 @@ export class PortfolioImage {
     required: true,
     index: true,
   })
-  userId: Types.ObjectId;
+  userId: Types.ObjectId; // user id of tasker
 
   @Prop({
     type: Types.ObjectId,
     ref: 'Tasker',
   })
-  taskerId?: Types.ObjectId;
-
-  @Prop({ required: true })
-  imageUrl: string;
+  taskerId?: Types.ObjectId; // tasker id of tasker
 
   @Prop()
   caption?: string;

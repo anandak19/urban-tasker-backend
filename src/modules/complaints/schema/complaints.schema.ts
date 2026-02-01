@@ -12,6 +12,9 @@ export class Complaint {
   taskId: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, required: true, ref: 'User' })
+  taskerId: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, required: true, ref: 'User' })
   createdBy: Types.ObjectId;
 
   @Prop({ type: String, required: true, trim: true })

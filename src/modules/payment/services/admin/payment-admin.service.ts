@@ -1,3 +1,4 @@
+import { PAYMENT_MESSAGES } from '@modules/payment/constants/messages.contant';
 import { ListPaymentDto } from '@modules/payment/dtos/list-payments.dto';
 import { ListPaymentsQueryDto } from '@modules/payment/dtos/query.dto';
 import { IFindAllPaymentsResponse } from '@modules/payment/interfaces/api-response.interface';
@@ -34,7 +35,7 @@ export class PaymentAdminService implements IAdminPaymentService {
     const result = await this._paymentRepo.findOnePayment(id);
 
     if (!result) {
-      throw new NotFoundException('Payment Details not found');
+      throw new NotFoundException(PAYMENT_MESSAGES.PAYMENT_DETAILS_NOT_FOUND);
     }
 
     return PaymentMapper.toListResponse(result);

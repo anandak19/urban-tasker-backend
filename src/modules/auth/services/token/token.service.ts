@@ -18,7 +18,7 @@ import { StringValue } from 'ms';
 
 @Injectable()
 export class TokenService implements ITokenService {
-  private readonly _accessTokenTime = '1d'; // default '120s'
+  private readonly _accessTokenTime = '15m'; // default '120s'
   private readonly _refereshTokenTime = '7d';
   private readonly _resetTokenTime = '30m';
   private readonly _defaultTokenTime = '10s';
