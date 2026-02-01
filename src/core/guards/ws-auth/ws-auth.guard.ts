@@ -21,14 +21,14 @@ export class WsAuthGuard implements CanActivate {
       .switchToWs()
       .getClient();
 
-    const cookies = cookie.parse(client.handshake.headers.cookie || '');
-    const accessToken = cookies['access-token'];
-    if (!accessToken) {
-      client.disconnect();
-      return false;
-    }
-
     try {
+      const cookies = cookie.parse(client.handshake.headers.cookie || '');
+      const accessToken = cookies['access-token'];
+      if (!accessToken) {
+        client.disconnect();
+        return false;
+      }
+
       const payload = await this._tokenService.verifyToken(accessToken);
 
       client.data.user = payload;
@@ -36,9 +36,8 @@ export class WsAuthGuard implements CanActivate {
 
       return true;
     } catch {
-      client.emit('auth_error', {
-        message: 'Unauthorized',
-      });
+      client.emit('accessTokenExpired');
+
       console.log('[Guard] Calling disconnect');
       client.disconnect();
       return false;

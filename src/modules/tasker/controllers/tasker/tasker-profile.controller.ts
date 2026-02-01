@@ -1,4 +1,5 @@
 import { AuthGuard } from '@core/guards/auth/auth.guard';
+import { TaskerGuard } from '@core/guards/tasker-guard/tasker-guard.guard';
 import { AddWorkCategoryDto } from '@modules/tasker/dtos/add-work-category.dto';
 import { UpdateAboutDto } from '@modules/tasker/dtos/update-about.dto';
 import type { ITaskerService } from '@modules/tasker/interfaces/tasker-services.interface';
@@ -16,7 +17,7 @@ import {
 } from '@nestjs/common';
 import type { IAuthenticatedReqeust } from '@shared/interfaces/request.interface';
 
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, TaskerGuard)
 @Controller('tasker/account')
 export class TaskerProfileController {
   /**

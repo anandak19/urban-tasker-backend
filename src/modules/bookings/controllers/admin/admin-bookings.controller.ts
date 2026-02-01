@@ -1,3 +1,4 @@
+import { AdminGuard } from '@core/guards/admin.guard';
 import { AuthGuard } from '@core/guards/auth/auth.guard';
 import { BOOKING_TOKEN } from '@modules/bookings/bookings.token';
 import { GetBookingsDto } from '@modules/bookings/dtos/booking-listing-query.dto';
@@ -14,7 +15,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, AdminGuard)
 @Controller('admin/bookings')
 export class AdminBookingsController {
   constructor(
