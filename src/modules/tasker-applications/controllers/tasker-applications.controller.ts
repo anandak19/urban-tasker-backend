@@ -21,6 +21,7 @@ import { UserId } from '@core/decorators/param/user-id.decorator';
 import { CookiePayload } from '@core/decorators/param/cookie-payload.decorator';
 import { type IPayload } from '@modules/auth/interfaces/auth.interface';
 import { TokenRevocationGuard } from '@core/guards/TokenRevocation/token-revocation-guard.guard';
+import { TaskerGuard } from '@core/guards/tasker-guard/tasker-guard.guard';
 
 @Controller('tasker-applications')
 export class TaskerApplicationsController {
@@ -30,7 +31,7 @@ export class TaskerApplicationsController {
     private _taskerApplicationService: ITaskerApplicationService,
   ) {}
   // to create tasker application
-  @UseGuards(AuthGuard, TokenRevocationGuard)
+  @UseGuards(AuthGuard, TokenRevocationGuard, TaskerGuard)
   @Post()
   @UseInterceptors(
     FileFieldsInterceptor([

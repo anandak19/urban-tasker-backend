@@ -20,9 +20,10 @@ import type { IAuthenticatedReqeust } from '@shared/interfaces/request.interface
 import { IMappedAvailability } from '../interfaces/availability.interface';
 import { SlotDataDto } from '../dtos/slot-data.dto';
 import { ChangeSlotStatusDto } from '../dtos/change-slot-status.dto';
+import { TaskerGuard } from '@core/guards/tasker-guard/tasker-guard.guard';
 
 @Controller('availability')
-@UseGuards(AuthGuard)
+@UseGuards(AuthGuard, TaskerGuard)
 export class AvailabilityController {
   constructor(
     @Inject(AVAILABILITY_TOKEN.AVAILABILITY_SERVICE)
