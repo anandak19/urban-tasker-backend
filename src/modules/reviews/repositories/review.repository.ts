@@ -5,10 +5,10 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, PipelineStage } from 'mongoose';
 import { IReviewRepository } from '../interfaces/review-repositories.interface';
 import { PaginatedResult } from '@shared/interfaces/query.interface';
-import { GetReviewsFilterDto } from '../dtos/get-reviews-filter.dto';
 import { ReviewResponseDto } from '../dtos/review-response.dto';
 import { toObjectId } from '@shared/utility/db/to-objectid.util';
 import { IFindAllAggregationResult } from '@shared/interfaces/repository.interface';
+import { IFindAllReviewsFilter } from '../interfaces/query-filters.interface';
 
 export class ReviewRepository
   extends BaseRepository<ReviewDocument, ICreateReview>
@@ -21,8 +21,10 @@ export class ReviewRepository
   }
 
   async findAllUserReviews(
-    filter: GetReviewsFilterDto,
+    filter: IFindAllReviewsFilter,
   ): Promise<PaginatedResult<ReviewResponseDto>> {
+    console.log(filter);
+
     const {
       page = this.defaultPage,
       limit = this.defaultLimit,

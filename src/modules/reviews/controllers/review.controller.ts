@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Inject,
+  Param,
   Post,
   Query,
   Request,
@@ -27,8 +28,19 @@ export class ReviewController {
     return this._reviewService.create(req.user.id, dto);
   }
 
-  @Get()
-  findAll(@Query() filter: GetReviewsFilterDto) {
-    return this._reviewService.findAllReviews(filter);
+  @Get('tasker/:taskerId')
+  findAll(
+    @Param('taskerId') taskerId: string,
+    @Query() filter: GetReviewsFilterDto,
+  ) {
+    return this._reviewService.findAllReviews(taskerId, filter);
+  }
+
+  @Get('me')
+  findMyReviews(
+    @Request() req: IAuthenticatedReqeust,
+    @Query() filter: GetReviewsFilterDto,
+  ) {
+    return this._reviewService.findMyReviews(req.user.id, filter);
   }
 }

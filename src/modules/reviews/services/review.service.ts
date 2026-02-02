@@ -17,6 +17,7 @@ import { SSM_TOKENS } from '@core/lib/ssm/ssm.token';
 import type { ISecretsManagerService } from '@core/lib/ssm/interfaces/ssm-services.interface';
 import type { IBookingService } from '@modules/bookings/interfaces/bookings-services.interface';
 import { BOOKING_TOKEN } from '@modules/bookings/bookings.token';
+import { IFindAllReviewsFilter } from '../interfaces/query-filters.interface';
 
 @Injectable()
 export class ReviewService implements IReviewService {
@@ -30,12 +31,6 @@ export class ReviewService implements IReviewService {
     @Inject(BOOKING_TOKEN.BOOKING_SERVICE)
     private _bookingService: IBookingService,
   ) {}
-
-  async findAllReviews(
-    filter: GetReviewsFilterDto,
-  ): Promise<PaginatedResult<ReviewResponseDto>> {
-    return await this._reviewRepo.findAllUserReviews(filter);
-  }
 
   async create(userId: string, dto: CreateReviewDto): Promise<IBaseResponse> {
     const taskData = await this._bookingService.getBookingDetails(dto.taskId);
@@ -56,5 +51,25 @@ export class ReviewService implements IReviewService {
     }
 
     return { message: 'Review added' };
+  }
+
+  async findAllReviews(
+    taskerId: string,
+    filter: GetReviewsFilterDto,
+  ): Promise<PaginatedResult<ReviewResponseDto>> {
+    const findAllFilter: IFindAllReviewsFilter = { taskerId, ...filter };
+    return await this._reviewRepo.findAllUserReviews(findAllFilter);
+  }
+
+  async findMyReviews(
+    userId: string,
+    filter: GetReviewsFilterDto,
+  ): Promise<PaginatedResult<ReviewResponseDto>> {
+    const findAllFilter: IFindAllReviewsFilter = {
+      ...filter,
+      taskerId: userId,
+    };
+
+    return await this._reviewRepo.findAllUserReviews(findAllFilter);
   }
 }
