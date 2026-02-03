@@ -15,7 +15,7 @@ export class PortfolioImage {
     type: Types.ObjectId,
     ref: 'Tasker',
   })
-  taskerId?: Types.ObjectId; // tasker id of tasker
+  taskerId?: Types.ObjectId;
 
   @Prop()
   caption?: string;

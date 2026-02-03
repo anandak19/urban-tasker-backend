@@ -1,5 +1,4 @@
 import { AuthGuard } from '@core/guards/auth/auth.guard';
-import { TaskerGuard } from '@core/guards/tasker-guard/tasker-guard.guard';
 import { AddWorkCategoryDto } from '@modules/tasker/dtos/add-work-category.dto';
 import { UpdateAboutDto } from '@modules/tasker/dtos/update-about.dto';
 import type { ITaskerService } from '@modules/tasker/interfaces/tasker-services.interface';
@@ -12,38 +11,37 @@ import {
   Inject,
   Param,
   Patch,
-  Req,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 import type { IAuthenticatedReqeust } from '@shared/interfaces/request.interface';
 
-@UseGuards(AuthGuard, TaskerGuard)
-@Controller('tasker/account')
+@UseGuards(AuthGuard)
+@Controller('tasker/account/profile')
 export class TaskerProfileController {
-  /**
-   * TODOS
-   * 3. To Remove work category
-   */
   constructor(
     @Inject(TASKER_TOKEN.SERVICE) private _taskerService: ITaskerService,
   ) {}
 
   // To get tasker card data
   @Get('card')
-  getTaskerCardData(@Req() req: IAuthenticatedReqeust) {
+  getTaskerCardData(@Request() req: IAuthenticatedReqeust) {
     return this._taskerService.getTaskerCardData(req.user.id);
   }
 
   // To get about
   @Get('about')
-  getTaskerAbout(@Req() req: IAuthenticatedReqeust) {
+  getTaskerAbout(@Request() req: IAuthenticatedReqeust) {
+    console.log('get abount');
+    console.log('got this:', req.user);
+
     return this._taskerService.getTaskerAbout(req.user.id);
   }
 
   // To update about
   @Patch('about')
   updateTaskerAbout(
-    @Req() req: IAuthenticatedReqeust,
+    @Request() req: IAuthenticatedReqeust,
     @Body() dto: UpdateAboutDto,
   ) {
     console.log('Dto', dto);
@@ -52,14 +50,15 @@ export class TaskerProfileController {
 
   // To get get work categories
   @Get('work-categories')
-  getTaskerWorkCategories(@Req() req: IAuthenticatedReqeust) {
+  getTaskerWorkCategories(@Request() req: IAuthenticatedReqeust) {
+    console.log(req.user.id);
     return this._taskerService.getTaskerWorkCategories(req.user.id);
   }
 
   // To add work categories
   @Patch('work-categories')
   addTaskerWorkCategory(
-    @Req() req: IAuthenticatedReqeust,
+    @Request() req: IAuthenticatedReqeust,
     @Body() dto: AddWorkCategoryDto,
   ) {
     return this._taskerService.addTaskerWorkCategory(
@@ -71,7 +70,7 @@ export class TaskerProfileController {
   // To Remove work category
   @Delete('work-categories/:categoryId')
   removeTaskerWorkCategory(
-    @Req() req: IAuthenticatedReqeust,
+    @Request() req: IAuthenticatedReqeust,
     @Param('categoryId') categoryId: string,
   ) {
     console.log(categoryId);

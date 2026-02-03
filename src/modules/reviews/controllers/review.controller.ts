@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Inject,
+  Param,
   Post,
   Query,
   Request,
@@ -22,13 +23,30 @@ export class ReviewController {
     @Inject(REVIEW_TOKEN.REVIEW_SERVICE) private _reviewService: IReviewService,
   ) {}
 
+  /**
+   * Create a review by user
+   */
   @Post()
   create(@Request() req: IAuthenticatedReqeust, @Body() dto: CreateReviewDto) {
     return this._reviewService.create(req.user.id, dto);
   }
 
-  @Get()
-  findAll(@Query() filter: GetReviewsFilterDto) {
-    return this._reviewService.findAllReviews(filter);
+  /**
+   * Find all reviews of selected tasker
+   */
+  @Get('tasker/:taskerId')
+  findAll(
+    @Param('taskerId') taskerId: string,
+    @Query() filter: GetReviewsFilterDto,
+  ) {
+    return this._reviewService.findAllReviews(taskerId, filter);
+  }
+
+  /**
+   * Find avarage rating of selected tasker
+   */
+  @Get('tasker/:taskerId/average')
+  findAvarageRating(@Param('taskerId') taskerId: string) {
+    return this._reviewService.findAvarageRating(taskerId);
   }
 }

@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -17,6 +18,8 @@ import { SSM_TOKENS } from '@core/lib/ssm/ssm.token';
 import type { ISecretsManagerService } from '@core/lib/ssm/interfaces/ssm-services.interface';
 import type { IBookingService } from '@modules/bookings/interfaces/bookings-services.interface';
 import { BOOKING_TOKEN } from '@modules/bookings/bookings.token';
+import { IFindAllReviewsFilter } from '../interfaces/query-filters.interface';
+import { RatingsAverageResponseDto } from '../dtos/ratings-average-response.dto';
 
 @Injectable()
 export class ReviewService implements IReviewService {
@@ -31,16 +34,18 @@ export class ReviewService implements IReviewService {
     private _bookingService: IBookingService,
   ) {}
 
-  async findAllReviews(
-    filter: GetReviewsFilterDto,
-  ): Promise<PaginatedResult<ReviewResponseDto>> {
-    return await this._reviewRepo.findAllUserReviews(filter);
-  }
-
   async create(userId: string, dto: CreateReviewDto): Promise<IBaseResponse> {
     const taskData = await this._bookingService.getBookingDetails(dto.taskId);
 
     // find review made by this user for tasker with taskerId. if found return conflic error
+    const existing = await this._reviewRepo.findOne({
+      userId: toObjectId(userId),
+      taskerId: toObjectId(taskData.taskerId),
+    });
+
+    if (existing) {
+      throw new ConflictException('You already reviewed this tasker');
+    }
 
     const newReview: ICreateReview = {
       taskerId: toObjectId(taskData.taskerId),
@@ -56,5 +61,31 @@ export class ReviewService implements IReviewService {
     }
 
     return { message: 'Review added' };
+  }
+
+  async findAllReviews(
+    taskerId: string,
+    filter: GetReviewsFilterDto,
+  ): Promise<PaginatedResult<ReviewResponseDto>> {
+    const findAllFilter: IFindAllReviewsFilter = { taskerId, ...filter };
+    return await this._reviewRepo.findAllUserReviews(findAllFilter);
+  }
+
+  async findMyReviews(
+    userId: string,
+    filter: GetReviewsFilterDto,
+  ): Promise<PaginatedResult<ReviewResponseDto>> {
+    const findAllFilter: IFindAllReviewsFilter = {
+      ...filter,
+      taskerId: userId,
+    };
+
+    return await this._reviewRepo.findAllUserReviews(findAllFilter);
+  }
+
+  async findAvarageRating(
+    taskerId: string,
+  ): Promise<RatingsAverageResponseDto> {
+    return await this._reviewRepo.findAvarageRating(taskerId);
   }
 }

@@ -28,6 +28,8 @@ export class TaskerRepository
   }
 
   async getTaskerWorkCategories(taskerId: string): Promise<IOptionData[]> {
+    console.log(taskerId);
+
     const taskerObjectId = toObjectId(taskerId);
     return await this._taskerModel.aggregate([
       {
