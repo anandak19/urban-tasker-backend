@@ -1,3 +1,5 @@
+import { AdminGuard } from '@core/guards/admin.guard';
+import { AuthGuard } from '@core/guards/auth/auth.guard';
 import type { ILoggerService } from '@core/lib/logger/logger.interface';
 import { LOGGER_SERVICE } from '@core/lib/logger/logger.service';
 import {
@@ -30,6 +32,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 import { type Express } from 'express';
 
+@UseGuards(AuthGuard, AdminGuard)
 @Controller('admin/category')
 export class CategoryAdminController {
   constructor(

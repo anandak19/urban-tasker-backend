@@ -23,14 +23,14 @@ export class SocketAuthService implements ISocektAuthService {
     const accessToken = cookies['access-token'];
 
     if (!accessToken) {
-      throw new WsException('NO_ACCESS_TOKEN');
+      throw new WsException('accessTokenExpired');
     }
 
     try {
       const payload = await this._tokenService.verifyToken(accessToken);
       client.data.user = payload;
     } catch {
-      throw new WsException('INVALID_TOKEN');
+      throw new WsException('accessTokenExpired');
     }
   }
 }

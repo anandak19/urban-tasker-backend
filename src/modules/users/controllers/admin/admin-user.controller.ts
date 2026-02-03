@@ -1,3 +1,5 @@
+import { AdminGuard } from '@core/guards/admin.guard';
+import { AuthGuard } from '@core/guards/auth/auth.guard';
 import { GetUsersDto } from '@modules/users/dtos/get-user.dto';
 import { SuspendUserDto } from '@modules/users/dtos/suspend-user.dto';
 import type {
@@ -14,8 +16,10 @@ import {
   Param,
   Patch,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 
+@UseGuards(AuthGuard, AdminGuard)
 @Controller('admin/user')
 export class AdminUserController {
   private _logger = new Logger(AdminUserController.name);

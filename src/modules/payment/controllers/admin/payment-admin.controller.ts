@@ -1,8 +1,18 @@
+import { AdminGuard } from '@core/guards/admin.guard';
+import { AuthGuard } from '@core/guards/auth/auth.guard';
 import { ListPaymentsQueryDto } from '@modules/payment/dtos/query.dto';
 import type { IAdminPaymentService } from '@modules/payment/interfaces/payment-services.interface';
 import { PAYMENT_TOKENS } from '@modules/payment/payment.token';
-import { Controller, Get, Inject, Param, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Inject,
+  Param,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 
+@UseGuards(AuthGuard, AdminGuard)
 @Controller('admin/payment')
 export class PaymentAdminController {
   constructor(

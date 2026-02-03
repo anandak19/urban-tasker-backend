@@ -9,6 +9,7 @@ import { S3Module } from '@core/lib/s3/s3.module';
 import { ComplaintRepository } from './repositories/complaint.repository';
 import { AdminComplaintService } from './services/admin-complaint/admin-complaint.service';
 import { UuidModule } from '@core/lib/uuid/uuid.module';
+import { BookingsModule } from '@modules/bookings/bookings.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { UuidModule } from '@core/lib/uuid/uuid.module';
     ]),
     S3Module,
     UuidModule,
+    BookingsModule,
   ],
   controllers: [ComplaintsController, AdminComplaintsController],
   providers: [

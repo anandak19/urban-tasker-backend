@@ -9,7 +9,7 @@ export class PortfolioImage {
     required: true,
     index: true,
   })
-  userId: Types.ObjectId;
+  userId: Types.ObjectId; // user id of tasker
 
   @Prop({
     type: Types.ObjectId,

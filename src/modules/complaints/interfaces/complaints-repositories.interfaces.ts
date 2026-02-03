@@ -20,4 +20,6 @@ export interface IComplaintRepository
   findAllComplaints(
     query: IFindAllQuery,
   ): Promise<PaginatedResult<IListComplaintRepoResult>>;
+
+  findTaskerComplaintCount(taskerId: string): Promise<number>;
 }

@@ -16,6 +16,8 @@ import type { IS3Service } from '@core/lib/s3/s3.interface';
 import { ComplaintMapper } from '../mappers/complaint.mapper';
 import { ComplaintDetailsResponseDto } from '../dtos/compliant-details-response.dto';
 import { UuidService } from '@core/lib/uuid/uuid.service';
+import { BOOKING_TOKEN } from '@modules/bookings/bookings.token';
+import type { IBookingService } from '@modules/bookings/interfaces/bookings-services.interface';
 
 @Injectable()
 export class ComplaintService implements IComplaintService {
@@ -27,6 +29,9 @@ export class ComplaintService implements IComplaintService {
     private _s3Service: IS3Service,
 
     @Inject() private _uuiService: UuidService,
+
+    @Inject(BOOKING_TOKEN.BOOKING_SERVICE)
+    private _bookingService: IBookingService,
   ) {}
 
   async findOneById(complaintId: string): Promise<ComplaintDetailsResponseDto> {
@@ -76,6 +81,7 @@ export class ComplaintService implements IComplaintService {
     imageFiles: Express.Multer.File[],
     complaint: CreateComplaintDto,
   ): Promise<IBaseResponse> {
+    const taskDetails = await this._bookingService.getBookingDetails(taskId);
     // validate inputs
     // upload images and get keys
     const imageKeys = imageFiles.length
@@ -86,6 +92,7 @@ export class ComplaintService implements IComplaintService {
     // create doc
     const newComplaint: ICreateComplaint = {
       taskId: toObjectId(taskId),
+      taskerId: toObjectId(taskDetails.taskerId),
       createdBy: toObjectId(userId),
       imageKeys,
       text: complaint.complaint,
