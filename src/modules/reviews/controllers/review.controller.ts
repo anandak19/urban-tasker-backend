@@ -23,11 +23,17 @@ export class ReviewController {
     @Inject(REVIEW_TOKEN.REVIEW_SERVICE) private _reviewService: IReviewService,
   ) {}
 
+  /**
+   * Create a review by user
+   */
   @Post()
   create(@Request() req: IAuthenticatedReqeust, @Body() dto: CreateReviewDto) {
     return this._reviewService.create(req.user.id, dto);
   }
 
+  /**
+   * Find all reviews of selected tasker
+   */
   @Get('tasker/:taskerId')
   findAll(
     @Param('taskerId') taskerId: string,
@@ -36,11 +42,11 @@ export class ReviewController {
     return this._reviewService.findAllReviews(taskerId, filter);
   }
 
-  @Get('me')
-  findMyReviews(
-    @Request() req: IAuthenticatedReqeust,
-    @Query() filter: GetReviewsFilterDto,
-  ) {
-    return this._reviewService.findMyReviews(req.user.id, filter);
+  /**
+   * Find avarage rating of selected tasker
+   */
+  @Get('tasker/:taskerId/average')
+  findAvarageRating(@Param('taskerId') taskerId: string) {
+    return this._reviewService.findAvarageRating(taskerId);
   }
 }

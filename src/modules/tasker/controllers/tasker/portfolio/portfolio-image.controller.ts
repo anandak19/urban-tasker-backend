@@ -1,13 +1,18 @@
 import { AuthGuard } from '@core/guards/auth/auth.guard';
 import { ImageValidationPipe } from '@core/pipes/image-validation.pipe';
 import { CreatePortfolioImageDto } from '@modules/tasker/dtos/create-portfolio-image.dto';
+import { GetPortfolioFilterDto } from '@modules/tasker/dtos/get-portfolio-filter.dto';
 import type { IPortfolioImageService } from '@modules/tasker/interfaces/tasker-services.interface';
 import { TASKER_TOKEN } from '@modules/tasker/tasker.token';
 import {
   Body,
   Controller,
+  Delete,
+  Get,
   Inject,
+  Param,
   Post,
+  Query,
   Req,
   UploadedFile,
   UseGuards,
@@ -17,7 +22,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import type { IAuthenticatedReqeust } from '@shared/interfaces/request.interface';
 
 @UseGuards(AuthGuard)
-@Controller('tasker/account/portfolio')
+@Controller('tasker/account/profile/portfolio')
 export class PortfolioImageController {
   constructor(
     @Inject(TASKER_TOKEN.PORTFOLIO_SERVICE)
@@ -38,5 +43,20 @@ export class PortfolioImageController {
     @Req() req: IAuthenticatedReqeust,
   ) {
     return this._portfolioService.create(file, dto, req.user.id);
+  }
+
+  // List all images of a tasker
+  @Get()
+  findAllPortfolioImages(
+    @Req() req: IAuthenticatedReqeust,
+    @Query() query: GetPortfolioFilterDto,
+  ) {
+    console.log('get called');
+    return this._portfolioService.findAllByTaskerId(req.user.id, query);
+  }
+
+  @Delete(':portfolioId')
+  deletePortfolioItem(@Param('portfolioId') portfolioId: string) {
+    return this._portfolioService.delete(portfolioId);
   }
 }

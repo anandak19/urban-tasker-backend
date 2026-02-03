@@ -9,6 +9,7 @@ import { ReviewResponseDto } from '../dtos/review-response.dto';
 import { toObjectId } from '@shared/utility/db/to-objectid.util';
 import { IFindAllAggregationResult } from '@shared/interfaces/repository.interface';
 import { IFindAllReviewsFilter } from '../interfaces/query-filters.interface';
+import { RatingsAverageResponseDto } from '../dtos/ratings-average-response.dto';
 
 export class ReviewRepository
   extends BaseRepository<ReviewDocument, ICreateReview>
@@ -98,5 +99,36 @@ export class ReviewRepository
         total: total,
       },
     };
+  }
+
+  async findAvarageRating(
+    taskerId: string,
+  ): Promise<RatingsAverageResponseDto> {
+    const pipeline: PipelineStage[] = [
+      {
+        $match: {
+          taskerId: toObjectId(taskerId),
+          isDeleted: false,
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          avarage: { $avg: '$rating' },
+          total: { $sum: 1 },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          rating: '$avarage',
+          totalRatings: '$total',
+        },
+      },
+    ];
+
+    const [result] =
+      await this._reviewModel.aggregate<RatingsAverageResponseDto>(pipeline);
+    return result;
   }
 }

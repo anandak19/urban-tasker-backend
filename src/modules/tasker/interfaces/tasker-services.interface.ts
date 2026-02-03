@@ -11,6 +11,8 @@ import { UpdateAboutDto } from '../dtos/update-about.dto';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { IOptionData } from '@shared/interfaces/response-data.interface';
 import { CreatePortfolioImageDto } from '../dtos/create-portfolio-image.dto';
+import { PortfolioResponseDto } from '../dtos/portfolio-response.dto';
+import { GetPortfolioFilterDto } from '../dtos/get-portfolio-filter.dto';
 
 export interface ITaskerService {
   /**
@@ -51,11 +53,16 @@ export interface ITaskerService {
 }
 
 export interface IPortfolioImageService {
-  findByTaskerId(taskerId: string);
+  findAllByTaskerId(
+    taskerId: string,
+    filter: GetPortfolioFilterDto,
+  ): Promise<PaginatedResult<PortfolioResponseDto>>;
 
   create(
     file: Express.Multer.File,
     dto: CreatePortfolioImageDto,
     userId: string,
   ): Promise<IBaseResponse>;
+
+  delete(portfolioId: string): Promise<IBaseResponse>;
 }

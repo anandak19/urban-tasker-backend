@@ -17,9 +17,6 @@ export class PortfolioImage {
   })
   taskerId?: Types.ObjectId;
 
-  @Prop({ required: true })
-  imageUrl: string;
-
   @Prop()
   caption?: string;
 

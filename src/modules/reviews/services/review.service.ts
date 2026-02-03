@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -18,6 +19,7 @@ import type { ISecretsManagerService } from '@core/lib/ssm/interfaces/ssm-servic
 import type { IBookingService } from '@modules/bookings/interfaces/bookings-services.interface';
 import { BOOKING_TOKEN } from '@modules/bookings/bookings.token';
 import { IFindAllReviewsFilter } from '../interfaces/query-filters.interface';
+import { RatingsAverageResponseDto } from '../dtos/ratings-average-response.dto';
 
 @Injectable()
 export class ReviewService implements IReviewService {
@@ -36,6 +38,14 @@ export class ReviewService implements IReviewService {
     const taskData = await this._bookingService.getBookingDetails(dto.taskId);
 
     // find review made by this user for tasker with taskerId. if found return conflic error
+    const existing = await this._reviewRepo.findOne({
+      userId: toObjectId(userId),
+      taskerId: toObjectId(taskData.taskerId),
+    });
+
+    if (existing) {
+      throw new ConflictException('You already reviewed this tasker');
+    }
 
     const newReview: ICreateReview = {
       taskerId: toObjectId(taskData.taskerId),
@@ -71,5 +81,11 @@ export class ReviewService implements IReviewService {
     };
 
     return await this._reviewRepo.findAllUserReviews(findAllFilter);
+  }
+
+  async findAvarageRating(
+    taskerId: string,
+  ): Promise<RatingsAverageResponseDto> {
+    return await this._reviewRepo.findAvarageRating(taskerId);
   }
 }

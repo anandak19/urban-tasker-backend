@@ -7,7 +7,11 @@ import { PaginatedResult } from '@shared/interfaces/query.interface';
 import { InferRawDocType, UpdateQuery } from 'mongoose';
 import { IOptionData } from '@shared/interfaces/response-data.interface';
 import { PortfolioImageDocument } from '../schemas/portfolio-image.schema';
-import { ICreatePortfolioImage } from './portfolio-image.interface';
+import {
+  ICreatePortfolioImage,
+  IPortfolioImageAggregationResult,
+} from './portfolio-image.interface';
+import { GetPortfolioFilterDto } from '../dtos/get-portfolio-filter.dto';
 
 export interface ITaskerRepository
   extends IBaseRepository<TaskerDocument, ICreateTasker> {
@@ -36,5 +40,8 @@ export interface ITaskerRepository
 
 export interface IProfileImageRepository
   extends IBaseRepository<PortfolioImageDocument, ICreatePortfolioImage> {
-  findAllImage();
+  findAllImage(
+    taskerId: string,
+    filter: GetPortfolioFilterDto,
+  ): Promise<PaginatedResult<IPortfolioImageAggregationResult>>;
 }
