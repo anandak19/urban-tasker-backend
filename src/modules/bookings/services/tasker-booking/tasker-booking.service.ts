@@ -11,6 +11,8 @@ import type {
 } from '@modules/bookings/interfaces/bookings-services.interface';
 import { IListBookingsQuery } from '@modules/bookings/interfaces/request.interface';
 import { BookingsMapper } from '@modules/bookings/mappers/bookings.mapper';
+import { GraphDataItemDto } from '@modules/reports/dtos/graph-data.dto';
+import { BookingReportFilterDto } from '@modules/reports/dtos/query-filters.dto';
 import type { ITaskerService } from '@modules/tasker/interfaces/tasker-services.interface';
 import { TASKER_TOKEN } from '@modules/tasker/tasker.token';
 
@@ -22,6 +24,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { TaskStatus } from '@shared/constants/enums/task.enum';
+import { UserRoles } from '@shared/constants/enums/user.enum';
 import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constants';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 
@@ -188,6 +191,17 @@ export class TaskerBookingService implements ITaskerBookingService {
     }
 
     return { message: 'Task marked completed' };
+  }
+
+  async getEarningsGraphData(
+    taskerId: string,
+    filter: BookingReportFilterDto = {},
+  ): Promise<GraphDataItemDto[]> {
+    return await this._bookingRepo.getGraphData(
+      UserRoles.TASKER,
+      filter,
+      taskerId,
+    );
   }
 
   private calculateAmount(totalWorkInSec: number, houlyRate: number): number {

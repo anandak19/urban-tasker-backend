@@ -9,3 +9,5 @@ export enum UserRoles {
   TASKER = 'tasker',
   ADMIN = 'admin',
 }
+
+export type NonUserRoles = Exclude<UserRoles, UserRoles.USER>;

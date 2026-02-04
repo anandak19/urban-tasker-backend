@@ -8,10 +8,14 @@ import { PaymentStatus } from '@shared/constants/enums/payment-status.enum';
 import { ClientSession } from 'mongoose';
 import { PaymentStatusDto } from '../dtos/payment-status.dto';
 import { IEarningsAggregationResponse } from './repo-responses.interface';
-import { BookingSummaryFilter } from '@modules/reports/dtos/query-filters.dto';
+import {
+  BookingReportFilterDto,
+  BookingSummaryFilter,
+} from '@modules/reports/dtos/query-filters.dto';
 import { PaginatedResult } from '@shared/interfaces/query.interface';
 import { BookingSummaryListItemDto } from '@modules/reports/dtos/bookings-summery.dto';
 import { GraphDataItemDto } from '@modules/reports/dtos/graph-data.dto';
+import { ITaskStatusGraphAggregationResult } from './bookings.interface';
 
 export interface IBookingService {
   /**
@@ -101,8 +105,12 @@ export interface ITaskerBookingService {
    */
   resumeTask(taskId: string): Promise<IBaseResponse>;
 
-  // ~ not tested
   finishTask(taskId: string): Promise<IBaseResponse>;
+
+  getEarningsGraphData(
+    taskerId: string,
+    filter?: BookingReportFilterDto,
+  ): Promise<GraphDataItemDto[]>;
 }
 
 export interface IAdminBookingService {
@@ -119,7 +127,9 @@ export interface IAdminBookingService {
 
   getBookingSummery(
     filter: BookingSummaryFilter,
-  ): Promise<PaginatedResult<BookingSummaryListItemDto>>; // assing return type
+  ): Promise<PaginatedResult<BookingSummaryListItemDto>>;
 
-  getGraphData(): Promise<GraphDataItemDto[]>;
+  getGraphData(filter?: BookingReportFilterDto): Promise<GraphDataItemDto[]>;
+
+  getStatusGraphData(): Promise<ITaskStatusGraphAggregationResult[]>;
 }

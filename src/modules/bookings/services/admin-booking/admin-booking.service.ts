@@ -5,13 +5,18 @@ import { BookingDetailsResponseDto } from '@modules/bookings/dtos/booking-detail
 import { IFindAllBookingsResponse } from '@modules/bookings/interfaces/api-responses.interface';
 import type { IBookingRepository } from '@modules/bookings/interfaces/bookings-repositories.interface';
 import { IAdminBookingService } from '@modules/bookings/interfaces/bookings-services.interface';
+import { ITaskStatusGraphAggregationResult } from '@modules/bookings/interfaces/bookings.interface';
 import { IEarningsAggregationResponse } from '@modules/bookings/interfaces/repo-responses.interface';
 import { IListBookingsQuery } from '@modules/bookings/interfaces/request.interface';
 import { BookingsMapper } from '@modules/bookings/mappers/bookings.mapper';
 import { BookingSummaryListItemDto } from '@modules/reports/dtos/bookings-summery.dto';
 import { GraphDataItemDto } from '@modules/reports/dtos/graph-data.dto';
-import { BookingSummaryFilter } from '@modules/reports/dtos/query-filters.dto';
+import {
+  BookingReportFilterDto,
+  BookingSummaryFilter,
+} from '@modules/reports/dtos/query-filters.dto';
 import { Inject, Injectable } from '@nestjs/common';
+import { UserRoles } from '@shared/constants/enums/user.enum';
 import { PaginatedResult } from '@shared/interfaces/query.interface';
 
 @Injectable()
@@ -51,7 +56,13 @@ export class AdminBookingService implements IAdminBookingService {
     return this._bookingRepo.getBookingSummery(filter);
   }
 
-  getGraphData(): Promise<GraphDataItemDto[]> {
-    return this._bookingRepo.getGraphData();
+  getGraphData(
+    filter: BookingReportFilterDto = {},
+  ): Promise<GraphDataItemDto[]> {
+    return this._bookingRepo.getGraphData(UserRoles.ADMIN, filter);
+  }
+
+  async getStatusGraphData(): Promise<ITaskStatusGraphAggregationResult[]> {
+    return await this._bookingRepo.getStatusGraphData();
   }
 }

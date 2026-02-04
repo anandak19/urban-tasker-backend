@@ -4,6 +4,7 @@ import {
   IBookingDetailsRepoResult,
   IBookingMatchArgs,
   ICreateBooking,
+  ITaskStatusGraphAggregationResult,
 } from './bookings.interface';
 import { IBaseRepository } from '@shared/interfaces/base-repository.interface';
 import { IListBookingsQuery } from './request.interface';
@@ -11,9 +12,13 @@ import { TaskStatus } from '@shared/constants/enums/task.enum';
 import { PaymentStatus } from '@shared/constants/enums/payment-status.enum';
 import { ClientSession } from 'mongoose';
 import { IEarningsAggregationResponse } from './repo-responses.interface';
-import { BookingSummaryFilter } from '@modules/reports/dtos/query-filters.dto';
+import {
+  BookingReportFilterDto,
+  BookingSummaryFilter,
+} from '@modules/reports/dtos/query-filters.dto';
 import { BookingSummaryListItemDto } from '@modules/reports/dtos/bookings-summery.dto';
 import { GraphDataItemDto } from '@modules/reports/dtos/graph-data.dto';
+import { NonUserRoles } from '@shared/constants/enums/user.enum';
 
 export interface IBookingRepository
   extends IBaseRepository<BookingDocument, ICreateBooking> {
@@ -97,5 +102,11 @@ export interface IBookingRepository
     filter: BookingSummaryFilter,
   ): Promise<PaginatedResult<BookingSummaryListItemDto>>;
 
-  getGraphData(): Promise<GraphDataItemDto[]>;
+  getGraphData(
+    role: NonUserRoles,
+    filter: BookingReportFilterDto,
+    taskerId?: string,
+  ): Promise<GraphDataItemDto[]>;
+
+  getStatusGraphData(): Promise<ITaskStatusGraphAggregationResult[]>;
 }

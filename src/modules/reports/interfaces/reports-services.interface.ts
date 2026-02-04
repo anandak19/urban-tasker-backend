@@ -1,8 +1,12 @@
 import { PaginatedResult } from '@shared/interfaces/query.interface';
 import { DashboardSummaryDto } from '../dtos/dashboard-summary.dto.';
 import { BookingSummaryListItemDto } from '../dtos/bookings-summery.dto';
-import { BookingSummaryFilter } from '../dtos/query-filters.dto';
+import {
+  BookingReportFilterDto,
+  BookingSummaryFilter,
+} from '../dtos/query-filters.dto';
 import { GraphDataItemDto } from '../dtos/graph-data.dto';
+import { StatusGraphDataDto } from '../dtos/status-graph-data.dto';
 
 export interface IReportService {
   getDashBoardSummary(): Promise<DashboardSummaryDto>;
@@ -11,5 +15,14 @@ export interface IReportService {
     query: BookingSummaryFilter,
   ): Promise<PaginatedResult<BookingSummaryListItemDto>>;
 
-  getGraphData(): Promise<GraphDataItemDto[]>;
+  getGraphData(filter?: BookingReportFilterDto): Promise<GraphDataItemDto[]>;
+
+  getStatusGraphData(): Promise<StatusGraphDataDto>;
+}
+
+export interface ITaskerReportService {
+  getEarningsGraphData(
+    taskerId: string,
+    filter?: BookingReportFilterDto,
+  ): Promise<GraphDataItemDto[]>;
 }
