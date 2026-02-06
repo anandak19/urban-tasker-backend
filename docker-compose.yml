@@ -6,11 +6,7 @@ services:
     container_name: urban_tasker_app
     ports:
       - '3000:3000'
-    env_file:
-      - .env
     depends_on:
-      mongo:
-        condition: service_healthy
       redis:
         condition: service_healthy
     volumes:
@@ -18,27 +14,9 @@ services:
       - ./logs:/var/log/app
       - ~/.aws:/root/.aws:ro
 
-  mongo:
-    image: mongo:7.0
-    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
-    ports:
-      - '27027:27017'
-    healthcheck:
-      test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0, host:'mongo:27017'}]}) }" | mongosh --quiet
-      interval: 5s
-      timeout: 30s
-      start_period: 0s
-      start_interval: 1s
-      retries: 30
-    volumes:
-      - mongo_data:/data/db
-      - "mongo_config:/data/configdb"
-
   redis:
     image: redis:alpine
     container_name: redis_server
-    env_file:
-      - .env
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
@@ -81,10 +59,6 @@ services:
       - loki
 
 volumes:
-  mongo_data:
-    driver: local
-  mongo_config:
-    driver: local
   cache:
     driver: local
   loki_data:
