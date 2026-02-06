@@ -23,6 +23,7 @@ import { PaymentModule } from './modules/payment/payment.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { SsmModule } from '@core/lib/ssm/ssm.module';
+import { LoggerModule } from '@core/lib/logger/logger.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { SsmModule } from '@core/lib/ssm/ssm.module';
     ConfigModule.forRoot(configOptions),
     CacheModule,
     AuthModule, // use default scope for providers
+    LoggerModule,
     CookieModule,
     TokenModule,
     MongooseModule.forRootAsync(mongooseOption),

@@ -41,11 +41,11 @@ import {
   WalletTransactionSource,
   WalletTransactionType,
 } from '@modules/wallet/constants/wallet.enums';
+import { PAYMENT_MESSAGES } from '../constants/messages.contant';
 
 import { InjectConnection } from '@nestjs/mongoose';
 import { ClientSession, Connection } from 'mongoose';
 import { withTransaction } from '@shared/database/transaction.util';
-import { PAYMENT_MESSAGES } from '../constants/messages.contant';
 
 @Injectable()
 export class PaymentService implements IPaymentService {

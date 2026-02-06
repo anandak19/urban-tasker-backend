@@ -24,6 +24,7 @@ import { LOGGER_SERVICE } from '@core/lib/logger/logger.service';
 import type { ILoggerService } from '@core/lib/logger/logger.interface';
 import { S3_SERVICE } from '@core/lib/s3/s3.module';
 import type { IS3Service } from '@core/lib/s3/s3.interface';
+import { ClientSession } from 'mongoose';
 
 @Injectable()
 export class UsersService implements IUserService {
@@ -85,7 +86,10 @@ export class UsersService implements IUserService {
     return await this._authenticate(email, password);
   }
 
-  async create(userData: ICreateUser): Promise<UserResponseDto> {
+  async create(
+    userData: ICreateUser,
+    session?: ClientSession,
+  ): Promise<UserResponseDto> {
     // local create
 
     this._loggerServce.verbose('Creating the user');
@@ -96,10 +100,7 @@ export class UsersService implements IUserService {
       userData.password = hashedPassword;
     }
 
-    const savedUser = await this._userRepo.create(userData);
-    this._loggerServce.verbose('Saved the user');
-    console.log('savedUser');
-    console.log(savedUser);
+    const savedUser = await this._userRepo.create(userData, session);
 
     if (!savedUser) {
       throw new InternalServerErrorException(AUTH_MESSAGES.SIGNUP_FAILD);

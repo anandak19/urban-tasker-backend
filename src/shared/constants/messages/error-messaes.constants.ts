@@ -13,6 +13,7 @@ export const GENERAL_ERRORS = {
 
 export const USER_ERRORS = {
   UPDATE_USER_FAIL: 'Faild to update user data',
+  INCORRECT_CURRENT_PASS: 'Incorrect current password!',
   UPDATE_PASSWORD_FAIL: 'Faild to update user password',
   USER_NOT_FOUND: 'User not found',
   SUSPEND_FAIL: 'Faild to suspend user',

@@ -105,3 +105,8 @@ export interface IBookingMatchArgs {
   taskStatus?: TaskStatus;
   subcategoryId?: string;
 }
+
+export interface ITaskStatusGraphAggregationResult {
+  _id: TaskStatus;
+  total: number;
+}

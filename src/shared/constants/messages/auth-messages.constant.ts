@@ -23,6 +23,8 @@ export const AUTH_MESSAGES = {
   INVALID_PHONE_FORMAT: 'Phone number must be a valid 10-digit Indian number.',
 
   //STEP2
+  OTP_SENT: 'OTP sent successfully',
+  OTP_VARIFY_SUCCESS: 'OTP Varified successfully',
   OTP_REQUIRED: 'OTP is required',
   OTP_STRING: 'OTP must be string',
   OTP_LENGTH: 'OTP must be 4 charecter long',
@@ -39,6 +41,11 @@ export const AUTH_MESSAGES = {
   LOGIN_SUCCESS: 'User login success',
   LOGIN_FAILD: 'Faild to login',
 
+  LOGUT_SUCCESS: 'Logout success',
+  LOGOUT_ERROR: 'Logout faild',
+
+  REFRESH_TOKEN_SUCCESS: 'Token refreshed',
+
   SIGNUP_FAILD: 'Signup faild, please try again later',
   SIGNUP_SUCCESS: 'Account created successfully, please login to continue',
 
@@ -46,6 +53,12 @@ export const AUTH_MESSAGES = {
   DO_LOGIN: 'Please Login to continue',
 
   ADMIN_ONLY: 'Access denied, only admins can perform this action',
+  ACCESS_DENDIED: 'Access denied',
+
+  TOKEN_GENRATION_FAILD: 'Failed to generate token',
+
+  //WEBSOCKETS
+  WS_ACCESS_TOKEN_EXPIRED: 'accessTokenExpired',
 };
 
 export const SESSION_MESSAGES = {

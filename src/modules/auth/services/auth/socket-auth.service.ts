@@ -8,6 +8,7 @@ import * as cookie from 'cookie';
 import { AUTH_TOKENS } from '@modules/auth/auth-tokens';
 import { WsException } from '@nestjs/websockets';
 import { ISocketData } from '@modules/chat/interfaces/socket-data.interface';
+import { AUTH_MESSAGES } from '@shared/constants/messages/auth-messages.constant';
 
 @Injectable()
 export class SocketAuthService implements ISocektAuthService {
@@ -23,14 +24,14 @@ export class SocketAuthService implements ISocektAuthService {
     const accessToken = cookies['access-token'];
 
     if (!accessToken) {
-      throw new WsException('accessTokenExpired');
+      throw new WsException(AUTH_MESSAGES.WS_ACCESS_TOKEN_EXPIRED);
     }
 
     try {
       const payload = await this._tokenService.verifyToken(accessToken);
       client.data.user = payload;
     } catch {
-      throw new WsException('accessTokenExpired');
+      throw new WsException(AUTH_MESSAGES.WS_ACCESS_TOKEN_EXPIRED);
     }
   }
 }

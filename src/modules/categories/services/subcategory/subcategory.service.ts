@@ -281,7 +281,9 @@ export class SubcategoryService implements ISubCategoryService {
     try {
       const categories = await this._subCategoryRepo.findAll(options, filter);
       if (!categories)
-        throw new InternalServerErrorException('Faild to get all categories');
+        throw new InternalServerErrorException(
+          SUBCATEGORY_ERROR_MESSAGES.FIND_ALL_FAILD,
+        );
       return categories.documents.map((c) => SubCategoryMapper.toResponse(c));
     } catch (error) {
       console.log(error);

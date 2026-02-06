@@ -6,10 +6,15 @@ import type { IAdminBookingService } from '@modules/bookings/interfaces/bookings
 import type { IAdminUserService } from '@modules/users/interfaces/user-services.interface';
 import { USER_TOKENS } from '@modules/users/user-tokens';
 import { ReportsMapper } from '../mappers/reports.mapper';
-import { BookingSummaryFilter } from '../dtos/query-filters.dto';
+import {
+  BookingReportFilterDto,
+  BookingSummaryFilter,
+} from '../dtos/query-filters.dto';
 import { PaginatedResult } from '@shared/interfaces/query.interface';
 import { BookingSummaryListItemDto } from '../dtos/bookings-summery.dto';
 import { GraphDataItemDto } from '../dtos/graph-data.dto';
+import { StatusGraphDataDto } from '../dtos/status-graph-data.dto';
+import { TaskStatus } from '@shared/constants/enums/task.enum';
 
 @Injectable()
 export class ReportsService implements IReportService {
@@ -41,7 +46,50 @@ export class ReportsService implements IReportService {
     return await this._adminBookingService.getBookingSummery(filter);
   }
 
-  getGraphData(): Promise<GraphDataItemDto[]> {
-    return this._adminBookingService.getGraphData();
+  getGraphData(filter?: BookingReportFilterDto): Promise<GraphDataItemDto[]> {
+    return this._adminBookingService.getGraphData(filter);
+  }
+
+  async getStatusGraphData(): Promise<StatusGraphDataDto> {
+    const result: StatusGraphDataDto = {
+      cancelled: 0,
+      completed: 0,
+      inProgress: 0,
+      overdue: 0,
+      pending: 0,
+      rejected: 0,
+    };
+
+    const dbResult = await this._adminBookingService.getStatusGraphData();
+
+    for (const item of dbResult) {
+      console.log(item);
+      switch (item._id) {
+        case TaskStatus.CANCELLED:
+          result.cancelled = item.total;
+          break;
+
+        case TaskStatus.COMPLETED:
+          result.completed = item.total;
+          break;
+
+        case TaskStatus.IN_PROGRESS:
+          result.inProgress = item.total;
+          break;
+
+        case TaskStatus.OVERDUE:
+          result.overdue = item.total;
+          break;
+
+        case TaskStatus.PENDING:
+          result.pending = item.total;
+          break;
+
+        case TaskStatus.REJECTED:
+          result.rejected = item.total;
+          break;
+      }
+    }
+    return result;
   }
 }

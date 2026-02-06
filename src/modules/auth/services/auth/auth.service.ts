@@ -27,8 +27,6 @@ import {
 import { AUTH_MESSAGES } from '@shared/constants/messages/auth-messages.constant';
 import { UserResponseDto } from '@modules/users/dtos/user-response.dto';
 import { UserRoles } from '@shared/constants/enums/user.enum';
-import { LOGGER_SERVICE } from '@core/lib/logger/logger.service';
-import { type ILoggerService } from '@core/lib/logger/logger.interface';
 import {
   ICreateUser,
   IUserData,
@@ -44,6 +42,10 @@ import { ILoginResponse } from '@modules/auth/interfaces/response.interface';
 import { ImageSource } from '@shared/constants/enums/image-source.enum';
 import { WALLET_TOKENS } from '@modules/wallet/wallet-tokens';
 import type { IWalletService } from '@modules/wallet/interfaces/wallet-services.interface';
+import { withTransaction } from '@shared/database/transaction.util';
+
+import { Connection } from 'mongoose';
+import { InjectConnection } from '@nestjs/mongoose';
 
 @Injectable({ scope: Scope.DEFAULT })
 export class AuthService implements IAuthService {
@@ -52,8 +54,6 @@ export class AuthService implements IAuthService {
 
     @Inject(USER_TOKENS.SERVICE) private _userService: IUserService,
 
-    @Inject(LOGGER_SERVICE) private _logger: ILoggerService,
-
     @Inject(TOKEN_TOKENS.REFERESH_TOKEN_SERVICE)
     private _refreshTokenService: IRefreshTokenService,
 
@@ -61,6 +61,8 @@ export class AuthService implements IAuthService {
     private _walletService: IWalletService,
 
     private _cookieService: CookieService,
+
+    @InjectConnection() private readonly connection: Connection,
   ) {}
 
   // validate local user
@@ -92,7 +94,7 @@ export class AuthService implements IAuthService {
   async logout(res: Response, refreshToken: string): Promise<IBaseResponse> {
     this._cookieService.clearCookie(res);
     await this._refreshTokenService.revokeRefreshToken(refreshToken);
-    return { message: 'Logout succsfully' };
+    return { message: AUTH_MESSAGES.LOGUT_SUCCESS };
   }
 
   // google login
@@ -109,6 +111,8 @@ export class AuthService implements IAuthService {
     // }
 
     if (existingUser) return existingUser;
+
+    // if user not exists create one
     const newUserData: ICreateUser = {
       email: userDetails.email,
       firstName: userDetails.firstName,
@@ -120,17 +124,19 @@ export class AuthService implements IAuthService {
       },
     };
 
-    const savedUser = await this._userService.create(newUserData);
-    if (!savedUser) {
-      this._logger.error('AuthServce: Faild to save google user to db');
-      throw new InternalServerErrorException(AUTH_MESSAGES.LOGIN_FAILD);
-    }
+    return withTransaction<UserResponseDto>(
+      this.connection,
+      async (session) => {
+        const savedUser = await this._userService.create(newUserData, session);
+        if (!savedUser) {
+          throw new InternalServerErrorException(AUTH_MESSAGES.LOGIN_FAILD);
+        }
 
-    // creae wallet
-    await this._walletService.create(savedUser.id);
-    console.log('Save success');
+        await this._walletService.create(savedUser.id, session);
 
-    return savedUser;
+        return savedUser;
+      },
+    );
   }
 
   async loginGoogleUser(
@@ -141,7 +147,6 @@ export class AuthService implements IAuthService {
 
     const refreshToken = await this._setTokensInCookie(res, payload);
 
-    console.log(refreshToken);
     const savedRefreshToken = await this._refreshTokenService.saveRefreshToken(
       refreshToken,
       userData.id,
@@ -187,22 +192,28 @@ export class AuthService implements IAuthService {
     );
 
     return {
-      message: 'Token refreshed',
+      message: AUTH_MESSAGES.REFRESH_TOKEN_SUCCESS,
     };
   }
 
+  /**
+   * Checks if the requeste is admin
+   * @param req
+   * @returns
+   * @deprecated use admin guard insted
+   */
   isAdmin(req: Request): IBaseResponse {
     const payload = req.user as IPayload;
     try {
       console.log(payload.userRole);
 
       if (!payload || payload.userRole !== UserRoles.ADMIN) {
-        throw new ForbiddenException('Access Denied');
+        throw new ForbiddenException(AUTH_MESSAGES.ACCESS_DENDIED);
       }
       return { message: 'Admin logged in' };
     } catch (error) {
       console.log(error);
-      throw new ForbiddenException('Access Denied');
+      throw new ForbiddenException(AUTH_MESSAGES.ACCESS_DENDIED);
     }
   }
 
@@ -231,8 +242,6 @@ export class AuthService implements IAuthService {
 
     return tokens.refreshToken;
   }
-
-  // authenticateSocket(client: C )
 
   private _getPaylod(user: IUserData | UserResponseDto): IPayload {
     return {

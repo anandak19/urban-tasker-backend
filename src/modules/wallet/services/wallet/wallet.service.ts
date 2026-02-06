@@ -1,3 +1,4 @@
+import { WALLET_TRANSACTION_MESSAGES } from '@modules/wallet/constants/wallet-transaction.messages';
 import { WALLET_CONSTANTS } from '@modules/wallet/constants/wallet.constants';
 import { WALLET_MESSAGES } from '@modules/wallet/constants/wallet.messages';
 import { WalletResponseDto } from '@modules/wallet/dtos/wallet-response.dto';
@@ -13,6 +14,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { toObjectId } from '@shared/utility/db/to-objectid.util';
+
 import { ClientSession } from 'mongoose';
 
 @Injectable()
@@ -23,7 +25,10 @@ export class WalletService implements IWalletService {
   ) {}
 
   // ~ NOT TESTED
-  async create(userId: string): Promise<WalletResponseDto> {
+  async create(
+    userId: string,
+    session?: ClientSession,
+  ): Promise<WalletResponseDto> {
     // check if exists
     const existingWallet = await this._walletRepo.findOne({
       userId: toObjectId(userId),
@@ -34,9 +39,12 @@ export class WalletService implements IWalletService {
       return WalletMapper.toResponse(existingWallet);
     }
 
-    const createdWallet = await this._walletRepo.create({
-      userId: toObjectId(userId),
-    });
+    const createdWallet = await this._walletRepo.create(
+      {
+        userId: toObjectId(userId),
+      },
+      session,
+    );
 
     if (!createdWallet) {
       throw new InternalServerErrorException(
@@ -98,7 +106,9 @@ export class WalletService implements IWalletService {
     );
 
     if (!updated) {
-      throw new InternalServerErrorException('Faild to credit amount');
+      throw new InternalServerErrorException(
+        WALLET_TRANSACTION_MESSAGES.CREDIT_FAILED,
+      );
     }
 
     return WalletMapper.toResponse(updated);

@@ -4,10 +4,12 @@ import {
   IBookingDetailsRepoResult,
   IBookingMatchArgs,
   ICreateBooking,
+  ITaskStatusGraphAggregationResult,
 } from '../interfaces/bookings.interface';
 import { IBookingRepository } from '../interfaces/bookings-repositories.interface';
 import { InjectModel } from '@nestjs/mongoose';
 import {
+  AccumulatorOperator,
   ClientSession,
   FilterQuery,
   InferRawDocType,
@@ -24,10 +26,14 @@ import {
   IEarningsAggregationResponse,
   IEarningsAggregationResult,
 } from '../interfaces/repo-responses.interface';
-import { BookingSummaryFilter } from '@modules/reports/dtos/query-filters.dto';
+import {
+  BookingReportFilterDto,
+  BookingSummaryFilter,
+} from '@modules/reports/dtos/query-filters.dto';
 import { BookingGroupBy } from '@modules/reports/constants/filter.enum';
 import { BookingSummaryListItemDto } from '@modules/reports/dtos/bookings-summery.dto';
 import { GraphDataItemDto } from '@modules/reports/dtos/graph-data.dto';
+import { NonUserRoles, UserRoles } from '@shared/constants/enums/user.enum';
 
 export class BookingRepository
   extends BaseRepository<BookingDocument, ICreateBooking>
@@ -620,16 +626,53 @@ export class BookingRepository
     };
   }
 
-  async getGraphData(): Promise<GraphDataItemDto[]> {
-    const fromDate = new Date();
-    fromDate.setMonth(fromDate.getMonth() - 10);
-    fromDate.setDate(1);
+  async getGraphData(
+    role: NonUserRoles = UserRoles.ADMIN,
+    filter?: BookingReportFilterDto,
+  ): Promise<GraphDataItemDto[]> {
+    const defaultStartDate = new Date();
+    defaultStartDate.setMonth(defaultStartDate.getMonth() - 10);
+    defaultStartDate.setDate(1);
+
+    const defaultEndDate = new Date();
+    defaultEndDate.setMonth(defaultEndDate.getMonth() + 10);
+    defaultEndDate.setDate(0);
+    defaultEndDate.setHours(23, 59, 59, 999);
+
+    const startDate: Date = filter?.startDate ?? defaultStartDate;
+    let endDate: Date = filter?.endDate ?? defaultEndDate;
+
+    // If only startDate is provided → range of 10 months
+    if (filter?.startDate && !filter?.endDate) {
+      endDate = new Date(filter.startDate);
+      endDate.setMonth(endDate.getMonth() + 10);
+      endDate.setDate(0);
+      endDate.setHours(23, 59, 59, 999);
+    }
+
+    // [Accumulator for summing amount]
+    let earningsCalculation: AccumulatorOperator = {
+      $sum: '$payment.platFormFee',
+    };
+    if (role === UserRoles.TASKER) {
+      earningsCalculation = {
+        $sum: {
+          $add: [
+            '$payment.totalAmount',
+            { $ifNull: ['$payment.tipAmount', 0] },
+          ],
+        },
+      };
+    }
 
     const pipeline: PipelineStage[] = [
       {
         $match: {
           'payment.paymentStatus': PaymentStatus.PAID,
-          'taskTimes.taskEndTime': { $gte: fromDate },
+          'taskTimes.taskEndTime': {
+            $gte: startDate,
+            $lte: endDate,
+          },
         },
       },
       {
@@ -642,12 +685,12 @@ export class BookingRepository
               },
             },
           },
-          totalEarnings: { $sum: '$payment.platFormFee' },
+          totalEarnings: earningsCalculation,
         },
       },
       {
         $sort: {
-          '_id.mongth': 1,
+          '_id.month': 1,
         },
       },
       {
@@ -660,5 +703,27 @@ export class BookingRepository
     ];
 
     return await this._bookingModel.aggregate<GraphDataItemDto>(pipeline);
+  }
+
+  async getStatusGraphData(): Promise<ITaskStatusGraphAggregationResult[]> {
+    const pipeline: PipelineStage[] = [
+      {
+        $match: {
+          isDeleted: false,
+        },
+      },
+      {
+        $group: {
+          _id: '$taskStatus',
+          total: { $sum: 1 },
+        },
+      },
+    ];
+
+    const result =
+      await this._bookingModel.aggregate<ITaskStatusGraphAggregationResult>(
+        pipeline,
+      );
+    return result;
   }
 }
