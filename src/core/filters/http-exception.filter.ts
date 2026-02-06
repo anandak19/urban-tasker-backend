@@ -16,21 +16,18 @@ interface IHttpExceptionResponse {
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
-  private _logger = new Logger(AllExceptionsFilter.name);
+  private _logger = new Logger();
 
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    this._logger.log(exception);
-
     //default val
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Internal Server Error';
 
     if (exception instanceof HttpException) {
-      this._logger.warn('Http execption occured');
       status = exception.getStatus();
       const res = exception.getResponse();
 
@@ -47,6 +44,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
         }
       }
     }
+
+    console.log(exception);
+
+    this._logger.error(
+      `[${request.method}] ${request.url} - ${status} - ${message}`,
+    );
 
     response.status(status).json({
       statusCode: status,

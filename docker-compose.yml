@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     build:
@@ -11,38 +9,83 @@ services:
     env_file:
       - .env
     depends_on:
-      - mongo
-      - redis
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
       - ./src:/usr/src/app/src
+      - ./logs:/var/log/app
+      - ~/.aws:/root/.aws:ro
 
   mongo:
     image: mongo:7.0
-    container_name: mongodb
-    command: ['--port', '27019']
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
     ports:
-      - '27019:27019'
+      - '27027:27017'
+    healthcheck:
+      test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0, host:'mongo:27017'}]}) }" | mongosh --quiet
+      interval: 5s
+      timeout: 30s
+      start_period: 0s
+      start_interval: 1s
+      retries: 30
     volumes:
       - mongo_data:/data/db
+      - "mongo_config:/data/configdb"
 
   redis:
     image: redis:alpine
+    container_name: redis_server
     env_file:
       - .env
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
       timeout: 5s
-      retries: 3  
+      retries: 3
     command: /bin/sh -c "redis-server --requirepass $$REDIS_PASS"
-    container_name: redis_server
     ports:
       - '6379:6379'
     volumes:
       - cache:/data
 
+  loki:
+    image: grafana/loki:2.9.4
+    container_name: loki
+    ports:
+      - '3100:3100'
+    volumes:
+      - ./monitoring/loki/loki-config.yml:/etc/loki/config.yml
+      - loki_data:/loki
+    command: -config.file=/etc/loki/config.yml
+
+  promtail:
+    image: grafana/promtail:2.9.4
+    container_name: promtail
+    volumes:
+      - ./monitoring/promtail/promtail-config.yml:/etc/promtail/config.yml
+      - ./logs:/var/log/app
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+
+  grafana:
+    image: grafana/grafana:10.2.0
+    container_name: grafana
+    ports:
+      - '3001:3000'
+    volumes:
+      - ./monitoring/grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+    depends_on:
+      - loki
+
 volumes:
   mongo_data:
     driver: local
+  mongo_config:
+    driver: local
   cache:
+    driver: local
+  loki_data:
     driver: local

@@ -2,15 +2,15 @@ import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { type Request, type Response } from 'express';
 import { BasicUserDto } from '../dtos/basicUserData.dto';
 import {
-  IAuthResponse,
   IBasicUserResponse,
+  ILoginResponse,
   ITimeLeftResponse,
 } from './response.interface';
 import { IGoogleUserAuthData, IPayload, ITokens } from './auth.interface';
-import { LoginDTo } from '../dtos/login.dto';
 import { UserResponseDto } from '@modules/users/dtos/user-response.dto';
 import { IUserData } from '@modules/users/interfaces/user.interface';
-import { IToken } from './token.interface';
+import { Socket } from 'socket.io';
+import { ISocketData } from '@modules/chat/interfaces/socket-data.interface';
 
 /**
  * Methods needed for signup process
@@ -97,33 +97,6 @@ export interface ITokenService {
   getResetToken(payload: IPayload): Promise<string>;
 }
 
-export interface IRefreshTokenService {
-  /**
-   * Save Refresh token to db
-   * @param token
-   */
-  saveRefreshToken(token: string, userId: string): Promise<IToken>;
-
-  /**
-   * Get refresh token
-   *
-   */
-  getRefreshToken(token: string): Promise<IToken | null>;
-
-  /**
-   * To set revoke as true (blacklisting token/ logout)
-   * @param token
-   */
-  revokeRefreshToken(token: string): Promise<void>;
-
-  /**
-   * To varify referesh token status (expiry, userId and revoked flag)
-   * @param token
-   * @param userId
-   */
-  varifyRefreshTokenStatus(token: string, userId: string): Promise<void>;
-}
-
 /**
  * Methods needed for authentications after signup
  * Directly used in controllers
@@ -142,15 +115,7 @@ export interface IAuthService {
    * @param {IUserData} userData - email and password
    * @returns {Promise<IAuthResponse>} - message and access token
    */
-  userLogin(res: Response, userData: IUserData): Promise<IBaseResponse>;
-
-  /**
-   * Method for login of admin
-   * @param {Response} res - response object
-   * @param {LoginDto} loginDto - email and password
-   * @returns {Promise<IAuthResponse>} - message and access token
-   */
-  adminLogin(res: Response, loginDto: LoginDTo): Promise<IAuthResponse>;
+  userLogin(res: Response, userData: IUserData): Promise<ILoginResponse>;
 
   /**
    * Method to refresh access token and refresh tokens
@@ -190,4 +155,12 @@ export interface IPasswordService {
    * @returns {Promise<IBaseResponse>} - message
    */
   resetPassword(token: string, newPassword: string): Promise<IBaseResponse>;
+}
+
+export interface ISocektAuthService {
+  /**
+   * Authenticate socket and return  payload
+   * @param client
+   */
+  authenticateSocket(client: Socket<any, any, any, ISocketData>): Promise<void>;
 }

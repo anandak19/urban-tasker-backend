@@ -8,7 +8,7 @@ export type IBasicResponseData<T, K extends string> = IBaseResponse & {
 };
 
 /*
-userage:
+usage:
 IBasicResponseData<IBasicUserData, 'userData'>
 
 result:

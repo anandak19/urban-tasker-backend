@@ -1,5 +1,8 @@
+import { AppConfig } from '@config/app.config';
 import { CacheService } from '@core/lib/cache/cache.service';
 import { EmailService } from '@core/lib/email/email.service';
+import type { ILoggerService } from '@core/lib/logger/logger.interface';
+import { LOGGER_SERVICE } from '@core/lib/logger/logger.service';
 import { AUTH_TOKENS } from '@modules/auth/auth-tokens';
 import { IPayload } from '@modules/auth/interfaces/auth.interface';
 import type {
@@ -14,24 +17,34 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
-  Logger,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { generateResetPasswordHtml } from '@shared/constants/email/email-templates';
 import { AUTH_MESSAGES } from '@shared/constants/messages/auth-messages.constant';
 import { USER_ERRORS } from '@shared/constants/messages/error-messaes.constants';
+import { USER_SUCCESS_MESSAGES } from '@shared/constants/messages/user-messages.constant';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 
 @Injectable()
 export class PasswordService implements IPasswordService {
-  private _logger = new Logger(PasswordService.name);
-  private _resetUrl = 'http://localhost:4200/reset-password';
+  private _resetUrl: string;
+  private _homeUrl: string;
+  private reset_link_duation = 1000 * 60 * 30;
 
   constructor(
     @Inject(AUTH_TOKENS.TOKEN_SERVICE) private _tokenService: ITokenService,
     @Inject(USER_TOKENS.SERVICE) private _userService: IUserService,
+    @Inject(LOGGER_SERVICE) private _logger: ILoggerService,
+    private _configService: ConfigService<AppConfig>,
     private _cacheService: CacheService,
     private _emailService: EmailService,
-  ) {}
+  ) {
+    this._homeUrl = this._configService.get<string>('APP_HOME_URL', {
+      infer: true,
+    })!;
+    this._resetUrl = `${this._homeUrl}/reset-password`;
+  }
 
   // to varify email and send reset link to email
   async forgotPassword(email: string): Promise<IBaseResponse> {
@@ -44,9 +57,10 @@ export class PasswordService implements IPasswordService {
     // call method to generate new reset link
     const resetTokenPaylod = this._getPaylod(userData);
     const resetToken = await this._tokenService.getResetToken(resetTokenPaylod);
+    this._logger.verbose(this._resetUrl);
     const resetUrl = `${this._resetUrl}?token=${resetToken}`;
     // call method to send reset link to users email.
-    const html = this._generateResetPasswordHtml(resetUrl);
+    const html = generateResetPasswordHtml(resetUrl);
 
     try {
       await this._emailService.sendEmail({
@@ -58,11 +72,10 @@ export class PasswordService implements IPasswordService {
       await this._cacheService.set<string>(
         resetToken,
         resetToken,
-        1000 * 60 * 30,
+        this.reset_link_duation,
       );
-      // return success message
-      this._logger.log(resetUrl);
-      return { message: 'Reset password link has send to your email' };
+
+      return { message: USER_SUCCESS_MESSAGES.RESET_PASS_LINK_SENT };
     } catch {
       throw new InternalServerErrorException(USER_ERRORS.UPDATE_PASSWORD_FAIL);
     }
@@ -73,7 +86,6 @@ export class PasswordService implements IPasswordService {
     token: string,
     newPassword: string,
   ): Promise<IBaseResponse> {
-    this._logger.log(token);
     // call the method to update users password
     const payload = await this._tokenService.verifyToken(token);
     if (!payload || !payload.id) {
@@ -89,7 +101,7 @@ export class PasswordService implements IPasswordService {
       throw new InternalServerErrorException(USER_ERRORS.UPDATE_PASSWORD_FAIL);
     }
 
-    return { message: 'Updated user password' };
+    return { message: USER_SUCCESS_MESSAGES.PASSWORD_UPDATE_SUCCESS };
   }
 
   private _getPaylod(user: UserResponseDto): IPayload {
@@ -97,39 +109,7 @@ export class PasswordService implements IPasswordService {
       id: user.id,
       email: user.email,
       userRole: user.userRole,
+      firstName: user.firstName,
     };
-  }
-
-  private _generateResetPasswordHtml(resetLink: string): string {
-    return `
-    <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
-      <h3 style="color: #2c3e50;">Reset Your Password</h3>
-      <p>Hello,</p>
-      <p>We received a request to reset your password. You can set a new one by clicking the button below:</p>
-      
-      <div style="margin: 20px 0;">
-        <a href="${resetLink}" 
-           style="
-             background-color: #007bff;
-             color: #fff;
-             text-decoration: none;
-             padding: 10px 20px;
-             border-radius: 6px;
-             display: inline-block;
-             font-weight: bold;
-           ">
-          Reset Password
-        </a>
-      </div>
-
-      <p>This link will expire in <b>30 minutes</b>. If you didn’t request a password reset, you can safely ignore this email.</p>
-
-      <p>Thanks,<br>The Support Team</p>
-
-      <hr style="border: none; border-top: 1px solid #ddd; margin-top: 30px;">
-      <p style="font-size: 12px; color: #777;">If the button doesn’t work, copy and paste the following link into your browser:</p>
-      <p style="font-size: 12px; color: #007bff; word-break: break-all;">${resetLink}</p>
-    </div>
-  `;
   }
 }

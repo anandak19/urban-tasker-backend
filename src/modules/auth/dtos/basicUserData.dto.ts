@@ -20,7 +20,7 @@ export class BasicUserDto {
 
   @IsNotEmpty({ message: AUTH_MESSAGES.LASTNAME_REQUIRED })
   @IsString({ message: AUTH_MESSAGES.LASTNAME_STRING })
-  @MinLength(2, { message: AUTH_MESSAGES.LASTNAME_MIN })
+  @MinLength(1, { message: AUTH_MESSAGES.LASTNAME_MIN })
   @MaxLength(30, { message: AUTH_MESSAGES.LASTNAME_MAX })
   @Matches(USER_REGEX.NAME, { message: AUTH_MESSAGES.LASTNAME_INVALID })
   readonly lastName: string;

@@ -8,10 +8,12 @@ import { AUTH_MESSAGES } from '@shared/constants/messages/auth-messages.constant
 import { IUserRepository } from '../interfaces/user-repositories.interface';
 import { BaseRepository } from '@shared/repository/base.repository';
 import {
-  IPaginationQuery,
+  IFindAllQuery,
   PaginatedResult,
 } from '@shared/interfaces/query.interface';
 import { IUserFilter } from '../interfaces/user-query.interface';
+import { IFindAllOptions } from '@shared/interfaces/repository.interface';
+import { UserRoles } from '@shared/constants/enums/user.enum';
 
 @Injectable()
 export class UserRepository
@@ -26,13 +28,24 @@ export class UserRepository
 
   // find all users
   findAllUsers(
-    pagination?: IPaginationQuery,
+    pagination?: IFindAllQuery,
     filter?: IUserFilter,
   ): Promise<PaginatedResult<UserDocument>> {
+    console.log('Filer below');
     console.log(filter);
     // prepare filter query here
-    const filterQuery = { ...filter, userRole: { $ne: 'admin' } };
-    return this.findAll(pagination, filterQuery);
+    const filterQuery = {
+      ...filter,
+      userRole: { $ne: 'admin' },
+    };
+
+    // prepare options
+    const options: IFindAllOptions = {
+      page: pagination?.page,
+      limit: pagination?.limit,
+    };
+
+    return this.findAll(options, filterQuery);
   }
 
   // find user by email
@@ -45,10 +58,23 @@ export class UserRepository
     try {
       return await this._userModel.create(data);
     } catch (error) {
+      console.log(error);
       if (isDuplicateKeyError(error)) {
         throw new ConflictException(AUTH_MESSAGES.EMAIL_TAKEN); // create one for phone number taken
       }
       throw error;
     }
+  }
+
+  async getTotalUsersCount(): Promise<number> {
+    return this._userModel.countDocuments({
+      userRole: UserRoles.USER,
+    });
+  }
+
+  async getTotalTaskersCount(): Promise<number> {
+    return this._userModel.countDocuments({
+      userRole: UserRoles.TASKER,
+    });
   }
 }

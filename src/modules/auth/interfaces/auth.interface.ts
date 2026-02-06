@@ -4,6 +4,8 @@ export interface IPayload {
   id: string;
   email: string;
   userRole: UserRoles;
+  firstName: string;
+  exp?: number;
 }
 
 export interface ITokens {
@@ -15,4 +17,5 @@ export interface IGoogleUserAuthData {
   firstName: string;
   lastName: string;
   email: string;
+  googleProfilePic: string;
 }

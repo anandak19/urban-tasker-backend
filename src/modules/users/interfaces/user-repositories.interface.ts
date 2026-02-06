@@ -2,7 +2,7 @@ import { IBaseRepository } from '@shared/interfaces/base-repository.interface';
 import { UserDocument } from '../schemas/user.schema';
 import { ICreateUser } from './user.interface';
 import {
-  IPaginationQuery,
+  IFindAllQuery,
   PaginatedResult,
 } from '@shared/interfaces/query.interface';
 import { IUserFilter } from './user-query.interface';
@@ -19,11 +19,15 @@ export interface IUserRepository
 
   /**
    * To find all users - paginated
-   * @param {IPaginationQuery} pagination;
+   * @param {IFindAllQuery} pagination;
    * @param {IUserFilter} filter - filter object. example , { email: 'ana@gmail.com' }
    */
   findAllUsers(
-    pagination?: IPaginationQuery,
+    pagination?: IFindAllQuery,
     filter?: IUserFilter,
   ): Promise<PaginatedResult<UserDocument>>;
+
+  getTotalUsersCount(): Promise<number>;
+
+  getTotalTaskersCount(): Promise<number>;
 }

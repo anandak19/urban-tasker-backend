@@ -1,4 +1,6 @@
 import { Cookies } from '@core/decorators/cookies.decorator';
+import type { ILoggerService } from '@core/lib/logger/logger.interface';
+import { LOGGER_SERVICE } from '@core/lib/logger/logger.service';
 import { AUTH_TOKENS } from '@modules/auth/auth-tokens';
 import { BasicUserDto } from '@modules/auth/dtos/basicUserData.dto';
 import { OtpDto } from '@modules/auth/dtos/otp.dto';
@@ -9,23 +11,15 @@ import {
   type IBasicUserResponse,
 } from '@modules/auth/interfaces/response.interface';
 import { type ISignupService } from '@modules/auth/interfaces/services.interface';
-import {
-  Body,
-  Controller,
-  Get,
-  Inject,
-  Logger,
-  Post,
-  Res,
-} from '@nestjs/common';
+import { Body, Controller, Get, Inject, Post, Res } from '@nestjs/common';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import express from 'express';
 
 @Controller('auth/signup')
 export class SignupController implements ISignupController {
-  private _logger = new Logger(SignupController.name);
   constructor(
     @Inject(AUTH_TOKENS.SIGNUP_SERVICE) private _signupService: ISignupService,
+    @Inject(LOGGER_SERVICE) private _logger: ILoggerService,
   ) {}
 
   // STEP 3

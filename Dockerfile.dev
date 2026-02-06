@@ -13,6 +13,9 @@ RUN npm ci
 # Copy entire source code (but src will be overridden by volume in dev)
 COPY . .
 
+# Logs directory
+RUN mkdir -p /var/log/app
+
 # Expose NestJS default port
 EXPOSE 3000
 

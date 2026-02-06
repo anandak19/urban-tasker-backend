@@ -1,0 +1,4 @@
+export const REPORTS_TOKENS = {
+  SERVICE: Symbol('SERVICE'),
+  TASKER_SERVICE: Symbol('TASKER_SERVICE'),
+};

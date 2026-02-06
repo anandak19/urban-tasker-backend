@@ -1,9 +1,22 @@
 export const GENERAL_ERRORS = {
   USER_NOT_FOUND: 'User not found',
   SERVER_ERROR: 'Internal server error',
+  ERROR: 'An error occured',
+  INVALID_ID: 'Invalid id',
+  PARAMS_ID_REQUIRED: 'Id is requered',
+  LOGIN_REQUIRED: 'Please login to continue',
+
+  IMAGE_REQUIRED: 'Image is required',
+  IMAGE_LARGE: 'Image should be less than or equal to 1MB',
+  IMAGE_FILE_INVALID: 'Only images of type jpg/jpeg/png are allowed',
 };
 
 export const USER_ERRORS = {
   UPDATE_USER_FAIL: 'Faild to update user data',
+  INCORRECT_CURRENT_PASS: 'Incorrect current password!',
   UPDATE_PASSWORD_FAIL: 'Faild to update user password',
+  USER_NOT_FOUND: 'User not found',
+  SUSPEND_FAIL: 'Faild to suspend user',
+  UNSUSPEND_FAIL: 'Faild to unsuspend user',
+  USER_FETCH_ERROR: 'Faild to fetch users',
 };

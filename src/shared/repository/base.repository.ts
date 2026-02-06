@@ -1,49 +1,90 @@
 import { Logger } from '@nestjs/common';
 import { IBaseRepository } from '@shared/interfaces/base-repository.interface';
+import { PaginatedResult } from '@shared/interfaces/query.interface';
 import {
-  IPaginationQuery,
-  PaginatedResult,
-} from '@shared/interfaces/query.interface';
-import { FilterQuery, InferRawDocType, Model, UpdateQuery } from 'mongoose';
+  IFindAllAggregationResult,
+  IFindAllOptions,
+} from '@shared/interfaces/repository.interface';
+import { TFilter } from '@shared/types/db-types';
+import {
+  ClientSession,
+  FilterQuery,
+  InferRawDocType,
+  Model,
+  PipelineStage,
+  UpdateQuery,
+} from 'mongoose';
 
 export abstract class BaseRepository<TDocument, TCreate>
   implements IBaseRepository<TDocument, TCreate>
 {
   constructor(protected readonly _model: Model<TDocument>) {}
+
   private _logger = new Logger(BaseRepository.name);
-  private _defaultPage = 1;
-  private _defaultLimit = 10;
+  defaultPage = 1;
+  defaultLimit = 10;
 
   // GET ALL DOCS : paginated, isDeleted: false
   async findAll(
-    paginationDto: IPaginationQuery = {
-      page: this._defaultPage,
-      limit: this._defaultLimit,
-    },
+    options: IFindAllOptions = {},
     filter: FilterQuery<InferRawDocType<TDocument>> = {},
   ): Promise<PaginatedResult<TDocument>> {
-    // extract page and limit --has default
-    const { page = this._defaultPage, limit = this._defaultLimit } =
-      paginationDto;
+    const {
+      page = this.defaultPage,
+      limit = this.defaultLimit,
+      sort = {},
+      select = {},
+    } = options;
 
-    // calculate skip
     const skip = (page - 1) * limit;
 
-    // create final filater query
+    // --- Extract search ---
+    const searchText = (filter as TFilter<TDocument>)?.search as
+      | string
+      | undefined;
+    if (searchText) delete (filter as TFilter<TDocument>).search;
+
+    // --- Build final filter ---
     const finalFilter: FilterQuery<InferRawDocType<TDocument>> = {
       ...(filter?.isDeleted !== undefined ? {} : { isDeleted: false }),
       ...filter,
     };
+
+    if (searchText) {
+      finalFilter.$text = { $search: searchText };
+    }
+
+    this._logger.verbose('Final ');
     this._logger.log(finalFilter);
 
-    // get data and total document
-    const [data, total] = await Promise.all([
-      this._model.find(finalFilter).skip(skip).limit(limit).exec(),
-      this._model.countDocuments(finalFilter).exec(),
-    ]);
+    // --- Build Pipeline ---
+    const pipeline: PipelineStage[] = [
+      { $match: finalFilter },
+      { $sort: Object.keys(sort).length ? sort : { createdAt: -1 } },
+      {
+        $facet: {
+          data: [{ $skip: skip }, { $limit: limit }],
+          total: [{ $count: 'count' }],
+        },
+      },
+    ];
 
+    if (Object.keys(select).length > 0) {
+      // project is more efficient BEFORE facet
+      pipeline.splice(2, 0, { $project: select });
+    }
+
+    // --- Execute ---
+    const [result] = await this._model
+      .aggregate<IFindAllAggregationResult<TDocument>>(pipeline)
+      .exec();
+
+    const data = result?.data ?? [];
+    const total = result?.total?.[0]?.count ?? 0;
+
+    // --- Response ---
     return {
-      data,
+      documents: data,
       meta: {
         total,
         page,
@@ -59,25 +100,57 @@ export abstract class BaseRepository<TDocument, TCreate>
   }
 
   // GET FIRST DOC WITH FILTER
-  async findOne(
-    filter: FilterQuery<InferRawDocType<TDocument>>,
-  ): Promise<TDocument | null> {
+  async findOne(filter: TFilter<TDocument>): Promise<TDocument | null> {
     return await this._model.findOne(filter).exec();
   }
 
   // CREAE NEW DOC
-  async create(data: TCreate): Promise<TDocument> {
-    return await this._model.create(data);
+  async create(data: TCreate, session?: ClientSession): Promise<TDocument> {
+    if (session) {
+      const [doc] = await this._model.create([data], { session });
+      return doc;
+    }
+
+    return this._model.create(data);
   }
 
   // UPDATE A DOC BY ID: returns updated
   async updateById(
     id: string,
-    update: UpdateQuery<InferRawDocType<TDocument>>,
+    update: UpdateQuery<TDocument>,
+    session?: ClientSession,
   ): Promise<TDocument | null> {
     return await this._model
-      .findByIdAndUpdate(id, { update }, { new: true })
+      .findByIdAndUpdate(id, update, { new: true, session })
       .exec();
+  }
+
+  async updateMany(
+    filter: FilterQuery<TDocument>,
+    update: UpdateQuery<TDocument>,
+  ): Promise<boolean> {
+    console.log(update);
+
+    const result = await this._model.updateMany(filter, update);
+    console.log(result);
+
+    return result.acknowledged && result.matchedCount > 0;
+  }
+
+  async updateOneData(
+    filter: FilterQuery<TDocument>,
+    update: Partial<TDocument>,
+    session?: ClientSession,
+  ): Promise<boolean> {
+    const res = await this._model.updateOne(
+      filter,
+      { $set: update },
+      { session },
+    );
+    console.log('Update base');
+    console.log(res);
+
+    return res.acknowledged && res.modifiedCount > 0;
   }
 
   // DELETE ONE DOC BY ID
@@ -87,5 +160,11 @@ export abstract class BaseRepository<TDocument, TCreate>
       .exec();
 
     return deleted;
+  }
+
+  async find(
+    filter: FilterQuery<InferRawDocType<TDocument>>,
+  ): Promise<TDocument[] | null> {
+    return await this._model.find(filter).exec();
   }
 }

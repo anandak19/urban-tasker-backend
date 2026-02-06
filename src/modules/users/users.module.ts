@@ -9,20 +9,31 @@ import { USER_TOKENS } from './user-tokens';
 import { AdminUserService } from './services/admin-user/admin-user.service';
 import { AdminUserController } from './controllers/admin/admin-user.controller';
 import { LoggerModule } from '@core/lib/logger/logger.module';
+import { TokenModule } from '@modules/Token/token.module';
+import { UserController } from './controllers/user/user.controller';
+import { UserProfileService } from './services/user/user-profile.service';
+import { S3Module } from '@core/lib/s3/s3.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
     HashModule,
     LoggerModule,
+    TokenModule,
+    S3Module,
   ],
-  controllers: [AdminUserController],
+  controllers: [AdminUserController, UserController],
   providers: [
     IsEmailUnique,
     { provide: USER_TOKENS.SERVICE, useClass: UsersService },
+    { provide: USER_TOKENS.PROFILE_SERVICE, useClass: UserProfileService },
     { provide: USER_TOKENS.REPOSITORY, useClass: UserRepository },
     { provide: USER_TOKENS.ADMIN_USER_SERVICE, useClass: AdminUserService },
   ],
-  exports: [USER_TOKENS.SERVICE],
+  exports: [
+    USER_TOKENS.SERVICE,
+    USER_TOKENS.ADMIN_USER_SERVICE,
+    USER_TOKENS.PROFILE_SERVICE,
+  ],
 })
 export class UsersModule {}

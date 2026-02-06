@@ -1,16 +1,27 @@
-import { InferRawDocType, UpdateQuery } from 'mongoose';
+import { ClientSession, InferRawDocType, UpdateQuery } from 'mongoose';
 import { FilterQuery } from 'mongoose';
-import { IPaginationQuery, PaginatedResult } from './query.interface';
+import { PaginatedResult } from './query.interface';
+import { IFindAllOptions } from './repository.interface';
+import { TObjectId } from '@shared/types/db-types';
 
 export interface IBaseRepository<TDocument, TCreate> {
   /**
    * To find all documents
-   * @param {IPaginationQuery} paginationDto? - contains: page, limit
-   * @param {FilterQuery<InferRawDocType<TDocument>>} paginationDto? actual mongoose filter query and its TDoc object
+   * @param {IFindAllOptions} options? - contains- page, limit, sort, select
+   * options can contain all the properties in IFindAllOptions interface and are OPTIONAL
+   * Default values of page and limit are provided if not provided manually --check base repo class to find values
+   *
+   * @param {FilterQuery<InferRawDocType<TDocument>>} filter? actual mongoose filter query
+   * it contains properties and values of object and other agregation operations
+   * ex: { userRole: {$ne: 'admin'}, isActive: true }
+   * No need to give {isDeleted: false}. The repo will add it later
+   * But if provided {isDeleted: true}. Repo will use this insted and get deleted docs
+   *
    * @returns {Promise<PaginatedResult<TDocument>>} object that contains array of docs and metaData
+   * metaData contains: total(total docs), page(current page), limit and pages(total pages)
    */
   findAll(
-    paginationDto?: IPaginationQuery,
+    options?: IFindAllOptions,
     filter?: FilterQuery<InferRawDocType<TDocument>>,
   ): Promise<PaginatedResult<TDocument>>;
 
@@ -37,7 +48,7 @@ export interface IBaseRepository<TDocument, TCreate> {
    * @param data - object containing data for new docuemnt
    * @returns {Promise<TDocument>} - returns new saved/created document
    */
-  create(data: TCreate): Promise<TDocument>;
+  create(data: TCreate, session?: ClientSession): Promise<TDocument>;
 
   /**
    * To update a document by its id
@@ -46,9 +57,15 @@ export interface IBaseRepository<TDocument, TCreate> {
    * @returns {Promise<TDocument | null>} - updated document, if no update - null
    */
   updateById(
-    id: string,
+    id: string | TObjectId,
     update: UpdateQuery<InferRawDocType<TDocument>>,
+    session?: ClientSession,
   ): Promise<TDocument | null>;
+
+  updateMany(
+    filter: FilterQuery<TDocument>,
+    update: UpdateQuery<TDocument>,
+  ): Promise<boolean>;
 
   /**
    * Delete one document by id
@@ -56,4 +73,18 @@ export interface IBaseRepository<TDocument, TCreate> {
    * @returns {Promise<TDocument | null>} - deleted document / null if no match
    */
   deleteOneById(id: string): Promise<TDocument | null>;
+
+  /**
+   * Find all the docs with given condition
+   * @param {FilterQuery<InferRawDocType<TDocument>>} filter
+   */
+  find(
+    filter: FilterQuery<InferRawDocType<TDocument>>,
+  ): Promise<TDocument[] | null>;
+
+  updateOneData(
+    filter: FilterQuery<TDocument>,
+    update: Partial<TDocument>,
+    session?: ClientSession,
+  ): Promise<boolean>;
 }
