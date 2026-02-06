@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile.dev
     container_name: urban_tasker_app
     ports:
-      - '${PORT}:3000'
+      - '3000:3000'
     env_file:
       - .env
     depends_on:
