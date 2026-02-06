@@ -49,10 +49,6 @@ export class CategoryAdminController {
     image: Express.Multer.File,
     @Body() dto: CreateCategoryDto,
   ) {
-    this._logger.verbose('[Category iamge] file uploaded');
-    this._logger.log(image);
-    this._logger.log(dto);
-
     const createCategory: ICreateCategory = {
       name: dto.name,
     };
