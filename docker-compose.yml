@@ -22,7 +22,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-    command: /bin/sh -c "redis-server --requirepass $$REDIS_PASS"
+    command: > 
+      sh -c "redis-server --requirepass \"$REDIS_PASS\""
     ports:
       - '6379:6379'
     volumes:
