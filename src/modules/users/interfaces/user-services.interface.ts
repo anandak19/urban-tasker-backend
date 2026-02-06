@@ -15,10 +15,15 @@ import { BasicUserResponseDto } from '../dtos/basic-user-response.dto';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { HomeAddressDto } from '../dtos/home-address.dto';
 
+import { ClientSession } from 'mongoose';
+
 export interface IUserService {
   findByEmail(email: string): Promise<UserResponseDto | null>;
   authenticateUser(email: string, password: string): Promise<UserResponseDto>;
-  create(userData: ICreateUser): Promise<UserResponseDto | null>;
+  create(
+    userData: ICreateUser,
+    session?: ClientSession,
+  ): Promise<UserResponseDto | null>;
 
   /**
    * To find and update user password by id

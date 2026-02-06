@@ -109,7 +109,7 @@ export class UserProfileService implements IUserProfileService {
     );
 
     if (!isPasswordMatch) {
-      throw new BadRequestException();
+      throw new BadRequestException(USER_ERRORS.INCORRECT_CURRENT_PASS);
     }
 
     const updatedUser = await this._userService.updateUserPassword(

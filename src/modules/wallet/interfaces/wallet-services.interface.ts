@@ -20,7 +20,7 @@ export interface IWalletService {
    * @param userId - Unique identifier of the user
    * @returns WalletResponseDto containing the newly created wallet details
    */
-  create(userId: string): Promise<WalletResponseDto>;
+  create(userId: string, session?: ClientSession): Promise<WalletResponseDto>;
 
   /**
    * Retrieves the wallet associated with a specific user.

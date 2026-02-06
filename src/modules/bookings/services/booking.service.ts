@@ -30,6 +30,11 @@ import { TaskStatus } from '@shared/constants/enums/task.enum';
 import { PaymentStatus } from '@shared/constants/enums/payment-status.enum';
 import { ClientSession } from 'mongoose';
 import { PaymentStatusDto } from '../dtos/payment-status.dto';
+import { BOOKING_MESSAGES } from '../constants/bookings-messages.constant';
+import {
+  CATEGORY_ERROR_MESSAGES,
+  SUBCATEGORY_ERROR_MESSAGES,
+} from '@shared/constants/messages/category-messages.constants';
 
 @Injectable()
 export class BookingService implements IBookingService {
@@ -56,8 +61,6 @@ export class BookingService implements IBookingService {
     filter: IListTaskersQuery,
   ): Promise<IFindAllBookingsResponse> {
     const result = await this._bookingRepo.getAllBookings({ userId }, filter);
-    console.log('All docs found from repo');
-    console.log(result.documents);
 
     const docs: BookingDetailsResponseDto[] = await Promise.all(
       result.documents.map(async (item) => {
@@ -84,10 +87,10 @@ export class BookingService implements IBookingService {
     };
     const savedBooking = await this._bookingRepo.createBooking(bookingPayload);
     if (!savedBooking) {
-      throw new InternalServerErrorException('Faild to complete booking');
+      throw new InternalServerErrorException(BOOKING_MESSAGES.BOOKING_FAILED);
     }
 
-    return { message: 'Booking successfull' };
+    return { message: BOOKING_MESSAGES.BOOKING_SUCCESS };
   }
   // by booking id
   async getBookingDetails(
@@ -96,7 +99,7 @@ export class BookingService implements IBookingService {
     const result = await this._bookingRepo.getBookingDetailsById(bookingId);
 
     if (!result) {
-      throw new NotFoundException('Booking details not found');
+      throw new NotFoundException(BOOKING_MESSAGES.BOOKING_NOT_FOUND);
     }
     console.log(result);
 
@@ -152,26 +155,25 @@ export class BookingService implements IBookingService {
     ]);
 
     if (!category && !subcategory) {
-      throw new NotFoundException('Category and Subcategory not found');
+      throw new NotFoundException(CATEGORY_ERROR_MESSAGES.NOT_FOUND);
     }
-    console.log(category?.isActive);
 
     // Category validations
     if (!category) {
-      throw new NotFoundException('Category not found');
+      throw new NotFoundException(CATEGORY_ERROR_MESSAGES.NOT_FOUND);
     }
 
     if (category.isDeleted || !category.isActive) {
-      throw new BadRequestException('Category is disabled or deleted');
+      throw new BadRequestException(CATEGORY_ERROR_MESSAGES.NOT_FOUND);
     }
 
     // Subcategory validations
     if (!subcategory) {
-      throw new NotFoundException('Subcategory not found');
+      throw new NotFoundException(SUBCATEGORY_ERROR_MESSAGES.NOT_FOUND);
     }
 
     if (subcategory.isDeleted || !subcategory.isActive) {
-      throw new BadRequestException('Subcategory is disabled or deleted');
+      throw new BadRequestException(SUBCATEGORY_ERROR_MESSAGES.NOT_FOUND);
     }
 
     // validate date
@@ -184,19 +186,10 @@ export class BookingService implements IBookingService {
     date: string, // date string from client
     time: number, // minutes from today 12:00 AM
   ): void {
-    this.logger.verbose('validateBookingDateTime');
-    console.log('input date, time', date, time);
-
     const now = getCurrIST();
 
     // current time in minutes from today 12 AM
-    console.log('now', now);
-    console.log('now hour', now.getHours());
-    console.log('now minutes', now.getMinutes());
-
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
-    console.log('currentMinutes');
-    console.log(currentMinutes);
 
     // today at 12 AM
     const today = new Date(now);
@@ -206,17 +199,15 @@ export class BookingService implements IBookingService {
     const bookingDate = new Date(date);
     bookingDate.setHours(0, 0, 0, 0);
 
-    // 1️⃣ past date check
+    //  past date check
     if (bookingDate < today) {
-      throw new BadRequestException('Booking date cannot be in the past');
+      throw new BadRequestException(BOOKING_MESSAGES.BOOKING_DATE_IN_PAST);
     }
 
-    // 2️⃣ same-day time check
+    // same-day time check
     if (bookingDate.getTime() === today.getTime()) {
-      console.log('same day booking');
-
       if (time <= currentMinutes) {
-        throw new BadRequestException('Booking time cannot be in the past');
+        throw new BadRequestException(BOOKING_MESSAGES.BOOKING_TIME_IN_PAST);
       }
     }
   }

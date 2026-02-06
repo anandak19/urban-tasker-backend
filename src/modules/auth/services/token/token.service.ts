@@ -13,7 +13,10 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService, JwtSignOptions } from '@nestjs/jwt';
-import { SESSION_MESSAGES } from '@shared/constants/messages/auth-messages.constant';
+import {
+  AUTH_MESSAGES,
+  SESSION_MESSAGES,
+} from '@shared/constants/messages/auth-messages.constant';
 import { StringValue } from 'ms';
 
 @Injectable()
@@ -93,7 +96,9 @@ export class TokenService implements ITokenService {
       return await this._jwtService.signAsync(payload, options);
     } catch {
       this._logger.error('Token generation faild');
-      throw new InternalServerErrorException('Failed to generate token');
+      throw new InternalServerErrorException(
+        AUTH_MESSAGES.TOKEN_GENRATION_FAILD,
+      );
     }
   }
 }

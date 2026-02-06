@@ -37,18 +37,18 @@ export class AvailabilityService implements IAvailabilityService {
       await this._availabilityRepo.deleteAllTaskerSlots(taskerId);
 
     if (!isDeletedAll) {
-      throw new InternalServerErrorException('Faild to remove slots');
+      throw new InternalServerErrorException(
+        AVAILABILITY_ERROR.REMOVE_SLOTS_FAILED,
+      );
     }
 
-    return { message: 'Successfully removed all slots' };
+    return { message: AVAILABILITY_SUCCESS.REMOVE_ALL_SLOTS_SUCCESS };
   }
 
   async createDefaultAvailability(userId: string): Promise<IBaseResponse> {
     // check if any non deleted slots exists for tasker
     const existingSlotCount =
       await this._availabilityRepo.countTaskerExistingSlots(userId);
-
-    console.log(existingSlotCount);
 
     if (existingSlotCount > 0) {
       throw new BadRequestException(

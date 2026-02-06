@@ -37,6 +37,9 @@ import type { IWalletService } from '@modules/wallet/interfaces/wallet-services.
 
 @Injectable({ scope: Scope.REQUEST })
 export class SignupService implements ISignupService {
+  private cache_duation = 1000 * 60 * 30;
+  private signup_id_duation = 60 * 30; // 30min
+
   constructor(
     @Inject(USER_TOKENS.SERVICE) private _userService: IUserService,
     @Inject(LOGGER_SERVICE) private _logger: ILoggerService,
@@ -65,17 +68,12 @@ export class SignupService implements ISignupService {
     try {
       // Create UUID and save to Redis
       const uuid = this._uuidService.generate();
-      // save user data in cache
-      // const userData: IBasicUserData = (await this._cacheService.set(
-      //   uuid,
-      //   { ...basicUserDto, isVerified: false },
-      //   1000 * 60 * 30,
-      // )) as IBasicUserData;
 
+      // save user data in cache
       await this._cacheService.set<IBasicUserData>(
         uuid,
         { ...basicUserDto, isVerified: false },
-        1000 * 60 * 30,
+        this.cache_duation,
       );
       const userData = await this._cacheService.get<IBasicUserData>(uuid);
       if (!userData) {
@@ -83,7 +81,12 @@ export class SignupService implements ISignupService {
       }
 
       // add the uuid to cookie
-      this._cookieService.setCookie(res, 'signupId', uuid, 60 * 30); // in cookie upto 30min
+      this._cookieService.setCookie(
+        res,
+        'signupId',
+        uuid,
+        this.signup_id_duation,
+      );
 
       // Generate OTP
       const otp = this._otpService.generateOtp();
@@ -97,7 +100,7 @@ export class SignupService implements ISignupService {
       // Save OTP to Redis
       await this._otpService.storeOtp(uuid, otp);
 
-      return { message: 'OTP sent successfully', userData };
+      return { message: AUTH_MESSAGES.OTP_SENT, userData };
     } catch (err) {
       console.error('Error in saveBasicUserData:', err);
       throw new InternalServerErrorException();
@@ -118,9 +121,9 @@ export class SignupService implements ISignupService {
     }
 
     await this._cacheService.updateField(signupId, 'isVerified', true);
-    // TODO: call method to delete otp from cache here
+    // TODO: call method to delete otp from cache here -
 
-    return { message: 'OTP Varified successfully' };
+    return { message: AUTH_MESSAGES.OTP_VARIFY_SUCCESS };
   }
 
   /*
@@ -144,7 +147,7 @@ export class SignupService implements ISignupService {
 
       await this._otpService.storeOtp(signupId, otp);
 
-      return { message: 'OTP sent successfully', userData };
+      return { message: AUTH_MESSAGES.OTP_SENT, userData };
     } catch (err) {
       console.error('Error in otp send:', err);
       throw new InternalServerErrorException();
@@ -154,7 +157,7 @@ export class SignupService implements ISignupService {
   async getOtpTimeLeft(signupId: string): Promise<ITimeLeftResponse> {
     const timeLeft = await this._otpService.getOtpTimeLeft(signupId);
     if (!timeLeft) {
-      throw new NotFoundException('OTP expired');
+      throw new NotFoundException(AUTH_MESSAGES.OTP_EXPIRED);
     }
     return { timeLeft };
   }
@@ -186,7 +189,7 @@ export class SignupService implements ISignupService {
       provider: AuthProvider.LOCAL,
     });
     if (!savedUser) {
-      throw new InternalServerErrorException('Faild to signup user');
+      throw new InternalServerErrorException(AUTH_MESSAGES.SIGNUP_FAILD);
     }
 
     // creae wallet
@@ -198,7 +201,7 @@ export class SignupService implements ISignupService {
     */
 
     return {
-      message: 'User signup success',
+      message: AUTH_MESSAGES.SIGNUP_SUCCESS,
     };
   }
 

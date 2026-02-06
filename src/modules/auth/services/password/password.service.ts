@@ -23,12 +23,14 @@ import { ConfigService } from '@nestjs/config';
 import { generateResetPasswordHtml } from '@shared/constants/email/email-templates';
 import { AUTH_MESSAGES } from '@shared/constants/messages/auth-messages.constant';
 import { USER_ERRORS } from '@shared/constants/messages/error-messaes.constants';
+import { USER_SUCCESS_MESSAGES } from '@shared/constants/messages/user-messages.constant';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 
 @Injectable()
 export class PasswordService implements IPasswordService {
   private _resetUrl: string;
   private _homeUrl: string;
+  private reset_link_duation = 1000 * 60 * 30;
 
   constructor(
     @Inject(AUTH_TOKENS.TOKEN_SERVICE) private _tokenService: ITokenService,
@@ -70,11 +72,10 @@ export class PasswordService implements IPasswordService {
       await this._cacheService.set<string>(
         resetToken,
         resetToken,
-        1000 * 60 * 30,
+        this.reset_link_duation,
       );
-      // return success message
-      this._logger.log(resetUrl);
-      return { message: 'Reset password link has send to your email' };
+
+      return { message: USER_SUCCESS_MESSAGES.RESET_PASS_LINK_SENT };
     } catch {
       throw new InternalServerErrorException(USER_ERRORS.UPDATE_PASSWORD_FAIL);
     }
@@ -85,7 +86,6 @@ export class PasswordService implements IPasswordService {
     token: string,
     newPassword: string,
   ): Promise<IBaseResponse> {
-    this._logger.log(token);
     // call the method to update users password
     const payload = await this._tokenService.verifyToken(token);
     if (!payload || !payload.id) {
@@ -101,7 +101,7 @@ export class PasswordService implements IPasswordService {
       throw new InternalServerErrorException(USER_ERRORS.UPDATE_PASSWORD_FAIL);
     }
 
-    return { message: 'Updated user password' };
+    return { message: USER_SUCCESS_MESSAGES.PASSWORD_UPDATE_SUCCESS };
   }
 
   private _getPaylod(user: UserResponseDto): IPayload {

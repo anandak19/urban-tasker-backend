@@ -9,4 +9,6 @@ export const USER_SUCCESS_MESSAGES = {
   PERSONAL_DATA_UPDATE_SUCCESS: 'Successfully updated personal data',
   PASSWORD_UPDATE_SUCCESS: 'Successfully updated password',
   HOME_ADDRESS_UPDATE_SUCCESS: 'Successfully updated home address',
+
+  RESET_PASS_LINK_SENT: 'Reset password link has send to your email',
 };

@@ -11,7 +11,7 @@ scrape_configs:
   - job_name: nestjs-api
     static_configs:
       - targets:
-          - localhost
+          - 127.0.0.1
         labels:
           job: nestjs
           app: api

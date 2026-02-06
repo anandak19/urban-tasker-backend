@@ -61,14 +61,11 @@ export class CategoryService implements ICategoryService {
     // Check if the category with same name exists, if exists throw error
     const existingCategory = await this.getCategoryByName(categoryData.name);
     if (existingCategory) {
-      this._logger.warn('Category with same name exists');
       throw new ConflictException(CATEGORY_ERROR_MESSAGES.NAME_CONFLICT);
     }
-    console.log(categoryData);
 
     // Upload image to s3 and get image key
     const imageKey = await this._s3.uploadCategoryImage(file);
-    this._logger.verbose(`Uploaded image key is: ${imageKey}`);
 
     // Create new createCategory object with imageUrl and name
     const newCategory: ICreateCategory = {
@@ -90,7 +87,6 @@ export class CategoryService implements ICategoryService {
         category: CategoryMapper.toResponse(savedCategory),
       };
     } catch {
-      this._logger.error('Error in adding new category');
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }
   }
@@ -107,7 +103,6 @@ export class CategoryService implements ICategoryService {
 
       return CategoryMapper.toResponse(category);
     } catch (error) {
-      this._logger.warn('Error in finding category by name');
       console.log(error);
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }
