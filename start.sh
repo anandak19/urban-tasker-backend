@@ -6,4 +6,4 @@ export REDIS_PASS=$(aws ssm get-parameter \
   --query "Parameter.Value" \
   --output text)
 
-docker compose up -d
+docker compose -f docker-compose.yml up -d

@@ -12,6 +12,7 @@ import {
 } from '@shared/interfaces/repository.interface';
 import { PaginatedResult } from '@shared/interfaces/query.interface';
 import { IOptionData } from '@shared/interfaces/response-data.interface';
+import { TaskStatus } from '@shared/constants/enums/task.enum';
 
 export class TaskerRepository
   extends BaseRepository<TaskerDocument, ICreateTasker>
@@ -67,9 +68,6 @@ export class TaskerRepository
   ): Promise<PaginatedResult<IListTaskers>> {
     const categoryObjectId = toObjectId(availQuery.subcategoryId);
 
-    console.log('avail taskers query');
-    console.log(availQuery);
-
     const {
       page = this._defaultTaskersPage,
       limit = this._defaultTaskersLimit,
@@ -94,6 +92,11 @@ export class TaskerRepository
       { $eq: ['$city', '$$bookingCity'] },
       { $eq: ['$taskerId', '$$taskerId'] },
       { $eq: ['$isDeleted', false] },
+      {
+        $not: {
+          $in: ['$taskStatus', [TaskStatus.CANCELLED, TaskStatus.REJECTED]],
+        },
+      },
     ];
 
     // [Condition] IF TIME WAS IN THE QUERY

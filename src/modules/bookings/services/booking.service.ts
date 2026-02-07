@@ -148,6 +148,34 @@ export class BookingService implements IBookingService {
     };
   }
 
+  // cancel booking
+  async cancelBooking(bookingId: string): Promise<IBaseResponse> {
+    const booking = await this._bookingRepo.findById(bookingId);
+
+    if (!booking) {
+      throw new NotFoundException(BOOKING_MESSAGES.BOOKING_NOT_FOUND);
+    }
+
+    if (
+      booking.taskStatus === TaskStatus.COMPLETED ||
+      booking.taskStatus === TaskStatus.IN_PROGRESS ||
+      booking.taskStatus === TaskStatus.OVERDUE
+    ) {
+      throw new BadRequestException(BOOKING_MESSAGES.CANCELL_CONFLICT);
+    }
+
+    const updated = await this._bookingRepo.changeBookingStatus(
+      bookingId,
+      TaskStatus.CANCELLED,
+    );
+
+    if (!updated) {
+      throw new InternalServerErrorException(BOOKING_MESSAGES.CANCELL_FAILD);
+    }
+
+    return { message: BOOKING_MESSAGES.CANCELL_SUCCESS };
+  }
+
   private async validateBookingData(payload: CreateBookingDto): Promise<void> {
     const [category, subcategory] = await Promise.all([
       this._categoryService.findById(payload.categoryId),

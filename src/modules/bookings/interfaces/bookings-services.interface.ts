@@ -61,6 +61,8 @@ export interface IBookingService {
   ): Promise<boolean>;
 
   getTaskPaymentStatus(taskId: string): Promise<PaymentStatusDto>;
+
+  cancelBooking(bookingId: string): Promise<IBaseResponse>;
 }
 
 // service belongs to the booking and tasker

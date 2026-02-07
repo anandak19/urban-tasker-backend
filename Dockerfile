@@ -1,4 +1,4 @@
-# ---------- BUILD STAGE ----------
+# ---------- Build stage ----------
 FROM node:20-alpine AS builder
 
 WORKDIR /usr/src/app
@@ -6,35 +6,31 @@ WORKDIR /usr/src/app
 # Copy package files
 COPY package*.json ./
 
-# Install all deps (needed for build)
+# Install all deps (needed to build)
 RUN npm ci
 
-# Copy source code
+# Copy source
 COPY . .
 
 # Build NestJS app
 RUN npm run build
 
 
-# ---------- PRODUCTION STAGE ----------
-FROM node:20-alpine AS production
+# ---------- Runtime stage ----------
+FROM node:20-alpine
 
 WORKDIR /usr/src/app
 
-# Copy only package files
+# Copy only what is needed to run
+COPY --from=builder /usr/src/app/dist ./dist
+COPY --from=builder /usr/src/app/node_modules ./node_modules
 COPY package*.json ./
 
-# Install only production dependencies
-RUN npm ci --omit=dev
-
-# Copy compiled app from builder
-COPY --from=builder /usr/src/app/dist ./dist
-
-# Logs directory (for winston / promtail)
+# Optional: logs directory
 RUN mkdir -p /var/log/app
 
 # Expose app port
 EXPOSE 3000
 
-# Run the compiled app
+# Start the app
 CMD ["node", "dist/main.js"]

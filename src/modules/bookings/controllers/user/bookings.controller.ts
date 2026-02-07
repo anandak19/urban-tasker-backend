@@ -9,6 +9,7 @@ import {
   Get,
   Inject,
   Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -51,5 +52,12 @@ export class BookingsController {
   @Get(':taskId/status')
   getTaskPaymentStatus(@Param('taskId') id: string) {
     return this._bookingService.getTaskPaymentStatus(id);
+  }
+
+  //cancel booking
+  @Patch(':taskId/cancel')
+  cancelBooking(@Param('taskId') id: string) {
+    // method to cancel the task : id
+    return this._bookingService.cancelBooking(id);
   }
 }
