@@ -44,9 +44,12 @@ export class AwsSsmService implements ISSMService {
       Path: path,
       WithDecryption: true,
       Recursive: true,
+      MaxResults: 30,
     });
 
     const response = await this._client.send(command);
+
+    console.log('parameters we got');
 
     console.log(response);
 

@@ -40,7 +40,8 @@ async function bootstrap() {
 
   app.useGlobalInterceptors(new ResponseInterceptor());
   app.useGlobalFilters(new AllExceptionsFilter());
-  await app.listen(process.env.PORT ?? 3000);
+  const PORT = Number(process.env.PORT ?? 3000);
+  await app.listen(PORT);
 }
 
 bootstrap().catch((error) => {

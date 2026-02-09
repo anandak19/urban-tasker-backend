@@ -32,14 +32,6 @@ export class S3Service implements IS3Service {
     // s3 config/ move it to config file later
     this.s3 = new S3Client({
       region: _configService.get<string>('AWS_REGION', { infer: true })!,
-      credentials: {
-        accessKeyId: _configService.get<string>('AWS_ACCESS_KEY', {
-          infer: true,
-        })!,
-        secretAccessKey: _configService.get<string>('AWS_SECRET_KEY', {
-          infer: true,
-        })!,
-      },
     });
     // get bucket name
     this.bucket = _configService.get<string>('AWS_BUCKET_NAME', {
