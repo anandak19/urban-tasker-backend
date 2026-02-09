@@ -1,21 +1,3 @@
-# ---------- Build stage ----------
-FROM node:20-alpine AS builder
-
-WORKDIR /usr/src/app
-
-# Copy package files
-COPY package*.json ./
-
-# Install all deps (needed to build)
-RUN npm ci
-
-# Copy source
-COPY . .
-
-# Build NestJS app
-RUN npm run build
-
-
 # ---------- Runtime stage ----------
 FROM node:20-alpine
 
