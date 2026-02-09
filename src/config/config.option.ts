@@ -4,4 +4,5 @@ import configuration from './configuration';
 export const configOptions: ConfigModuleOptions = {
   isGlobal: true,
   load: [configuration],
+  envFilePath: ['.env'],
 };
