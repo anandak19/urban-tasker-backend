@@ -6,14 +6,10 @@ import { useContainer } from 'class-validator';
 import cookieParser from 'cookie-parser';
 import { AllExceptionsFilter } from '@core/filters/http-exception.filter';
 import { ResponseInterceptor } from '@core/interceptors/response.interceptor';
-import { AwsSsmService } from '@core/lib/ssm/services/aws-ssm/aws-ssm.service';
 
 // import { winstonLogger } from '@config/logger/logger.config';
 
 async function bootstrap() {
-  const awsSSMService = new AwsSsmService();
-  await awsSSMService.loadFromSSM('/ut/dev');
-
   const app = await NestFactory.create(AppModule, {
     // logger: winstonLogger,
   });
@@ -40,7 +36,8 @@ async function bootstrap() {
 
   app.useGlobalInterceptors(new ResponseInterceptor());
   app.useGlobalFilters(new AllExceptionsFilter());
-  await app.listen(process.env.PORT ?? 3000);
+  const PORT = Number(process.env.PORT ?? 3000);
+  await app.listen(PORT);
 }
 
 bootstrap().catch((error) => {

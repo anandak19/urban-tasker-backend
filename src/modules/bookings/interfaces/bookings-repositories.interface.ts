@@ -11,7 +11,10 @@ import { IListBookingsQuery } from './request.interface';
 import { TaskStatus } from '@shared/constants/enums/task.enum';
 import { PaymentStatus } from '@shared/constants/enums/payment-status.enum';
 import { ClientSession } from 'mongoose';
-import { IEarningsAggregationResponse } from './repo-responses.interface';
+import {
+  IEarningsAggregationResponse,
+  IPopularCategoriesRepoResponse,
+} from './repo-responses.interface';
 import {
   BookingReportFilterDto,
   BookingSummaryFilter,
@@ -109,4 +112,6 @@ export interface IBookingRepository
   ): Promise<GraphDataItemDto[]>;
 
   getStatusGraphData(): Promise<ITaskStatusGraphAggregationResult[]>;
+
+  getMostBookedCategories(): Promise<IPopularCategoriesRepoResponse[]>;
 }

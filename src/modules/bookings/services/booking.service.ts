@@ -35,6 +35,8 @@ import {
   CATEGORY_ERROR_MESSAGES,
   SUBCATEGORY_ERROR_MESSAGES,
 } from '@shared/constants/messages/category-messages.constants';
+import { ListCategoryCardDto } from '../dtos/popular-categories.dto';
+import { BookingAnalyticsMapper } from '../mappers/booking-analytics.mapper';
 
 @Injectable()
 export class BookingService implements IBookingService {
@@ -146,6 +148,16 @@ export class BookingService implements IBookingService {
     return {
       paymentStatus: result.payment.paymentStatus,
     };
+  }
+
+  async getMostBookedCategories(): Promise<ListCategoryCardDto[]> {
+    const result = await this._bookingRepo.getMostBookedCategories();
+    return Promise.all(
+      result.map(async (item) => {
+        const imageUrl = await this._s3.getImageUrl(item.imagePublicKey);
+        return BookingAnalyticsMapper.toListCategoryCard(item, imageUrl);
+      }),
+    );
   }
 
   // cancel booking
