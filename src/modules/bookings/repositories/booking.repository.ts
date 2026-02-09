@@ -25,6 +25,7 @@ import { PaymentStatus } from '@shared/constants/enums/payment-status.enum';
 import {
   IEarningsAggregationResponse,
   IEarningsAggregationResult,
+  IPopularCategoriesRepoResponse,
 } from '../interfaces/repo-responses.interface';
 import {
   BookingReportFilterDto,
@@ -725,5 +726,46 @@ export class BookingRepository
         pipeline,
       );
     return result;
+  }
+
+  async getMostBookedCategories(): Promise<IPopularCategoriesRepoResponse[]> {
+    const pipeline: PipelineStage[] = [
+      {
+        $group: {
+          _id: '$subcategoryId',
+          totalCount: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { totalCount: -1 },
+      },
+      {
+        $limit: 5,
+      },
+      {
+        $lookup: {
+          from: 'subcategories',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'categoryDetails',
+        },
+      },
+      {
+        $unwind: '$categoryDetails',
+      },
+      {
+        $project: {
+          _id: 0,
+          id: { $toString: '$_id' },
+          name: '$categoryDetails.name',
+          description: '$categoryDetails.description',
+          imagePublicKey: '$categoryDetails.image',
+        },
+      },
+    ];
+
+    return await this._bookingModel.aggregate<IPopularCategoriesRepoResponse>(
+      pipeline,
+    );
   }
 }

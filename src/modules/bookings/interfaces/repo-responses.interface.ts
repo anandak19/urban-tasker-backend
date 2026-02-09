@@ -1,5 +1,3 @@
-// import { BookingSummaryListItemDto } from '@modules/reports/dtos/bookings-summery.dto';
-
 export interface IEarningsAggregationResult {
   totalTasksCompleted: { count: number }[];
   totalEarnings: { earnings: number }[];
@@ -10,4 +8,11 @@ export interface IEarningsAggregationResponse {
   totalTasksCompleted: number;
   totalEarnings: number;
   totalIncomingAmount: number;
+}
+
+export interface IPopularCategoriesRepoResponse {
+  id: string;
+  name: string;
+  description: string;
+  imagePublicKey: string;
 }
