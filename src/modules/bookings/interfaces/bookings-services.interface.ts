@@ -16,6 +16,7 @@ import { PaginatedResult } from '@shared/interfaces/query.interface';
 import { BookingSummaryListItemDto } from '@modules/reports/dtos/bookings-summery.dto';
 import { GraphDataItemDto } from '@modules/reports/dtos/graph-data.dto';
 import { ITaskStatusGraphAggregationResult } from './bookings.interface';
+import { ListCategoryCardDto } from '../dtos/popular-categories.dto';
 
 export interface IBookingService {
   /**
@@ -63,6 +64,8 @@ export interface IBookingService {
   getTaskPaymentStatus(taskId: string): Promise<PaymentStatusDto>;
 
   cancelBooking(bookingId: string): Promise<IBaseResponse>;
+
+  getMostBookedCategories(): Promise<ListCategoryCardDto[]>;
 }
 
 // service belongs to the booking and tasker
