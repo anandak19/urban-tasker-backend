@@ -45,7 +45,7 @@ import type {
 import { WsAuthGuard } from '@core/guards/ws-auth/ws-auth.guard';
 
 @WebSocketGateway({
-  cors: { origin: 'http://localhost:4200', credentials: true },
+  cors: { origin: process.env.APP_HOME_URL, credentials: true },
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() server: Server<any, ServerEvents>;
