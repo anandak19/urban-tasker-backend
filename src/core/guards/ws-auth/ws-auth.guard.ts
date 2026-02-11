@@ -25,6 +25,7 @@ export class WsAuthGuard implements CanActivate {
       const cookies = cookie.parse(client.handshake.headers.cookie || '');
       const accessToken = cookies['access-token'];
       if (!accessToken) {
+        console.log('Token not found in ws connection header');
         client.disconnect();
         return false;
       }
