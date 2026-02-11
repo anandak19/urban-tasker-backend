@@ -11,6 +11,14 @@ common:
       chunks_directory: /loki/chunks
       rules_directory: /loki/rules
 
+ingester:
+  lifecycler:
+    ring:
+      kvstore:
+        store: inmemory
+  chunk_idle_period: 5m
+  chunk_retain_period: 30s
+
 schema_config:
   configs:
     - from: 2024-01-01

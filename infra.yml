@@ -10,7 +10,10 @@ services:
       timeout: 5s
       retries: 3
     command: > 
-      sh -c "redis-server --requirepass \"$REDIS_PASS\""
+      sh -c "redis-server --requirepass \"$REDIS_PASS\"
+      --maxmemory 128mb
+      --maxmemory-policy allkeys-lru
+      --save ''"
     ports:
       - '6379:6379'
     volumes:
@@ -24,11 +27,19 @@ services:
     volumes:
       - ./monitoring/loki/loki-config.yml:/etc/loki/config.yml
       - loki_data:/loki
-    command: -config.file=/etc/loki/config.yml
+    command: -config.file=/etc/loki/config.yml -target=all
+    deploy:
+      resources:
+        limits:
+          memory: 256M
 
   promtail:
     image: grafana/promtail:2.9.4
     container_name: promtail
+    deploy: 
+      resources: 
+        limits:
+          memory: 64M
     volumes:
       - ./monitoring/promtail/promtail-config.yml:/etc/promtail/config.yml
       - ./logs:/var/log/app
@@ -43,6 +54,10 @@ services:
       - '3001:3000'
     volumes:
       - ./monitoring/grafana/datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml
+    deploy:
+      resources:
+        limits:
+          memory: 256M
     depends_on:
       - loki
 
