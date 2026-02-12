@@ -34,4 +34,9 @@ export class ReportsController {
   getStatusGraphData() {
     return this._reportService.getStatusGraphData();
   }
+
+  @Get('payment-status-graph')
+  getPaymentStatusGraphData() {
+    return this._reportService.getPaymentStatusGraphData();
+  }
 }

@@ -4,6 +4,7 @@ import { ListPaymentsQueryDto } from '@modules/payment/dtos/query.dto';
 import { IFindAllPaymentsResponse } from '@modules/payment/interfaces/api-response.interface';
 import type { IPaymentRepository } from '@modules/payment/interfaces/payment-repositories.interface';
 import { IAdminPaymentService } from '@modules/payment/interfaces/payment-services.interface';
+import { IPaymentStatusGraphAggregationResult } from '@modules/payment/interfaces/repo-response.interface';
 import { PaymentMapper } from '@modules/payment/mappers/payment.mapper';
 import { PAYMENT_TOKENS } from '@modules/payment/payment.token';
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
@@ -14,8 +15,8 @@ export class PaymentAdminService implements IAdminPaymentService {
     @Inject(PAYMENT_TOKENS.PAYMENT_REPOSITORY)
     private _paymentRepo: IPaymentRepository,
   ) {}
-  // find all
 
+  // find all
   async findAllPayments(
     query: ListPaymentsQueryDto,
   ): Promise<IFindAllPaymentsResponse> {
@@ -39,5 +40,9 @@ export class PaymentAdminService implements IAdminPaymentService {
     }
 
     return PaymentMapper.toListResponse(result);
+  }
+
+  getPaymentStatusGraphData(): Promise<IPaymentStatusGraphAggregationResult[]> {
+    return this._paymentRepo.getPaymentStatusGraphData();
   }
 }

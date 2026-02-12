@@ -12,6 +12,7 @@ import { ListPaymentsQueryDto } from '../dtos/query.dto';
 import { IFindAllAggregationResult } from '@shared/interfaces/repository.interface';
 import { PaginatedResult } from '@shared/interfaces/query.interface';
 import { toObjectId } from '@shared/utility/db/to-objectid.util';
+import { IPaymentStatusGraphAggregationResult } from '../interfaces/repo-response.interface';
 
 @Injectable()
 export class PaymentRepository
@@ -223,5 +224,30 @@ export class PaymentRepository
       await this._paymentModel.aggregate<IPaymentListItemRepoResult>(pipeline);
 
     return result[0] ?? null;
+  }
+
+  // reports methods
+  async getPaymentStatusGraphData(): Promise<
+    IPaymentStatusGraphAggregationResult[]
+  > {
+    const pipeline: PipelineStage[] = [
+      {
+        $match: {
+          isDeleted: false,
+        },
+      },
+      {
+        $group: {
+          _id: '$paymentStatus',
+          total: { $sum: 1 },
+        },
+      },
+    ];
+
+    const result =
+      await this._paymentModel.aggregate<IPaymentStatusGraphAggregationResult>(
+        pipeline,
+      );
+    return result;
   }
 }
