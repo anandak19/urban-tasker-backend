@@ -30,7 +30,6 @@ import { LOGGER_SERVICE } from '@core/lib/logger/logger.service';
 import { type ILoggerService } from '@core/lib/logger/logger.interface';
 import { IFindAllQuery } from '@shared/interfaces/query.interface';
 import { IFindAllTaskerApplicationResponse } from '../interfaces/api-responses.interface';
-import { IFindAllOptions } from '@shared/interfaces/repository.interface';
 import { TaskerApplicationMapper } from '../mappers/tasker-application.mapper';
 import { TaskerApplicationStatus } from '@shared/constants/enums/status.enum';
 import { USER_TOKENS } from '@modules/users/user-tokens';
@@ -170,13 +169,9 @@ export class TaskerApplicationsService implements ITaskerApplicationService {
   async findAll(
     query: IFindAllQuery,
   ): Promise<IFindAllTaskerApplicationResponse> {
-    const options: IFindAllOptions = {
-      page: query.page,
-      limit: query.limit,
-    };
-
     try {
-      const result = await this._taskerApplicationRepo.findAll(options);
+      const result =
+        await this._taskerApplicationRepo.findAllApplications(query);
 
       if (!result) {
         throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);

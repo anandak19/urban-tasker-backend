@@ -43,10 +43,15 @@ export class AdminUserService implements IAdminUserService {
       limit: userQuery?.limit,
     };
 
-    const filter: IUserFilter = {
-      search: userQuery.search,
-      role: userQuery.role ?? userQuery.role,
-    };
+    const filter: IUserFilter = {};
+
+    if (userQuery.search) {
+      filter.search = userQuery.search;
+    }
+
+    if (userQuery.role) {
+      filter.role = userQuery.role;
+    }
 
     try {
       const users = await this._userRepo.findAllUsers(pagination, filter);

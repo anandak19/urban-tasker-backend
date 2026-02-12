@@ -38,8 +38,6 @@ export class TaskerApplicationsAdminController {
     @Param('applicationId') applicationId: string,
     @Body() statusInfo: UpdateApplicationStatusDto,
   ) {
-    console.log(statusInfo);
-
     return this._taskerApplicationService.updateStatus(
       applicationId,
       statusInfo,

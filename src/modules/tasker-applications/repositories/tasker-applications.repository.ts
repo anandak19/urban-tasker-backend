@@ -8,9 +8,14 @@ import {
   ITaskerApplication,
 } from '../interfaces/tasker-applications.interface';
 import { ITaskerApplicationRepository } from '../interfaces/tasker-applications-repositories.interface';
-import { Model, PipelineStage } from 'mongoose';
+import { FilterQuery, Model, PipelineStage } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { TFilter } from '@shared/types/db-types';
+import {
+  IFindAllQuery,
+  PaginatedResult,
+} from '@shared/interfaces/query.interface';
+import { IFindAllOptions } from '@shared/interfaces/repository.interface';
 
 export class TaskerApplicationRepository
   extends BaseRepository<TaskerApplicationDocument, ICreateTaskerApplication>
@@ -23,9 +28,20 @@ export class TaskerApplicationRepository
     super(_taskerApplicationModel);
   }
 
-  changeStatus(id: string) {
-    console.log(id);
-    throw new Error('Method not implemented.');
+  async findAllApplications(
+    query: IFindAllQuery,
+  ): Promise<PaginatedResult<TaskerApplicationDocument>> {
+    const options: IFindAllOptions = {
+      page: query.page,
+      limit: query.limit,
+    };
+
+    const filter: FilterQuery<TaskerApplication> = {};
+    if (query.search) {
+      filter.firstName = { $regex: query.search, $options: 'i' };
+    }
+
+    return await this.findAll(options, filter);
   }
 
   async findOneTaskerApplication(

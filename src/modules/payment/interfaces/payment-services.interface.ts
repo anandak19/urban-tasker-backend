@@ -9,6 +9,7 @@ import { VarifyPaymentDto } from '../dtos/varify-payment.dto';
 import { ListPaymentsQueryDto } from '../dtos/query.dto';
 import { IFindAllPaymentsResponse } from './api-response.interface';
 import { ListPaymentDto } from '../dtos/list-payments.dto';
+import { IPaymentStatusGraphAggregationResult } from './repo-response.interface';
 
 export interface IPaymentService {
   getPaymentDataByTaskId(taskId: string): Promise<PaymentInfoResponseDto>;
@@ -30,4 +31,6 @@ export interface IAdminPaymentService {
   ): Promise<IFindAllPaymentsResponse>;
 
   findOneById(id: string): Promise<ListPaymentDto>;
+
+  getPaymentStatusGraphData(): Promise<IPaymentStatusGraphAggregationResult[]>;
 }

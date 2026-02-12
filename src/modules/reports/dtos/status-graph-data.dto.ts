@@ -6,3 +6,11 @@ export class StatusGraphDataDto {
   cancelled: number;
   overdue: number;
 }
+
+export class PaymentStatusGraphDataDto {
+  created: number;
+  attempted: number;
+  paid: number;
+  faild: number;
+  pending: number;
+}

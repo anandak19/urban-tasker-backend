@@ -23,6 +23,8 @@ export class Category {
 export type CategoryDocument = HydratedDocument<Category>;
 export const CategorySchema = SchemaFactory.createForClass(Category);
 
+CategorySchema.index({ name: 'text' });
+
 // presave methods
 CategorySchema.pre<CategoryDocument>('save', function (next) {
   if (this.isModified('name')) {

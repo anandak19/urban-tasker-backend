@@ -6,9 +6,10 @@ import { BookingsModule } from '@modules/bookings/bookings.module';
 import { UsersModule } from '@modules/users/users.module';
 import { TaskerReportService } from './services/tasker-report-service/tasker-report.service';
 import { TaskerReportsController } from './controllers/tasker/tasker-reports.controller';
+import { PaymentModule } from '@modules/payment/payment.module';
 
 @Module({
-  imports: [BookingsModule, UsersModule],
+  imports: [BookingsModule, UsersModule, PaymentModule],
   controllers: [ReportsController, TaskerReportsController],
   providers: [
     { provide: REPORTS_TOKENS.SERVICE, useClass: ReportsService },

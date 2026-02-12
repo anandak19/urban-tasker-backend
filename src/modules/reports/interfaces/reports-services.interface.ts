@@ -6,7 +6,10 @@ import {
   BookingSummaryFilter,
 } from '../dtos/query-filters.dto';
 import { GraphDataItemDto } from '../dtos/graph-data.dto';
-import { StatusGraphDataDto } from '../dtos/status-graph-data.dto';
+import {
+  PaymentStatusGraphDataDto,
+  StatusGraphDataDto,
+} from '../dtos/status-graph-data.dto';
 
 export interface IReportService {
   getDashBoardSummary(): Promise<DashboardSummaryDto>;
@@ -18,6 +21,8 @@ export interface IReportService {
   getGraphData(filter?: BookingReportFilterDto): Promise<GraphDataItemDto[]>;
 
   getStatusGraphData(): Promise<StatusGraphDataDto>;
+
+  getPaymentStatusGraphData(): Promise<PaymentStatusGraphDataDto>;
 }
 
 export interface ITaskerReportService {

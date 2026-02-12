@@ -1,6 +1,6 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { User, UserDocument } from '../schemas/user.schema';
 import { ICreateUser } from '../interfaces/user.interface';
 import { isDuplicateKeyError } from '@shared/utility/db/mongo-error.util';
@@ -34,10 +34,20 @@ export class UserRepository
     console.log('Filer below');
     console.log(filter);
     // prepare filter query here
-    const filterQuery = {
-      ...filter,
-      userRole: { $ne: 'admin' },
-    };
+    const filterQuery: FilterQuery<User> = {};
+
+    if (filter?.role) {
+      filterQuery.userRole = filter.role;
+    } else {
+      filterQuery.userRole = { $ne: 'admin' };
+    }
+
+    if (filter?.search) {
+      filterQuery.$or = [
+        { firstName: { $regex: filter.search, $options: 'i' } },
+        { lastName: { $regex: filter.search, $options: 'i' } },
+      ];
+    }
 
     // prepare options
     const options: IFindAllOptions = {

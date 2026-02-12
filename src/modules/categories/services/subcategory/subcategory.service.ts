@@ -193,16 +193,17 @@ export class SubcategoryService implements ISubCategoryService {
     parentCategoryId: string,
     categoryQuery?: GetDocsDto,
   ): Promise<IFindAllSubCategoryResponse> {
-    const pagination: IFindAllQuery | undefined = categoryQuery
+    const filterQuery: IFindAllQuery | undefined = categoryQuery
       ? {
           page: categoryQuery.page,
           limit: categoryQuery.limit,
+          search: categoryQuery.search,
         }
       : undefined;
 
     const result = await this._subCategoryRepo.findAllSubCategories(
       parentCategoryId,
-      pagination,
+      filterQuery,
     );
 
     if (!result || !result.documents || !result.meta) {

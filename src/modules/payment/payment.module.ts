@@ -35,6 +35,10 @@ import { PaymentAdminController } from './controllers/admin/payment-admin.contro
       useClass: PaymentAdminService,
     },
   ],
-  exports: [RazorpayProvider, PAYMENT_TOKENS.PAYMENT_SERVICE],
+  exports: [
+    RazorpayProvider,
+    PAYMENT_TOKENS.PAYMENT_SERVICE,
+    PAYMENT_TOKENS.ADMIN_PAYMENT_SERVICE,
+  ],
 })
 export class PaymentModule {}

@@ -7,6 +7,7 @@ import {
 import { FilterQuery } from 'mongoose';
 import { ListPaymentsQueryDto } from '../dtos/query.dto';
 import { PaginatedResult } from '@shared/interfaces/query.interface';
+import { IPaymentStatusGraphAggregationResult } from './repo-response.interface';
 
 export interface IPaymentRepository
   extends IBaseRepository<PaymentDocument, ICreatePayment> {
@@ -20,4 +21,6 @@ export interface IPaymentRepository
   ): Promise<PaginatedResult<IPaymentListItemRepoResult>>;
 
   findOnePayment(id: string): Promise<IPaymentListItemRepoResult | null>;
+
+  getPaymentStatusGraphData(): Promise<IPaymentStatusGraphAggregationResult[]>;
 }
