@@ -3,8 +3,11 @@ import { Category, CategoryDocument } from '../schemas/categories.schema';
 import { ICreateCategory } from '../interfaces/category.interface';
 import { ICategoryRepository } from '../interfaces/categories-repositories.interface';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { IOptionData } from '@shared/interfaces/response-data.interface';
+import { PaginatedResult } from '@shared/interfaces/query.interface';
+import { GetDocsDto } from '@shared/dtos/get-docs.dto';
+import { IFindAllOptions } from '@shared/interfaces/repository.interface';
 
 export class CategoryRepository
   extends BaseRepository<CategoryDocument, ICreateCategory>
@@ -38,6 +41,21 @@ export class CategoryRepository
     isActive: boolean,
   ): Promise<CategoryDocument | null> {
     return await this.updateById(id, { $set: { isActive } });
+  }
+
+  async findAllCategories(
+    categoryQuery: GetDocsDto,
+  ): Promise<PaginatedResult<CategoryDocument>> {
+    const options: IFindAllOptions = {
+      page: categoryQuery?.page || 1,
+      limit: categoryQuery?.limit,
+    };
+
+    const filter: FilterQuery<Category> = {};
+    if (categoryQuery?.search) {
+      filter.name = { $regex: categoryQuery.search, $options: 'i' };
+    }
+    return await this.findAll(options, filter);
   }
 
   async findByName(name: string): Promise<CategoryDocument | null> {

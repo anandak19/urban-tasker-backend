@@ -9,6 +9,7 @@ import {
 } from '@shared/interfaces/query.interface';
 import { TObjectId } from '@shared/types/db-types';
 import { IOptionData } from '@shared/interfaces/response-data.interface';
+import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 
 export interface ICategoryRepository
   extends IBaseRepository<CategoryDocument, ICreateCategory> {
@@ -18,6 +19,10 @@ export interface ICategoryRepository
     id: string,
     isActive: boolean,
   ): Promise<CategoryDocument | null>;
+
+  findAllCategories(
+    categoryQuery: GetDocsDto,
+  ): Promise<PaginatedResult<CategoryDocument>>;
 
   getActiveCategoriesOptions(): Promise<IOptionData[]>;
 }

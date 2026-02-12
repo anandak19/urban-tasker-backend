@@ -29,7 +29,6 @@ import {
 import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constants';
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
-import { IFindAllOptions } from '@shared/interfaces/repository.interface';
 import { IOptionData } from '@shared/interfaces/response-data.interface';
 import { type Express } from 'express';
 
@@ -114,14 +113,9 @@ export class CategoryService implements ICategoryService {
    * @returns
    */
   async findAllCategories(
-    categoryQuery?: GetDocsDto,
+    categoryQuery: GetDocsDto = {},
   ): Promise<IFindAllCategoryResponse> {
-    const options: IFindAllOptions = {
-      page: categoryQuery?.page || 1,
-      limit: categoryQuery?.limit,
-    };
-
-    const result = await this._categoryRepo.findAll(options); // fix it
+    const result = await this._categoryRepo.findAllCategories(categoryQuery); // fix it
     if (!result || !result.documents || !result.meta) {
       throw new InternalServerErrorException(
         CATEGORY_ERROR_MESSAGES.FIND_ALL_FAILD,

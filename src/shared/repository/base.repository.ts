@@ -56,6 +56,7 @@ export abstract class BaseRepository<TDocument, TCreate>
 
     this._logger.verbose('Final ');
     this._logger.log(finalFilter);
+    console.log(filter);
 
     // --- Build Pipeline ---
     const pipeline: PipelineStage[] = [

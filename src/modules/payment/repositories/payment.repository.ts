@@ -43,6 +43,10 @@ export class PaymentRepository
       matchStage.paymentStatus = query.paymentStatus;
     }
 
+    if (query.search) {
+      matchStage.razorpayReceiptId = { $regex: query.search, $options: 'i' };
+    }
+
     const { page = this.defaultPage, limit = this.defaultLimit } = query;
 
     const skip = (page - 1) * limit;

@@ -51,17 +51,21 @@ export class SubCategoryRepository
 
   async findAllSubCategories(
     parentCategoryId: string,
-    pagination?: IFindAllQuery,
+    filterQuery?: IFindAllQuery,
   ): Promise<PaginatedResult<SubCategoryDocument>> {
     const options: IFindAllOptions = {
-      page: pagination?.page,
-      limit: pagination?.limit,
+      page: filterQuery?.page,
+      limit: filterQuery?.limit,
     };
 
     // filter by subcategories of parent category
     const filter: FilterQuery<InferRawDocType<SubCategoryDocument>> = {
       categoryId: new Types.ObjectId(parentCategoryId),
     };
+
+    if (filterQuery?.search) {
+      filter.name = { $regex: filterQuery.search, $options: 'i' };
+    }
 
     return await this.findAll(options, filter);
   }
