@@ -60,9 +60,4 @@ export class BookingsController {
     // method to cancel the task : id
     return this._bookingService.cancelBooking(id);
   }
-
-  @Get('analytics/popular-categories')
-  getMostBookedCategories() {
-    return this._bookingService.getMostBookedCategories();
-  }
 }

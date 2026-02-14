@@ -13,6 +13,7 @@ import { AdminBookingsController } from './controllers/admin/admin-bookings.cont
 import { AdminBookingService } from './services/admin-booking/admin-booking.service';
 import { OtpModule } from '@core/lib/otp/otp.module';
 import { TaskerModule } from '@modules/tasker/tasker.module';
+import { BookingsCommonController } from './controllers/common/bookings-common.controller';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { TaskerModule } from '@modules/tasker/tasker.module';
     BookingsController,
     TaskerBookingsController,
     AdminBookingsController,
+    BookingsCommonController,
   ],
   providers: [
     { provide: BOOKING_TOKEN.BOOKING_SERVICE, useClass: BookingService },
