@@ -11,10 +11,14 @@ import { IEarningsAggregationResponse } from './repo-responses.interface';
 import {
   BookingReportFilterDto,
   BookingSummaryFilter,
+  ReportGroupFilterDto,
 } from '@modules/reports/dtos/query-filters.dto';
 import { PaginatedResult } from '@shared/interfaces/query.interface';
 import { BookingSummaryListItemDto } from '@modules/reports/dtos/bookings-summery.dto';
-import { GraphDataItemDto } from '@modules/reports/dtos/graph-data.dto';
+import {
+  GraphDataItemDto,
+  IBookingsCountReportData,
+} from '@modules/reports/dtos/graph-data.dto';
 import { ITaskStatusGraphAggregationResult } from './bookings.interface';
 import { ListCategoryCardDto } from '../dtos/popular-categories.dto';
 
@@ -111,11 +115,18 @@ export interface ITaskerBookingService {
   resumeTask(taskId: string): Promise<IBaseResponse>;
 
   finishTask(taskId: string): Promise<IBaseResponse>;
+}
 
+export interface ITaskerBookingsReportService {
   getEarningsGraphData(
     taskerId: string,
     filter?: BookingReportFilterDto,
   ): Promise<GraphDataItemDto[]>;
+
+  getBookingsCountReportData(
+    taskerId: string,
+    filter: ReportGroupFilterDto,
+  ): Promise<IBookingsCountReportData[]>;
 }
 
 export interface IAdminBookingService {

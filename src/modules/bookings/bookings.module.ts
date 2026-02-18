@@ -14,6 +14,7 @@ import { AdminBookingService } from './services/admin-booking/admin-booking.serv
 import { OtpModule } from '@core/lib/otp/otp.module';
 import { TaskerModule } from '@modules/tasker/tasker.module';
 import { BookingsCommonController } from './controllers/common/bookings-common.controller';
+import { TaskerBookingReportService } from './services/tasker-booking/tasker-booking-report.service';
 
 @Module({
   imports: [
@@ -37,6 +38,10 @@ import { BookingsCommonController } from './controllers/common/bookings-common.c
       useClass: TaskerBookingService,
     },
     {
+      provide: BOOKING_TOKEN.TASKERS_BOOKING_REPORT_SERVICE,
+      useClass: TaskerBookingReportService,
+    },
+    {
       provide: BOOKING_TOKEN.ADMIN_BOOKING_SERVICE,
       useClass: AdminBookingService,
     },
@@ -45,6 +50,7 @@ import { BookingsCommonController } from './controllers/common/bookings-common.c
     BOOKING_TOKEN.BOOKING_SERVICE,
     BOOKING_TOKEN.TASKERS_BOOKING_SERVICE,
     BOOKING_TOKEN.ADMIN_BOOKING_SERVICE,
+    BOOKING_TOKEN.TASKERS_BOOKING_REPORT_SERVICE,
   ],
 })
 export class BookingsModule {}

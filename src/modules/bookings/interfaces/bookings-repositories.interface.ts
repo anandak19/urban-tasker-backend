@@ -18,9 +18,13 @@ import {
 import {
   BookingReportFilterDto,
   BookingSummaryFilter,
+  ReportGroupFilterDto,
 } from '@modules/reports/dtos/query-filters.dto';
 import { BookingSummaryListItemDto } from '@modules/reports/dtos/bookings-summery.dto';
-import { GraphDataItemDto } from '@modules/reports/dtos/graph-data.dto';
+import {
+  GraphDataItemDto,
+  IBookingsCountReportData,
+} from '@modules/reports/dtos/graph-data.dto';
 import { NonUserRoles } from '@shared/constants/enums/user.enum';
 
 export interface IBookingRepository
@@ -114,4 +118,9 @@ export interface IBookingRepository
   getStatusGraphData(): Promise<ITaskStatusGraphAggregationResult[]>;
 
   getMostBookedCategories(): Promise<IPopularCategoriesRepoResponse[]>;
+
+  getBookingsCountReportData(
+    filter: ReportGroupFilterDto,
+    taskerId?: string,
+  ): Promise<IBookingsCountReportData[]>;
 }
