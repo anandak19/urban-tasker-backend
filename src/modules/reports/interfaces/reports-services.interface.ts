@@ -4,8 +4,12 @@ import { BookingSummaryListItemDto } from '../dtos/bookings-summery.dto';
 import {
   BookingReportFilterDto,
   BookingSummaryFilter,
+  ReportGroupFilterDto,
 } from '../dtos/query-filters.dto';
-import { GraphDataItemDto } from '../dtos/graph-data.dto';
+import {
+  GraphDataItemDto,
+  IBookingsCountReportData,
+} from '../dtos/graph-data.dto';
 import {
   PaymentStatusGraphDataDto,
   StatusGraphDataDto,
@@ -30,4 +34,9 @@ export interface ITaskerReportService {
     taskerId: string,
     filter?: BookingReportFilterDto,
   ): Promise<GraphDataItemDto[]>;
+
+  getBookingsCountReportData(
+    taskerId: string,
+    filter: ReportGroupFilterDto,
+  ): Promise<IBookingsCountReportData[]>;
 }

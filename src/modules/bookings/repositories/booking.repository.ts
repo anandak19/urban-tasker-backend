@@ -30,11 +30,16 @@ import {
 import {
   BookingReportFilterDto,
   BookingSummaryFilter,
+  ReportGroupFilterDto,
 } from '@modules/reports/dtos/query-filters.dto';
 import { BookingGroupBy } from '@modules/reports/constants/filter.enum';
 import { BookingSummaryListItemDto } from '@modules/reports/dtos/bookings-summery.dto';
-import { GraphDataItemDto } from '@modules/reports/dtos/graph-data.dto';
+import {
+  GraphDataItemDto,
+  IBookingsCountReportData,
+} from '@modules/reports/dtos/graph-data.dto';
 import { NonUserRoles, UserRoles } from '@shared/constants/enums/user.enum';
+import { ReportGroupBy } from '@shared/constants/enums/reports.enum';
 
 export class BookingRepository
   extends BaseRepository<BookingDocument, ICreateBooking>
@@ -704,6 +709,194 @@ export class BookingRepository
     ];
 
     return await this._bookingModel.aggregate<GraphDataItemDto>(pipeline);
+  }
+
+  getBookingsCountReportData(
+    filter: ReportGroupFilterDto,
+    taskerId?: string,
+  ): Promise<IBookingsCountReportData[]> {
+    const pipeline: PipelineStage[] = [];
+
+    const matStage: PipelineStage.Match = {
+      $match: { isDeleted: false },
+    };
+
+    if (taskerId) {
+      matStage.$match.taskerId = toObjectId(taskerId);
+    }
+
+    // [MONTH]
+    if (filter.reportGroupBy === ReportGroupBy.MONTH) {
+      const tenMonthsAgo = new Date();
+      tenMonthsAgo.setMonth(tenMonthsAgo.getMonth() - 10);
+
+      // MATCH
+      matStage.$match.createdAt = { $gte: tenMonthsAgo };
+      pipeline.push(matStage);
+
+      // GROUP
+      pipeline.push({
+        $group: {
+          _id: {
+            year: { $year: '$createdAt' },
+            month: { $month: '$createdAt' },
+          },
+          totalBookings: { $sum: 1 },
+        },
+      });
+
+      // SORT properly
+      pipeline.push({
+        $sort: {
+          '_id.year': 1,
+          '_id.month': 1,
+        },
+      });
+
+      // PROJECT formatted label
+      pipeline.push({
+        $project: {
+          _id: 0,
+          label: {
+            $dateToString: {
+              format: '%b-%Y',
+              date: {
+                $dateFromParts: {
+                  year: '$_id.year',
+                  month: '$_id.month',
+                  day: 1,
+                },
+              },
+            },
+          },
+          totalBookings: 1,
+        },
+      });
+
+      // [WEEK]
+    } else if (filter.reportGroupBy === ReportGroupBy.WEEK) {
+      const oneMonthAgo = new Date();
+      oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+
+      matStage.$match.createdAt = { $gte: oneMonthAgo };
+      pipeline.push(matStage);
+
+      // GROUP
+      pipeline.push({
+        $group: {
+          _id: {
+            year: { $year: '$createdAt' },
+            monthNumber: { $month: '$createdAt' },
+            monthName: {
+              $dateToString: {
+                format: '%b',
+                date: '$createdAt',
+              },
+            },
+            weekNumber: {
+              $ceil: {
+                $divide: [{ $dayOfMonth: '$createdAt' }, 7],
+              },
+            },
+          },
+          totalBookings: { $sum: 1 },
+        },
+      });
+
+      // SORT (must use numeric fields)
+      pipeline.push({
+        $sort: {
+          '_id.year': 1,
+          '_id.monthNumber': 1,
+          '_id.weekNumber': 1,
+        },
+      });
+
+      // PROJECT
+      pipeline.push({
+        $project: {
+          _id: 0,
+          label: {
+            $concat: [
+              '$_id.monthName',
+              ' - ',
+              { $toString: '$_id.weekNumber' },
+            ],
+          },
+          totalBookings: 1,
+        },
+      });
+      // [DAY]
+    } else if (filter.reportGroupBy === ReportGroupBy.DAY) {
+      const twentyDaysAgo = new Date();
+      twentyDaysAgo.setDate(twentyDaysAgo.getDate() - 20);
+
+      matStage.$match.createdAt = { $gte: twentyDaysAgo };
+      pipeline.push(matStage);
+
+      const groupStage: PipelineStage.Group = {
+        $group: {
+          _id: {
+            $dateTrunc: {
+              date: '$createdAt',
+              unit: 'day',
+            },
+          },
+          totalBookings: { $sum: 1 },
+        },
+      };
+
+      pipeline.push(groupStage);
+
+      pipeline.push({
+        $sort: { _id: 1 },
+      });
+
+      // project
+      pipeline.push({
+        $project: {
+          _id: 0,
+          label: {
+            $dateToString: {
+              format: '%d-%b-%Y',
+              date: '$_id',
+            },
+          },
+          totalBookings: 1,
+        },
+      });
+      // [YEAR]
+    } else if (filter.reportGroupBy == ReportGroupBy.YEAR) {
+      const tenYearAgo = new Date();
+      tenYearAgo.setFullYear(tenYearAgo.getFullYear() - 10);
+
+      matStage.$match.createdAt = { $gte: tenYearAgo };
+      pipeline.push(matStage);
+
+      pipeline.push({
+        $group: {
+          _id: {
+            year: { $year: '$createdAt' },
+          },
+          totalBookings: { $sum: 1 },
+        },
+      });
+
+      pipeline.push({
+        $sort: { '_id.year': 1 },
+      });
+
+      // PROJECT
+      pipeline.push({
+        $project: {
+          _id: 0,
+          label: { $toString: '$_id.year' },
+          totalBookings: 1,
+        },
+      });
+    }
+
+    return this._bookingModel.aggregate<IBookingsCountReportData>(pipeline);
   }
 
   async getStatusGraphData(): Promise<ITaskStatusGraphAggregationResult[]> {

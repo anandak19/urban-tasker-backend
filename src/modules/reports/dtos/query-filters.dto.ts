@@ -3,6 +3,7 @@ import { IsEnum, IsOptional } from 'class-validator';
 import { BookingGroupBy } from '../constants/filter.enum';
 import { Transform } from 'class-transformer';
 import { ToEndDate, ToStartDate } from '@core/transformers/date.transformer';
+import { ReportGroupBy } from '@shared/constants/enums/reports.enum';
 
 export class BookingSummaryFilter extends GetDocsDto {
   @IsEnum(BookingGroupBy)
@@ -17,4 +18,9 @@ export class BookingReportFilterDto {
   @IsOptional()
   @Transform(ToEndDate)
   endDate?: Date;
+}
+
+export class ReportGroupFilterDto {
+  @IsOptional()
+  reportGroupBy: ReportGroupBy;
 }
