@@ -5,16 +5,15 @@ export interface ICreateCategory {
 
 export type IUpdateCategory = Partial<ICreateCategory>;
 
-export interface ICategory {
+// have this in f
+export interface ICategoryCard {
   id: string;
-
   name: string;
-
   image: string;
+}
 
+export interface ICategory extends ICategoryCard {
   isActive: boolean;
-
   slug: string;
-
   isDeleted: boolean;
 }

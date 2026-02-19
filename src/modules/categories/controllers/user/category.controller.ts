@@ -13,17 +13,19 @@ export class CategoryController {
     @Inject(LOGGER_SERVICE) private _logger: ILoggerService,
     @Inject(CATEGORY_TOKEN.CATEGORY_SERVICE)
     private _categoryService: ICategoryService,
+
     @Inject(CATEGORY_TOKEN.SUBCATEGORY_SERVICE)
     private _subcategoryService: ISubCategoryService,
   ) {}
 
-  @Get()
-  getActiveCategories() {
-    return this._subcategoryService.getAllActiveSubCategories();
-  }
-
+  // returns all active categories in option type
   @Get('options')
   getActiveCategoriesOptions() {
     return this._categoryService.getActiveCategoriesOptions();
+  }
+
+  @Get()
+  getActiveCategories() {
+    return this._categoryService.getActiveCategories();
   }
 }

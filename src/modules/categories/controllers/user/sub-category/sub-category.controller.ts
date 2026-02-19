@@ -13,4 +13,9 @@ export class SubCategoryController {
   getActiveSubcategoriesOptions(@Param('id') categoryId: string) {
     return this._subCategoryService.getActiveSubCategoriesOptions(categoryId);
   }
+
+  @Get()
+  getActiveSubCategories(@Param('id') categoryId: string) {
+    return this._subCategoryService.getActiveSubCategories(categoryId);
+  }
 }

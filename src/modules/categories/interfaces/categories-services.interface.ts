@@ -1,6 +1,7 @@
 import { type Express } from 'express';
 import type {
   ICategory,
+  ICategoryCard,
   ICreateCategory,
   IUpdateCategory,
 } from './category.interface';
@@ -12,7 +13,11 @@ import type {
 } from './responses.interface';
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
-import { ICreateSubCategory, ISubCategory } from './subcategory.interface';
+import {
+  ICreateSubCategory,
+  ISubCategory,
+  ISubCategoryCard,
+} from './subcategory.interface';
 import { TObjectId } from '@shared/types/db-types';
 import { IOptionData } from '@shared/interfaces/response-data.interface';
 
@@ -70,6 +75,8 @@ export interface ICategoryService {
   ): Promise<ICategoryResponse>;
 
   getActiveCategoriesOptions(): Promise<IOptionData[]>;
+
+  getActiveCategories(): Promise<ICategoryCard[]>;
 }
 
 /**
@@ -100,7 +107,7 @@ export interface ISubCategoryService {
     imagFile: Express.Multer.File | null,
   ): Promise<ISubCategoryResponse>;
 
-  getAllActiveSubCategories(): Promise<ISubCategory[]>;
+  getActiveSubCategories(categoryId: string): Promise<ISubCategoryCard[]>;
 
   isActiveCategoryIds(ids: TObjectId[]): Promise<void>;
 

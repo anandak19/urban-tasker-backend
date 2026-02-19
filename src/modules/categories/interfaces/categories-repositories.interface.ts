@@ -1,8 +1,8 @@
 import { IBaseRepository } from '@shared/interfaces/base-repository.interface';
 import { CategoryDocument } from '../schemas/categories.schema';
-import { ICreateCategory } from './category.interface';
+import { ICategoryCard, ICreateCategory } from './category.interface';
 import { SubCategoryDocument } from '../schemas/subcategories.schema';
-import { ICreateSubCategory } from './subcategory.interface';
+import { ICreateSubCategory, ISubCategoryCard } from './subcategory.interface';
 import {
   IFindAllQuery,
   PaginatedResult,
@@ -25,6 +25,9 @@ export interface ICategoryRepository
   ): Promise<PaginatedResult<CategoryDocument>>;
 
   getActiveCategoriesOptions(): Promise<IOptionData[]>;
+
+  // this can be replaced with findAllCategories, if pagination is need
+  getActiveCategories(): Promise<ICategoryCard[]>;
 }
 
 export interface ISubCategoryRepository
@@ -50,4 +53,10 @@ export interface ISubCategoryRepository
   ): Promise<SubCategoryDocument[] | null>;
 
   getActiveSubCategoriesOptions(categoryId: string): Promise<IOptionData[]>;
+
+  /**
+   * Returns all active sub categories under a category
+   * @param categoryId
+   */
+  getActiveSubCategories(categoryId: string): Promise<ISubCategoryCard[]>;
 }

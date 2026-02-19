@@ -13,6 +13,7 @@ import {
 import {
   ICreateSubCategory,
   ISubCategory,
+  ISubCategoryCard,
 } from '@modules/categories/interfaces/subcategory.interface';
 import { SubCategoryMapper } from '@modules/categories/mappers/subcategory.mapper';
 import {
@@ -290,6 +291,20 @@ export class SubcategoryService implements ISubCategoryService {
       console.log(error);
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }
+  }
+
+  async getActiveSubCategories(
+    categoryId: string,
+  ): Promise<ISubCategoryCard[]> {
+    const subcategories =
+      await this._subCategoryRepo.getActiveSubCategories(categoryId);
+    const result = Promise.all(
+      subcategories.map(async (item) => {
+        const imageUrl = await this._s3.getImageUrl(item.image);
+        return { ...item, image: imageUrl };
+      }),
+    );
+    return result;
   }
 
   // PRIVATE METHODS
