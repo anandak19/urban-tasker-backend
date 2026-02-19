@@ -15,4 +15,6 @@ export interface IPopularCategoriesRepoResponse {
   name: string;
   description: string;
   imagePublicKey: string;
+  parentCategoryName: string;
+  parentCategoryId: string;
 }

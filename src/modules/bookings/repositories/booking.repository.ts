@@ -947,12 +947,25 @@ export class BookingRepository
         $unwind: '$categoryDetails',
       },
       {
+        $lookup: {
+          from: 'categories',
+          localField: 'categoryDetails.categoryId',
+          foreignField: '_id',
+          as: 'parentCategoryDetails',
+        },
+      },
+      {
+        $unwind: '$parentCategoryDetails',
+      },
+      {
         $project: {
           _id: 0,
           id: { $toString: '$_id' },
           name: '$categoryDetails.name',
           description: '$categoryDetails.description',
           imagePublicKey: '$categoryDetails.image',
+          parentCategoryId: { $toString: '$categoryDetails.categoryId' },
+          parentCategoryName: '$parentCategoryDetails.name',
         },
       },
     ];

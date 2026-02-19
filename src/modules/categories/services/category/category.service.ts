@@ -7,6 +7,7 @@ import { type ICategoryRepository } from '@modules/categories/interfaces/categor
 import { ICategoryService } from '@modules/categories/interfaces/categories-services.interface';
 import type {
   ICategory,
+  ICategoryCard,
   ICreateCategory,
   IUpdateCategory,
 } from '@modules/categories/interfaces/category.interface';
@@ -244,6 +245,17 @@ export class CategoryService implements ICategoryService {
       this._logger.log(error as object);
       throw new InternalServerErrorException(GENERAL_ERRORS.SERVER_ERROR);
     }
+  }
+
+  async getActiveCategories(): Promise<ICategoryCard[]> {
+    const categories = await this._categoryRepo.getActiveCategories();
+    const result = Promise.all(
+      categories.map(async (item) => {
+        const imageUrl = await this._s3.getImageUrl(item.image);
+        return { ...item, image: imageUrl };
+      }),
+    );
+    return result;
   }
 
   // PRIVATE METHODS

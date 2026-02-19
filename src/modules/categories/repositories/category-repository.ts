@@ -1,9 +1,12 @@
 import { BaseRepository } from '@shared/repository/base.repository';
 import { Category, CategoryDocument } from '../schemas/categories.schema';
-import { ICreateCategory } from '../interfaces/category.interface';
+import {
+  ICategoryCard,
+  ICreateCategory,
+} from '../interfaces/category.interface';
 import { ICategoryRepository } from '../interfaces/categories-repositories.interface';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
+import { FilterQuery, Model, PipelineStage } from 'mongoose';
 import { IOptionData } from '@shared/interfaces/response-data.interface';
 import { PaginatedResult } from '@shared/interfaces/query.interface';
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
@@ -18,6 +21,7 @@ export class CategoryRepository
   ) {
     super(_categoryModel);
   }
+
   async getActiveCategoriesOptions(): Promise<IOptionData[]> {
     return await this._categoryModel.aggregate([
       {
@@ -60,5 +64,23 @@ export class CategoryRepository
 
   async findByName(name: string): Promise<CategoryDocument | null> {
     return await this.findOne({ name });
+  }
+
+  async getActiveCategories(): Promise<ICategoryCard[]> {
+    const pipeline: PipelineStage[] = [
+      {
+        $match: { isDeleted: false, isActive: true },
+      },
+      {
+        $project: {
+          _id: 0,
+          id: { $toString: '$_id' },
+          name: 1,
+          image: 1,
+        },
+      },
+    ];
+
+    return await this._categoryModel.aggregate<ICategoryCard>(pipeline);
   }
 }

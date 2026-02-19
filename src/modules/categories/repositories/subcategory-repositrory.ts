@@ -3,10 +3,19 @@ import {
   SubCategory,
   SubCategoryDocument,
 } from '../schemas/subcategories.schema';
-import { ICreateSubCategory } from '../interfaces/subcategory.interface';
+import {
+  ICreateSubCategory,
+  ISubCategoryCard,
+} from '../interfaces/subcategory.interface';
 import { ISubCategoryRepository } from '../interfaces/categories-repositories.interface';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, InferRawDocType, Model, Types } from 'mongoose';
+import {
+  FilterQuery,
+  InferRawDocType,
+  Model,
+  PipelineStage,
+  Types,
+} from 'mongoose';
 import {
   IFindAllQuery,
   PaginatedResult,
@@ -89,5 +98,28 @@ export class SubCategoryRepository
       isActive: true,
       isDeleted: false,
     });
+  }
+
+  getActiveSubCategories(categoryId: string): Promise<ISubCategoryCard[]> {
+    const pipeline: PipelineStage[] = [
+      {
+        $match: {
+          categoryId: toObjectId(categoryId),
+          isDeleted: false,
+          isActive: true,
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          id: { $toString: '$_id' },
+          name: 1,
+          image: 1,
+          description: 1,
+        },
+      },
+    ];
+
+    return this._subCategoryModel.aggregate<ISubCategoryCard>(pipeline);
   }
 }

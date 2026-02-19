@@ -11,6 +11,8 @@ export class BookingAnalyticsMapper {
       id: data.id,
       image: imageUrl,
       name: data.name,
+      parentCategoryId: data.parentCategoryId,
+      parentCategoryName: data.parentCategoryName,
     };
   }
 }

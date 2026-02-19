@@ -7,14 +7,14 @@ import cookieParser from 'cookie-parser';
 import { AllExceptionsFilter } from '@core/filters/http-exception.filter';
 import { ResponseInterceptor } from '@core/interceptors/response.interceptor';
 
-// import { winstonLogger } from '@config/logger/logger.config';
+import { winstonLogger } from '@config/logger/logger.config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    // logger: winstonLogger,
+    logger: winstonLogger,
   });
 
-  // app.useLogger(winstonLogger);
+  app.useLogger(winstonLogger);
 
   app.enableCors({
     origin: [

@@ -1,4 +1,5 @@
 import { Types } from 'mongoose';
+import { ICategoryCard } from './category.interface';
 
 // for repo
 export interface ICreateSubCategory {
@@ -8,11 +9,12 @@ export interface ICreateSubCategory {
   categoryId: Types.ObjectId | string;
 }
 
-export interface ISubCategory {
-  id: string;
-  name: string;
+// have this in f
+export interface ISubCategoryCard extends ICategoryCard {
   description: string;
-  image: string;
+}
+
+export interface ISubCategory extends ISubCategoryCard {
   isActive: boolean;
   slug: string;
   isDeleted: boolean;
