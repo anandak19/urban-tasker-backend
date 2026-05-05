@@ -12,7 +12,7 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import type { Express } from 'express';
+import 'multer';
 import { LOGGER_SERVICE } from '../logger/logger.service';
 import { type ILoggerService } from '../logger/logger.interface';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';

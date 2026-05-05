@@ -19,7 +19,7 @@
       "@config/*": ["config/*"],
       "@database/*": ["database/*"],
       "@modules/*": ["modules/*"],
-      "@shared/*": ["shared/*"],
+      "@shared/*": ["shared/*"]
     },
     "incremental": true,
     "skipLibCheck": true,
@@ -28,6 +28,7 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
+    "types": ["jest"]
   },
   "watchOptions": {
     "watchFile": "dynamicPriorityPolling",

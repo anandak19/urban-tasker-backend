@@ -13,6 +13,7 @@ import { IOptionData } from '@shared/interfaces/response-data.interface';
 import { CreatePortfolioImageDto } from '../dtos/create-portfolio-image.dto';
 import { PortfolioResponseDto } from '../dtos/portfolio-response.dto';
 import { GetPortfolioFilterDto } from '../dtos/get-portfolio-filter.dto';
+import 'multer';
 
 export interface ITaskerService {
   /**

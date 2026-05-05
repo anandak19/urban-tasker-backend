@@ -11,9 +11,6 @@ services:
       - '3000:3000'
     env_file:
       - .env
-    depends_on:
-      redis:
-        condition: service_healthy
     volumes:
       - ./src:/usr/src/app/src
       - ./logs:/var/log/app

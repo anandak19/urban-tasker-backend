@@ -4,6 +4,7 @@ import { ComplaintDetailsResponseDto } from '../dtos/compliant-details-response.
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 import { ChangeStatusDto } from '../dtos/change-status.dto';
 import { IFindAllComplaintsResponse } from './responses.interface';
+import 'multer';
 
 export interface IComplaintService {
   findOneById(complaintId: string): Promise<ComplaintDetailsResponseDto>;

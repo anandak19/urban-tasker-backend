@@ -20,6 +20,7 @@ import {
 } from './subcategory.interface';
 import { TObjectId } from '@shared/types/db-types';
 import { IOptionData } from '@shared/interfaces/response-data.interface';
+import 'multer';
 
 export interface ICategoryService {
   /**

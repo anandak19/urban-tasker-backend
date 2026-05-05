@@ -27,6 +27,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
+import 'multer';
 
 @UseGuards(AuthGuard, AdminGuard, CategoryExistsGuard) // will check if the parent category exists or not
 @Controller('admin/category/:id/subcategory')
