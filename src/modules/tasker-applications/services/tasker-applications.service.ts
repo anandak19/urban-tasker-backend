@@ -38,6 +38,7 @@ import { UserRoles } from '@shared/constants/enums/user.enum';
 import { TASKER_TOKEN } from '@modules/tasker/tasker.token';
 import { type ITaskerService } from '@modules/tasker/interfaces/tasker-services.interface';
 import { ICreateTasker } from '@modules/tasker/interfaces/tasker.interface';
+import 'multer';
 
 @Injectable()
 export class TaskerApplicationsService implements ITaskerApplicationService {

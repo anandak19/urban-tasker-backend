@@ -14,8 +14,8 @@ import { UserDocument } from '../schemas/user.schema';
 import { BasicUserResponseDto } from '../dtos/basic-user-response.dto';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { HomeAddressDto } from '../dtos/home-address.dto';
-
 import { ClientSession } from 'mongoose';
+import 'multer';
 
 export interface IUserService {
   findByEmail(email: string): Promise<UserResponseDto | null>;

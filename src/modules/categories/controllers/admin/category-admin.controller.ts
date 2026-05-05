@@ -31,6 +31,7 @@ import {
 import { FileInterceptor } from '@nestjs/platform-express';
 import { GetDocsDto } from '@shared/dtos/get-docs.dto';
 import { type Express } from 'express';
+import 'multer';
 
 @UseGuards(AuthGuard, AdminGuard)
 @Controller('admin/category')

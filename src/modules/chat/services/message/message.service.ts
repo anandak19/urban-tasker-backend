@@ -20,6 +20,7 @@ import {
 } from '@nestjs/common';
 import { IFindAllOptions } from '@shared/interfaces/repository.interface';
 import { toObjectId } from '@shared/utility/db/to-objectid.util';
+import 'multer';
 
 @Injectable()
 export class MessageService implements IMessageService {

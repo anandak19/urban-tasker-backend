@@ -20,6 +20,7 @@ import type {
 } from '../interfaces/chat-services.interface';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ImageValidationPipe } from '@core/pipes/image-validation.pipe';
+import 'multer';
 
 @UseGuards(AuthGuard)
 @Controller('chat')

@@ -16,6 +16,7 @@ import {
 import type { IComplaintService } from '@modules/complaints/interfaces/complaints-services.interface';
 import type { IAuthenticatedReqeust } from '@shared/interfaces/request.interface';
 import { AuthGuard } from '@core/guards/auth/auth.guard';
+import 'multer';
 
 @UseGuards(AuthGuard)
 @Controller('bookings/:taskId/complaints')

@@ -34,6 +34,7 @@ import {
 } from '@shared/constants/messages/user-messages.constant';
 import { IBaseResponse } from '@shared/interfaces/base-response.interface';
 import { toObjectId } from '@shared/utility/db/to-objectid.util';
+import 'multer';
 
 @Injectable()
 export class UserProfileService implements IUserProfileService {

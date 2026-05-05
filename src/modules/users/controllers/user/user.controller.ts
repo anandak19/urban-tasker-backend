@@ -21,6 +21,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { IAuthenticatedReqeust } from '@shared/interfaces/request.interface';
+import 'multer';
 
 @Controller('user')
 @UseGuards(AuthGuard)

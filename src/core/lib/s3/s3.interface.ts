@@ -1,4 +1,4 @@
-import { Express } from 'express';
+import 'multer';
 
 export interface IS3Service {
   /**

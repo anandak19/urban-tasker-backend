@@ -7,6 +7,7 @@ import {
   PipeTransform,
 } from '@nestjs/common';
 import { GENERAL_ERRORS } from '@shared/constants/messages/error-messaes.constants';
+import 'multer';
 
 @Injectable()
 export class MultiImageValidatorPipe implements PipeTransform {

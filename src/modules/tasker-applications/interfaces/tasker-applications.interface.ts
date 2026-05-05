@@ -1,5 +1,6 @@
 import { TaskerApplicationStatus } from '@shared/constants/enums/status.enum';
 import mongoose from 'mongoose';
+import 'multer';
 
 export type IworkCategories = string[] | mongoose.Types.ObjectId[];
 

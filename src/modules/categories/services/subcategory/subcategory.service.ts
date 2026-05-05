@@ -38,6 +38,7 @@ import { IFindAllOptions } from '@shared/interfaces/repository.interface';
 import { IOptionData } from '@shared/interfaces/response-data.interface';
 import { TObjectId } from '@shared/types/db-types';
 import { Types } from 'mongoose';
+import 'multer';
 
 @Injectable()
 export class SubcategoryService implements ISubCategoryService {

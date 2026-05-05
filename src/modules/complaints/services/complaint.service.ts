@@ -18,6 +18,7 @@ import { ComplaintDetailsResponseDto } from '../dtos/compliant-details-response.
 import { UuidService } from '@core/lib/uuid/uuid.service';
 import { BOOKING_TOKEN } from '@modules/bookings/bookings.token';
 import type { IBookingService } from '@modules/bookings/interfaces/bookings-services.interface';
+import 'multer';
 
 @Injectable()
 export class ComplaintService implements IComplaintService {
