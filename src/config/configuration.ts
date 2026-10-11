@@ -29,6 +29,15 @@ export default () => {
 
     RAZORPAY_API_KEY: process.env.RAZORPAY_API_KEY,
     RAZORPAY_KEY_SECREAT: process.env.RAZORPAY_KEY_SECREAT,
+
+    THROTTLE_SHORT_TTL: process.env.THROTTLE_SHORT_TTL,
+    THROTTLE_SHORT_LIMIT: process.env.THROTTLE_SHORT_LIMIT,
+
+    THROTTLE_MEDIUM_TTL: process.env.THROTTLE_MEDIUM_TTL,
+    THROTTLE_MEDIUM_LIMIT: process.env.THROTTLE_MEDIUM_LIMIT,
+
+    THROTTLE_LONG_TTL: process.env.THROTTLE_LONG_TTL,
+    THROTTLE_LONG_LIMIT: process.env.THROTTLE_LONG_LIMIT,
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

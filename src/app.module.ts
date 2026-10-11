@@ -24,6 +24,10 @@ import { ReportsModule } from './modules/reports/reports.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { SsmModule } from '@core/lib/ssm/ssm.module';
 import { LoggerModule } from '@core/lib/logger/logger.module';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { AppThrottlerGuard } from '@core/guards/app-throttler/app-throttler.guard';
+import { throttlerOptions } from '@config/throttler/throttler.config';
 
 @Module({
   imports: [
@@ -48,9 +52,15 @@ import { LoggerModule } from '@core/lib/logger/logger.module';
     PaymentModule,
     ReportsModule,
     ReviewsModule,
+    ThrottlerModule.forRootAsync(throttlerOptions),
   ],
   controllers: [AppController],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: AppThrottlerGuard,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

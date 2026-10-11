@@ -29,6 +29,15 @@ export interface AppConfig {
 
   RAZORPAY_API_KEY: string;
   RAZORPAY_KEY_SECREAT: string;
+  // throtler
+  THROTTLE_SHORT_TTL: number;
+  THROTTLE_SHORT_LIMIT: number;
+
+  THROTTLE_MEDIUM_TTL: number;
+  THROTTLE_MEDIUM_LIMIT: number;
+
+  THROTTLE_LONG_TTL: number;
+  THROTTLE_LONG_LIMIT: number;
 }
 
 // joi validation schema
@@ -60,4 +69,13 @@ export const appConfigSchema = Joi.object<AppConfig, true>({
 
   RAZORPAY_API_KEY: Joi.string().required(),
   RAZORPAY_KEY_SECREAT: Joi.string().required(),
+
+  THROTTLE_SHORT_TTL: Joi.number().default(60000),
+  THROTTLE_SHORT_LIMIT: Joi.number().default(30),
+
+  THROTTLE_MEDIUM_TTL: Joi.number().default(300000),
+  THROTTLE_MEDIUM_LIMIT: Joi.number().default(200),
+
+  THROTTLE_LONG_TTL: Joi.number().default(1800000),
+  THROTTLE_LONG_LIMIT: Joi.number().default(1100),
 });
