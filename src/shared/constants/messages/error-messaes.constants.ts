@@ -20,3 +20,7 @@ export const USER_ERRORS = {
   UNSUSPEND_FAIL: 'Faild to unsuspend user',
   USER_FETCH_ERROR: 'Faild to fetch users',
 };
+
+export const THROTTLER_ERRORS = {
+  TOO_MANY_REQUESTS: 'Too Many Requests! Try again later',
+};
